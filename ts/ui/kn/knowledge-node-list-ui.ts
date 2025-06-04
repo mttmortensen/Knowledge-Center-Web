@@ -1,18 +1,7 @@
-import { getAllKnowledgeNodes } from "../services/knowledge-node-service.js";
+import { getAllKnowledgeNodes } from "../../services/knowledge-node-service.js";
 
 document.addEventListener("DOMContentLoaded", () => 
 {
-    // === Main Menu Button Logic ===
-    const viewBtn = document.getElementById("view-nodes");
-
-    if (viewBtn) 
-    {
-        viewBtn.addEventListener("click", async () => 
-        {
-            window.location.href = "knowledge-nodes-list.html"
-        })
-    }
-
     // === KN List Page Logic ===
     const nodeListContainer = document.getElementById("node-list");
     if(nodeListContainer) 
@@ -29,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () =>
             window.location.href = "knowledge-nodes-main.html";
         });
     }
-})
+});
 
 async function loadAndRenderNodeList(container: HTMLElement) 
 {
