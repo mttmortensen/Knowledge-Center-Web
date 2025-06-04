@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () =>
     {
         viewBtn.addEventListener("click", async () => 
         {
-            window.location.href = "knowledge-nodes-list.html"
+            window.location.href = "/kn/knowledge-nodes-list.html"
         })
     }
 

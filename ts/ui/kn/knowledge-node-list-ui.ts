@@ -36,14 +36,10 @@ async function loadAndRenderNodeList(container: HTMLElement)
         
         const button = document.createElement("button");
         button.textContent = `${node.Title}`;
-
-        // This will be a future feature
         button.addEventListener("click", () => 
         {
-            window.location.href = `knowledge-nodes-details.html?id=${node.Id}`;
-            console.log(node.Id)
+            window.location.href = `/kn/knowledge-nodes-details.html?id=${node.Id}`;
         });
-        // 
 
         li.appendChild(button);
         container.appendChild(li);
