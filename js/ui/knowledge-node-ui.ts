@@ -1,4 +1,4 @@
-import { getAllKnowledgeNodes } from "../services/knowledge-node-service";
+import { getAllKnowledgeNodes } from "../services/knowledge-node-service.js";
 
 document.addEventListener("DOMContentLoaded", () => 
 {
