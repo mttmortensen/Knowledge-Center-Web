@@ -43,10 +43,10 @@ async function loadAndRenderNodeList(container: HTMLElement)
 
     nodes.forEach(node => 
     {
+        const li = document.createElement("li");
+        
         const button = document.createElement("button");
         button.textContent = `${node.Title}`;
-        button.style.display = "block";
-        button.style.marginBottom = "10px";
 
         // This will be a future feature
         button.addEventListener("click", () => 
@@ -55,6 +55,7 @@ async function loadAndRenderNodeList(container: HTMLElement)
         });
         // 
 
-        container.appendChild(button);
+        li.appendChild(button);
+        container.appendChild(li);
     });
 }
