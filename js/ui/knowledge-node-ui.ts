@@ -1,6 +1,15 @@
 import { getAllKnowledgeNodes } from "../services/knowledge-node-service";
 
-getAllKnowledgeNodes().then((nodes) => 
+document.addEventListener("DOMContentLoaded", () => 
 {
-    console.log(`Here be the Knowledge Nodes: ${nodes}`);
+    const viewBtn = document.getElementById("view-nodes");
+
+    if (viewBtn) 
+    {
+        viewBtn.addEventListener("click", async () => 
+        {
+            const nodes = await getAllKnowledgeNodes();
+            console.log(`Knowledge Nodes: ${nodes}`)
+        })
+    }
 })
