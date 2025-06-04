@@ -20,4 +20,14 @@ document.addEventListener("DOMContentLoaded", () =>
     {
         loadAndRenderNodeList(nodeListContainer);
     }
+
+    // === Back button for KN List Page ===
+    const backBtn = document.getElementById("back-to-menu");
+    if(backBtn)
+    {
+        backBtn.addEventListener("click", () => 
+        {
+            window.location.href = "knowledge-nodes-main.html";
+        });
+    }
 })
