@@ -2,7 +2,7 @@ import { Domains  } from "../types/domains";
 
 const API_BASE_URL = "http://localhost:8080/api/domains";
 
-export async function getAllKnowledgeNodes(): Promise<Domains[]>
+export async function getAllDomains(): Promise<Domains[]>
 {
     try
     {
@@ -22,7 +22,7 @@ export async function getAllKnowledgeNodes(): Promise<Domains[]>
     }    
 }
 
-export async function getAKnowledgeNodeById(id: number): Promise<Domains | null> 
+export async function getADomainById(id: number): Promise<Domains | null> 
 {
     try 
     {
