@@ -1,5 +1,0 @@
-{
-    "server": {
-        "baseDir": ["./html", "./dist", "./css"]
-    }
-}
