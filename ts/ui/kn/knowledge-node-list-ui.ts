@@ -40,7 +40,6 @@ async function loadAndRenderNodeList(container: HTMLElement)
         // This will be a future feature
         button.addEventListener("click", () => 
         {
-            console.log("Clicked Node: ", node);
             window.location.href = "knowledge-nodes-deatils.html"
         });
         // 

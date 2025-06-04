@@ -21,3 +21,23 @@ export async function getAllKnowledgeNodes(): Promise<KnowledgeNode[]>
         return [];
     }    
 }
+
+export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode | null> 
+{
+    try 
+    {
+        const response = await fetch(`${API_BASE_URL}/${id}`);
+        if(!response.ok) 
+        {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: KnowledgeNode = await response.json();
+        return data;
+    }
+    catch(error)
+    {
+        console.error(`Failed to get Knowledge Node by Id ${id}: ${error}`);
+        return null;
+    }
+}
