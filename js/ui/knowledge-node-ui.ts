@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () =>
         viewBtn.addEventListener("click", async () => 
         {
             const nodes = await getAllKnowledgeNodes();
-            console.log(`Knowledge Nodes: ${nodes}`)
+            console.log("Knowledge Nodes:", nodes)
         })
     }
 })
