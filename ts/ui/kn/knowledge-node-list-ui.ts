@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () =>
     {
         backBtn.addEventListener("click", () => 
         {
-            window.location.href = "knowledge-nodes-main.html";
+            window.history.back();
         });
     }
 });
@@ -40,7 +40,8 @@ async function loadAndRenderNodeList(container: HTMLElement)
         // This will be a future feature
         button.addEventListener("click", () => 
         {
-            window.location.href = "knowledge-nodes-details.html"
+            window.location.href = `knowledge-nodes-details.html?id=${node.Id}`;
+            console.log(node.Id)
         });
         // 
 
