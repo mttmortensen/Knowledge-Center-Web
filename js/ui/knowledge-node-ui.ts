@@ -31,3 +31,31 @@ document.addEventListener("DOMContentLoaded", () =>
         });
     }
 })
+
+async function loadAndRenderNodeList(container: HTMLElement) 
+{
+    const nodes = await getAllKnowledgeNodes();
+
+    if (nodes.length == 0) 
+    {
+        container.textContent = "No Knowledge Nodes found.";
+        return;
+    }
+
+    nodes.forEach(node => 
+    {
+        const button = document.createElement("button");
+        button.textContent = `${node.Title}`;
+        button.style.display = "block";
+        button.style.marginBottom = "10px";
+
+        // This will be a future feature
+        button.addEventListener("click", () => 
+        {
+            console.log("Clicked Node: ", node);
+        });
+        // 
+
+        container.appendChild(button);
+    });
+}
