@@ -1,4 +1,5 @@
 import { getAllLogs } from "../../services/log-services.js";
+import { getAllKnowledgeNodes } from "../../services/knowledge-node-service.js";
 
 document.addEventListener("DOMContentLoaded", () => 
 {
@@ -23,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () =>
 async function loadAndRenderLogList(container: HTMLElement) 
 {
     const logs = await getAllLogs();
+    const knowledgesNodes = await getAllKnowledgeNodes ();
 
     if (logs.length == 0) 
     {
@@ -34,8 +36,15 @@ async function loadAndRenderLogList(container: HTMLElement)
     {
         const li = document.createElement("li");
         
+        
         const button = document.createElement("button");
-        button.textContent = `${log.Content}`;
+
+        const preview = log.Content.length > 50
+            ? log.Content.substring(0, 50) + "..."
+            : log.Content;
+
+        button.textContent = preview;
+
         button.addEventListener("click", () => 
         {
             window.location.href = `/logs/logs-details.html?id=${log.LogId}`;
