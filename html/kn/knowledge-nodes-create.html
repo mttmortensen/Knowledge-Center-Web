@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Knowledge Node</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <h1>Create a Knowledge Node</h1>
+
+  <form id="kn-form">
+    <label for="title">Title:</label><br />
+    <input type="text" id="title" name="title" required /><br /><br />
+
+    <label>Node Type:</label><br />
+    <input type="radio" id="type-project" name="nodeType" value="Project" required />
+    <label for="type-project">Project</label><br />
+    <input type="radio" id="type-concept" name="nodeType" value="Concept" />
+    <label for="type-concept">Concept</label><br /><br />
+
+    <label for="description">Description:</label><br />
+    <textarea id="description" name="description" rows="5" cols="40" required></textarea><br /><br />
+
+    <label for="confidence">Confidence Level:</label><br />
+    <select id="confidence" name="confidence" required>
+      <option value="" disabled selected>Select a level</option>
+      <!-- 1 to 10 options -->
+      ${[...Array(10)].map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
+    </select><br /><br />
+
+    <label>Status:</label><br />
+    <input type="radio" id="status-active" name="status" value="Active" required />
+    <label for="status-active">Active</label><br />
+    <input type="radio" id="status-paused" name="status" value="Paused" />
+    <label for="status-paused">Paused</label><br /><br />
+
+    <button type="submit">Create Node</button>
+  </form>
+
+  <br />
+  <button id="back-button">⬅️ Back</button>
+
+  <script type="module" src="/ui/kn/knowledge-node-create-ui.js"></script>
+</body>
+</html>
