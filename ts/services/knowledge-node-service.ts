@@ -41,3 +41,20 @@ export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode |
         return null;
     }
 }
+
+export async function createKnowledgeNode(node: Omit<KnowledgeNode, "id">): Promise<boolean> {
+    try {
+        const response = await fetch(API_BASE_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(node)
+        });
+
+        return response.ok;
+    } catch (error) {
+        console.error("❌ Failed to create Knowledge Node:", error);
+        return false;
+    }
+}
