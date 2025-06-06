@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => 
 {
     // === Main Menu Button Logic ===
-    const viewBtn = document.getElementById("view-tagss");
+    const viewBtn = document.getElementById("view-tags");
 
     if (viewBtn) 
     {
