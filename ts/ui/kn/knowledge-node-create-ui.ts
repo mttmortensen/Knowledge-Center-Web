@@ -1,8 +1,11 @@
 import { createKnowledgeNode } from "../../services/knowledge-node-service.js";
+import { getAllDomains } from "../../services/domain-services.js";
 
 document.addEventListener("DOMContentLoaded", () => 
 {
     populateConfidenceSelect("confidence");
+    populateDomainSelect("domain");
+
     const form = document.getElementById("kn-form") as HTMLFormElement;
 
     if (form) {
@@ -29,8 +32,6 @@ document.addEventListener("DOMContentLoaded", () =>
             CreatedAt: now,
             LastUpdated: now
         };
-
-        console.log(newNode)
 
         // const success = await createKnowledgeNode(newNode);
 
@@ -64,4 +65,31 @@ function populateConfidenceSelect(selectId: string): void {
     option.textContent = i.toString();
     select.appendChild(option);
   }
+}
+
+async function populateDomainSelect(selectId: string): Promise<void> 
+{
+    const select = document.getElementById(selectId) as HTMLSelectElement;
+    if(!select) return;
+
+    try 
+    {
+        const domains = await getAllDomains();
+
+        domains.forEach(domain => 
+        {
+            const option = document.createElement("option");
+            option.value = domain.DomainId.toString();
+            option.textContent = domain.DomainName;
+            select.appendChild(option);
+        })
+    }
+    catch (err) 
+    {
+        console.error("Failed to load domains:", err);
+        const option = document.createElement("option");
+        option.disabled = true;
+        option.textContent = "Error Loading Domains";
+        select.appendChild(option);
+    }
 }
