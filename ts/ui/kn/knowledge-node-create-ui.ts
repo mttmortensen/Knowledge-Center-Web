@@ -2,6 +2,7 @@ import { createKnowledgeNode } from "../../services/knowledge-node-service.js";
 
 document.addEventListener("DOMContentLoaded", () => 
 {
+    populateConfidenceSelect("confidence");
     const form = document.getElementById("kn-form") as HTMLFormElement;
 
     if (form) {
@@ -29,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () =>
             LastUpdated: now
         };
 
-        console.log(newNode);
+        console.log(newNode)
 
         // const success = await createKnowledgeNode(newNode);
 
@@ -52,3 +53,15 @@ document.addEventListener("DOMContentLoaded", () =>
         });
     }
 });
+
+function populateConfidenceSelect(selectId: string): void {
+  const select = document.getElementById(selectId) as HTMLSelectElement;
+  if (!select) return;
+
+  for (let i = 1; i <= 10; i++) {
+    const option = document.createElement("option");
+    option.value = i.toString();
+    option.textContent = i.toString();
+    select.appendChild(option);
+  }
+}
