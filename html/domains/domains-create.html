@@ -15,8 +15,11 @@
     <label for="description">Domain Description:</label><br />
     <textarea id="description" name="description" rows="5" cols="40" required></textarea><br /><br />
 
-    <label for="status">Status:</label><br />
-    <input type="text" id="status" name="status" required /><br /><br />
+    <label>Status:</label><br />
+    <input type="radio" id="status-active" name="status" value="Active" required />
+    <label for="status-active">Active</label><br />
+    <input type="radio" id="status-inactive" name="status" value="Inactive" />
+    <label for="status-inactive">Inactive</label><br /><br />
 
     <button type="submit">Create Domain</button>
   </form>
