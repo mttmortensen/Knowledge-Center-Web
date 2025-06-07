@@ -25,13 +25,13 @@ document.addEventListener("DOMContentLoaded", () =>
 
         const newNode = {
             Title,
-            NodeType,
             Description,
             ConfidenceLevel,
             Status,
-            DomainId,
             CreatedAt: now,
-            LastUpdated: now
+            LastUpdated: now,
+            NodeType,
+            DomainId
         };
 
         const success = await createKnowledgeNode(newNode);
