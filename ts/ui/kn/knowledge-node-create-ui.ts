@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () =>
         const formData = new FormData(form);
 
         const Title = formData.get("title") as string;
+        const DomainId = parseInt(formData.get("domain") as string);
         const NodeType = formData.get("nodeType") as string;
         const Description = formData.get("description") as string;
         const ConfidenceLevel = parseInt(formData.get("confidence") as string);
@@ -28,19 +29,19 @@ document.addEventListener("DOMContentLoaded", () =>
             Description,
             ConfidenceLevel,
             Status,
-            DomainId: 0, // Placeholder for now — we'll add domain support later
+            DomainId,
             CreatedAt: now,
             LastUpdated: now
         };
 
-        // const success = await createKnowledgeNode(newNode);
+        const success = await createKnowledgeNode(newNode);
 
-        // if (success) {
-        //     alert("✅ Knowledge Node created!");
-        //     window.location.href = "knowledge-nodes-main.html";
-        // } else {
-        //     alert("❌ Failed to create Knowledge Node.");
-        // }
+        if (success) {
+            alert("✅ Knowledge Node created!");
+            window.location.href = "knowledge-nodes-main.html";
+        } else {
+            alert("❌ Failed to create Knowledge Node.");
+        }
         });
     }
     
