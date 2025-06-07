@@ -41,3 +41,26 @@ export async function getADomainById(id: number): Promise<Domains | null>
         return null;
     }
 }
+
+export async function createDomain(domain: any): Promise<boolean> 
+{
+    try
+    {
+        const response = await fetch(API_BASE_URL, 
+        {
+            method: "POST",
+            headers: 
+            {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(domain)
+        })
+
+        return response.ok;
+    }
+    catch (err)
+    {
+        console.error("❌ Error creating domain:", err);
+        return false;
+    }
+}
