@@ -11,6 +11,12 @@
   <form id="kn-form">
     <label for="title">Title:</label><br />
     <input type="text" id="title" name="title" required /><br /><br />
+    
+    <label for="domain">Domain:</label><br />
+    <select id="domain" name="domain" required>
+      <option value="" disabled selected>Select a domain</option>
+      <!-- Domain options will be added dynamically -->
+    </select><br /><br />
 
     <label>Node Type:</label><br />
     <input type="radio" id="type-project" name="nodeType" value="Project" required />
@@ -25,7 +31,6 @@
     <select id="confidence" name="confidence" required>
       <option value="" disabled selected>Select a level</option>
       <!-- 1 to 10 options will be done dynamically-->
-       
     </select><br /><br />
 
     <label>Status:</label><br />
