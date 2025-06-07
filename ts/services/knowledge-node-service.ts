@@ -42,7 +42,7 @@ export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode |
     }
 }
 
-export async function createKnowledgeNode(node: Omit<KnowledgeNode, "id">): Promise<boolean> {
+export async function createKnowledgeNode(node: Omit<KnowledgeNode, "Id">): Promise<boolean> {
     try {
         const response = await fetch(API_BASE_URL, {
             method: "POST",
