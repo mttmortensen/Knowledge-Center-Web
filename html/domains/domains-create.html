@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Domain</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <h1>Create a Domain</h1>
+
+  <form id="domain-form">
+    <label for="name">Domain Name:</label><br />
+    <input type="text" id="name" name="name" required /><br /><br />
+
+    <label for="description">Domain Description:</label><br />
+    <textarea id="description" name="description" rows="5" cols="40" required></textarea><br /><br />
+
+    <label for="status">Status:</label><br />
+    <input type="text" id="status" name="status" required /><br /><br />
+
+    <button type="submit">Create Domain</button>
+  </form>
+
+  <br />
+  <button id="back-button">⬅️ Back</button>
+
+  <script type="module" src="/ui/domain/domain-create-ui.js"></script>
+</body>
+</html>
