@@ -1,11 +1,11 @@
-import { createLog } from "../../services/log-services";
-import { getAllKnowledgeNodes } from "../../services/knowledge-node-service";
-import { getAllTags } from "../../services/tag-service";
+import { createLog } from "../../services/log-services.js";
+import { getAllKnowledgeNodes } from "../../services/knowledge-node-service.js";
+import { getAllTags } from "../../services/tag-service.js";
 
 document.addEventListener("DOMContentLoaded", () => 
 {
-    // populateNodeSelect("nodeId");
-    // populateTagSelect("tagId");
+    populateNodeSelect("nodeId");
+    populateTagSelect("tagId");
 
     const form = document.getElementById("log-form") as HTMLFormElement;
 
@@ -22,11 +22,29 @@ document.addEventListener("DOMContentLoaded", () =>
             const ContributesToProgress = formData.get("contributesToProgress") === "true";
             const EntryDate = new Date().toISOString(); 
 
-            
-        })
+            const newLog = 
+            {
+                NodeId,
+                Content,
+                TagId,
+                ContributesToProgress,
+                EntryDate
+            }
+
+            const success = await createLog(newLog);
+
+            if(success) 
+            {
+                alert("✅ Log created!");
+                window.location.href = "/logs/logs-main.html";            
+            }
+            else 
+            {
+                alert("❌ Failed to create log.");
+
+            }
+        });
     }
-
-
 
     // === Back button ===
     const backBtn = document.getElementById("back-button");
@@ -39,3 +57,47 @@ document.addEventListener("DOMContentLoaded", () =>
     }
     
 })
+
+async function populateNodeSelect(selectId: string): Promise<void> {
+  const select = document.getElementById(selectId) as HTMLSelectElement;
+  if (!select) return;
+
+  try {
+    const nodes = await getAllKnowledgeNodes();
+
+    nodes.forEach((node: any) => {
+      const option = document.createElement("option");
+      option.value = node.Id.toString();
+      option.textContent = node.Title;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error("❌ Failed to load Knowledge Nodes:", err);
+    const option = document.createElement("option");
+    option.disabled = true;
+    option.textContent = "Error loading Knowledge Nodes";
+    select.appendChild(option);
+  }
+}
+
+async function populateTagSelect(selectId: string): Promise<void> {
+  const select = document.getElementById(selectId) as HTMLSelectElement;
+  if (!select) return;
+
+  try {
+    const tags = await getAllTags();
+
+    tags.forEach((tag: any) => {
+      const option = document.createElement("option");
+      option.value = tag.TagId.toString();
+      option.textContent = tag.Name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error("❌ Failed to load Tags:", err);
+    const option = document.createElement("option");
+    option.disabled = true;
+    option.textContent = "Error loading Tags";
+    select.appendChild(option);
+  }
+}
