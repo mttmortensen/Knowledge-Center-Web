@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Log Entry</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <h1>Create a Log Entry</h1>
+
+  <form id="log-form">
+    <!-- Knowledge Node dropdown (added dynamically later) -->
+    <label for="nodeId">Knowledge Node:</label><br />
+    <select id="nodeId" name="nodeId" required>
+      <option value="" disabled selected>Select a Knowledge Node</option>
+    </select><br /><br />
+
+    <label for="content">Log Content:</label><br />
+    <textarea id="content" name="content" rows="6" cols="50" required></textarea><br /><br />
+
+    <!-- TagId dropdown (filled in later) -->
+    <label for="tagId">Tag:</label><br />
+    <select id="tagId" name="tagId" required>
+      <option value="" disabled selected>Select a Tag</option>
+    </select><br /><br />
+
+    <label>Contributes to Progress?</label><br />
+    <input type="radio" id="progress-yes" name="contributesToProgress" value="true" required />
+    <label for="progress-yes">Yes</label><br />
+    <input type="radio" id="progress-no" name="contributesToProgress" value="false" />
+    <label for="progress-no">No</label><br /><br />
+
+    <button type="submit">Create Log</button>
+  </form>
+
+  <br />
+  <button id="back-button">⬅️ Back</button>
+
+  <script type="module" src="/ui/logs/logs-create-ui.js"></script>
+</body>
+</html>
