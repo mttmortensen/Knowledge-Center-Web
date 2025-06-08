@@ -1,3 +1,11 @@
+document.getElementById("quick-log")?.addEventListener("click", () => {
+  window.location.href= "/logs/logs-create.html"
+})
+
+document.getElementById("quick-create-node")?.addEventListener("click", () => {
+  window.location.href = "/kn/knowledge-nodes-create.html"
+})
+
 document.getElementById("menu-nodes")?.addEventListener("click", () => {
   window.location.href = "/kn/knowledge-nodes-main.html";
 });
