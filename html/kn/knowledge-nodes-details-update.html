@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Knowledge Node</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <h1>Edit Knowledge Node</h1>
+
+  <form id="edit-kn-form">
+    <input type="hidden" id="kn-id" name="kn-id" />
+
+    <label for="title">Title:</label><br />
+    <input type="text" id="title" name="title" required /><br /><br />
+
+    <label for="domain">Domain:</label><br />
+    <select id="domain" name="domain" required>
+      <option value="" disabled selected>Select a domain</option>
+      <!-- Domain options populated dynamically -->
+    </select><br /><br />
+
+    <label>Node Type:</label><br />
+    <input type="radio" id="type-project" name="nodeType" value="Project" required />
+    <label for="type-project">Project</label><br />
+    <input type="radio" id="type-concept" name="nodeType" value="Concept" />
+    <label for="type-concept">Concept</label><br /><br />
+
+    <label for="description">Description:</label><br />
+    <textarea id="description" name="description" rows="5" cols="40" required></textarea><br /><br />
+
+    <label for="confidence">Confidence Level:</label><br />
+    <select id="confidence" name="confidence" required>
+      <option value="" disabled selected>Select a level</option>
+      <!-- 1–10 options populated dynamically -->
+    </select><br /><br />
+
+    <label>Status:</label><br />
+    <input type="radio" id="status-exploring" name="status" value="Exploring" required />
+    <label for="status-exploring">Exploring</label><br />
+    <input type="radio" id="status-learning" name="status" value="Learning" />
+    <label for="status-learning">Learning</label><br />
+    <input type="radio" id="status-mastered" name="status" value="Mastered" />
+    <label for="status-mastered">Mastered</label><br /><br />
+
+    <button type="submit">Update Node</button>
+  </form>
+
+  <br />
+  <button id="back-button">⬅️ Back</button>
+
+  <script type="module" src="/ui/kn/knowledge-node-details-update-ui.js"></script>
+</body>
+</html>
