@@ -58,3 +58,26 @@ export async function createKnowledgeNode(node: Omit<KnowledgeNode, "Id">): Prom
         return false;
     }
 }
+
+export async function updateAKnowledgeNode(KnowledgeNode: any): Promise<boolean> 
+{
+    try 
+    {
+        const response = await fetch(`${API_BASE_URL}/${KnowledgeNode.Id}`, 
+        {
+            method: "PUT",
+            headers: 
+            {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(KnowledgeNode)
+        })
+
+        return response.ok
+    }
+    catch (error)
+    {
+        console.error("❌ Failed to update Knowledge Node:", error);
+        return false;
+    }
+}
