@@ -1,22 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => 
 {
     // === Main Menu Button Logic ===
-    const viewBtn = document.getElementById("view-nodes");
-    const crtBtn = document.getElementById("create-node");
-
-    if (viewBtn && crtBtn) 
-    {
-        viewBtn.addEventListener("click", async () => 
-        {
-            window.location.href = "/kn/knowledge-nodes-list.html"
-        })
-
-        crtBtn.addEventListener("click", async () => 
-        {
-            window.location.href = "/kn/knowledge-nodes-create.html"
-        })
-
-    }
+    setupNav("view-nodes", "/kn/knowledge-nodes-list.html");
+    setupNav("create-node", "/kn/knowledge-nodes-create.html");
+    setupNav("update-node", "/kn/knowledge-nodes-list-update.html");
 
     // === Back button for Main Menu ===
     const backBtn = document.getElementById("back-button");
@@ -29,4 +16,18 @@ document.addEventListener("DOMContentLoaded", () =>
     }
     
 })
+
+// This allows me to avoid repeating the same setup of code for each button 
+// And avoiding a nested conditional hell. 
+function setupNav(buttonId: string, targetUrl: string): void 
+{
+    const btn = document.getElementById(buttonId);
+    if (btn) 
+    {
+        btn.addEventListener("click", () => {
+            window.location.href = targetUrl;
+        });
+    }
+}
+
 
