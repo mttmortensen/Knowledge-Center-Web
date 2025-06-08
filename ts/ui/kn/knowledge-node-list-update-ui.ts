@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
         // Store ID in localStorage for next page
         localStorage.setItem("editKNId", selected.value);
-        window.location.href = "/kn/knowledge-nodes-update-details.html";
+        window.location.href = "/kn/knowledge-nodes-details-update.html";
     });
 
     // === Back button ===
