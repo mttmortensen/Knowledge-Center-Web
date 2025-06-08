@@ -21,3 +21,20 @@ export async function getAllTags(): Promise<Tag[]>
         return [];
     }    
 }
+
+export async function createTag(tagData: { Name: string }): Promise<boolean> {
+    try {
+        const response = await fetch(API_BASE_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(tagData)
+        });
+
+        return response.ok;
+    } catch (error) {
+        console.error("Failed to create tag:", error);
+        return false;
+    }
+}
