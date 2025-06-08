@@ -41,3 +41,26 @@ export async function getALogById(id: number): Promise<LogEntry | null>
         return null;
     }
 }
+
+export async function createLog(log: any): Promise<boolean> 
+{
+  try 
+  {
+    const response = await fetch(API_BASE_URL, 
+    {
+      method: "POST",
+      headers: 
+      {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(log),
+    });
+
+    return response.ok;
+  } 
+  catch (error) 
+  {
+    console.error("❌ Failed to create log:", error);
+    return false;
+  }
+}
