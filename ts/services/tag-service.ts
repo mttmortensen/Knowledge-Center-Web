@@ -22,6 +22,29 @@ export async function getAllTags(): Promise<Tag[]>
     }    
 }
 
+export async function getATagById(tagId: number): Promise<any | null> 
+{
+    try 
+    {
+        const response = await fetch(`${API_BASE_URL}/${tagId}`);
+
+        if (!response.ok) 
+        {
+            console.error(`❌ Failed to fetch tag with ID ${tagId}`);
+            return null;
+        }
+
+        const tag = await response.json();
+        return tag;
+    } 
+    catch (error) 
+    {
+        console.error("❌ Error fetching tag by ID:", error);
+        return null;
+    }
+}
+
+
 export async function createTag(tagData: { Name: string }): Promise<boolean> {
     try {
         const response = await fetch(API_BASE_URL, {
