@@ -43,16 +43,15 @@ document.addEventListener("DOMContentLoaded", async () =>
     form.addEventListener("submit", (e) => 
     {
         e.preventDefault();
-        const selected = (document.querySelector("input[name='kn']:checked") as HTMLInputElement);
+        const selected = document.querySelector("input[name='kn']:checked") as HTMLInputElement;
 
         if (!selected) {
             alert("Please select a Knowledge Node to edit.");
             return;
         }
 
-        // Store ID in localStorage for next page
-        localStorage.setItem("editKNId", selected.value);
-        window.location.href = "/kn/knowledge-nodes-details-update.html";
+        const nodeId = selected.value;
+        window.location.href = `/kn/knowledge-nodes-details-update.html?id=${nodeId}`;
     });
 
     // === Back button ===
