@@ -64,3 +64,26 @@ export async function createDomain(domain: any): Promise<boolean>
         return false;
     }
 }
+
+export async function updateADomain(domain: any): Promise<boolean> 
+{
+    try 
+    {
+        const response = await fetch(`${API_BASE_URL}/${domain.DomainId}`, 
+        {
+            method: "PUT",
+            headers: 
+            {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(domain)
+        });
+
+        return response.ok;
+    } 
+    catch (error) 
+    {
+        console.error("❌ Failed to update Domain:", error);
+        return false;
+    }
+}
