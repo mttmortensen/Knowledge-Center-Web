@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () =>
     setupTagNav("view-tags", "/tags/tags-list.html")
     setupTagNav("create-tag", "/tags/tags-create.html")
     setupTagNav("update-tag", "/tags/tags-list-update.html")
+    setupTagNav("delete-tag", "/tags/tags-list-delete.html")
 
     // === Back button for Main Menu ===
     const backBtn = document.getElementById("back-button");
