@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () =>
     setupNodeNav("view-nodes", "/kn/knowledge-nodes-list.html");
     setupNodeNav("create-node", "/kn/knowledge-nodes-create.html");
     setupNodeNav("update-node", "/kn/knowledge-nodes-list-update.html");
+    setupNodeNav("delete-node", "/kn/knowledge-nodes-list-delete.html");
 
     // === Back button for Main Menu ===
     const backBtn = document.getElementById("back-button");
