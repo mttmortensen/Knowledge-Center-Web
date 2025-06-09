@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async () =>
         }
 
         const tagId = selected.value;
-        window.location.href = `/ui/tag/tags-details-update.html?id=${tagId}`;
+        window.location.href = `/tags/tags-details-update.html?id=${tagId}`;
     });
 
     const backBtn = document.getElementById("back-button");

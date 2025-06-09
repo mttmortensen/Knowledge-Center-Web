@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
         if (success) {
             alert("✅ Tag updated!");
-            window.location.href = "/ui/tag/tags-main.html";
+            window.location.href = "/tags/tags-main.html";
         } else {
             alert("❌ Failed to update Tag.");
         }
