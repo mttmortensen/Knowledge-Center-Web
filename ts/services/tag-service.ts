@@ -38,3 +38,27 @@ export async function createTag(tagData: { Name: string }): Promise<boolean> {
         return false;
     }
 }
+
+export async function updateATag(tag: any): Promise<boolean> 
+{
+    try 
+    {
+        const response = await fetch(`${API_BASE_URL}/${tag.TagId}`, 
+        {
+            method: "PUT",
+            headers: 
+            {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(tag)
+        });
+
+        return response.ok;
+    } 
+    catch (error) 
+    {
+        console.error("❌ Failed to update Tag:", error);
+        return false;
+    }
+}
+
