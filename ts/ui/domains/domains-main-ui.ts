@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () =>
     setupDomainNav("view-domains", "/domains/domains-list.html")
     setupDomainNav("create-domain", "/domains/domains-create.html")
     setupDomainNav("update-domain", "/domains/domains-list-update.html")
+    setupDomainNav("delete-domain", "/domains/domains-list-delete.html")
 
 
     // === Back button for Main Menu ===
