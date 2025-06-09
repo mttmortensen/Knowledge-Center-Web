@@ -8,7 +8,7 @@
 <body>
   <h1>Edit Knowledge Node</h1>
 
-  <form id="edit-kn-form">
+  <form id="edit-node-form">
     <input type="hidden" id="kn-id" name="kn-id" />
 
     <label for="title">Title:</label><br />
@@ -17,11 +17,11 @@
     <label for="domain">Domain:</label><br />
     <select id="domain" name="domain" required>
       <option value="" disabled selected>Select a domain</option>
-      <!-- Domain options populated dynamically -->
+      <!-- Options populated dynamically -->
     </select><br /><br />
 
     <label>Node Type:</label><br />
-    <input type="radio" id="type-project" name="nodeType" value="Project" required />
+    <input type="radio" id="type-project" name="nodeType" value="Project" />
     <label for="type-project">Project</label><br />
     <input type="radio" id="type-concept" name="nodeType" value="Concept" />
     <label for="type-concept">Concept</label><br /><br />
@@ -32,11 +32,11 @@
     <label for="confidence">Confidence Level:</label><br />
     <select id="confidence" name="confidence" required>
       <option value="" disabled selected>Select a level</option>
-      <!-- 1–10 options populated dynamically -->
+      <!-- 1-10 populated dynamically -->
     </select><br /><br />
 
     <label>Status:</label><br />
-    <input type="radio" id="status-exploring" name="status" value="Exploring" required />
+    <input type="radio" id="status-exploring" name="status" value="Exploring" />
     <label for="status-exploring">Exploring</label><br />
     <input type="radio" id="status-learning" name="status" value="Learning" />
     <label for="status-learning">Learning</label><br />
