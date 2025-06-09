@@ -81,3 +81,22 @@ export async function updateAKnowledgeNode(KnowledgeNode: any): Promise<boolean>
         return false;
     }
 }
+
+export async function deleteAKnowledgeNode(nodeId: number): Promise<boolean> 
+{
+        try {
+        const response = await fetch(`${API_BASE_URL}/${nodeId}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            console.error(`Failed to delete node ${nodeId}:`, await response.text());
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error("Error deleting knowledge node:", error);
+        return false;
+    }
+}
