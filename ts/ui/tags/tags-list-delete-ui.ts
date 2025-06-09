@@ -1,0 +1,67 @@
+import { getAllTags, deleteATag } from "../../services/tag-service.js";
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const tagListDiv = document.getElementById("tag-list");
+    const form = document.getElementById("tag-delete-form") as HTMLFormElement;
+
+    try {
+        const tags = await getAllTags();
+
+        if (tags.length === 0) {
+            tagListDiv!.innerHTML = "<p>No Tags found.</p>";
+            return;
+        }
+
+        tags.forEach(tag => {
+            const wrapper = document.createElement("div");
+
+            const radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = "tag";
+            radio.value = tag.TagId.toString();
+            radio.id = `tag-${tag.TagId}`;
+
+            const label = document.createElement("label");
+            label.htmlFor = radio.id;
+            label.textContent = tag.Name;
+
+            wrapper.appendChild(radio);
+            wrapper.appendChild(label);
+
+            tagListDiv!.appendChild(wrapper);
+        });
+    } catch (err) {
+        tagListDiv!.innerHTML = "<p>Failed to load tags.</p>";
+        console.error("Error fetching tags:", err);
+    }
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const selected = document.querySelector("input[name='tag']:checked") as HTMLInputElement;
+        if (!selected) {
+            alert("Please select a tag to delete.");
+            return;
+        }
+
+        const tagId = parseInt(selected.value);
+        const confirmed = confirm("Are you sure you want to delete this tag?");
+        if (!confirmed) return;
+
+        const success = await deleteATag(tagId);
+
+        if (success) {
+            alert("✅ Tag deleted!");
+            window.location.href = "/tags/tags-main.html";
+        } else {
+            alert("❌ Failed to delete tag.");
+        }
+    });
+
+    const backBtn = document.getElementById("back-button");
+    if (backBtn) {
+        backBtn.addEventListener("click", () => {
+            window.history.back();
+        });
+    }
+});
