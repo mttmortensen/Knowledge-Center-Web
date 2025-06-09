@@ -87,3 +87,15 @@ export async function updateADomain(domain: any): Promise<boolean>
         return false;
     }
 }
+
+export async function deleteADomain(domainId: number): Promise<boolean> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/${domainId}`, {
+            method: "DELETE"
+        });
+        return response.ok;
+    } catch (error) {
+        console.error("Failed to delete domain:", error);
+        return false;
+    }
+}
