@@ -1,0 +1,35 @@
+const loginForm = document.getElementById("login-form") as HTMLFormElement;
+const errorMessage = document.getElementById("error-message") as HTMLParagraphElement;
+
+const API_BASE_URL = "http://localhost:8080/api/login";
+
+loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault(); // Stop form from refreshing the page
+
+  const username = (document.getElementById("username") as HTMLInputElement).value;
+  const password = (document.getElementById("password") as HTMLInputElement).value;
+
+  try {
+    const response = await fetch(API_BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      sessionStorage.setItem("token", data.token);
+
+      // Redirect to your main page (change if needed)
+      window.location.href = "/index.html";
+    } else {
+      const errorText = await response.text();
+      errorMessage.textContent = errorText || "Invalid credentials.";
+    }
+  } catch (err) {
+    console.error("Login failed:", err);
+    errorMessage.textContent = "Something went wrong. Please try again.";
+  }
+});
