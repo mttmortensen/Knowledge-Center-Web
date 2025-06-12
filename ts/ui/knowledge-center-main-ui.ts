@@ -1,3 +1,7 @@
+import { requireAuth } from "../services/auth-check.js";
+
+requireAuth();
+
 document.getElementById("quick-log")?.addEventListener("click", () => {
   window.location.href= "/logs/logs-create.html"
 })
