@@ -1,17 +1,18 @@
 import { getAllDomains, deleteADomain } from "../../services/domain-services.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const domainListDiv = document.getElementById("domain-list");
+    const domainListDiv = document.getElementById("domain-list") as HTMLElement;
     const form = document.getElementById("domain-delete-form") as HTMLFormElement;
 
     try {
         const domains = await getAllDomains();
 
         if (domains.length === 0) {
-            domainListDiv!.innerHTML = "<p>No Domains found.</p>";
+            displayError(domainListDiv, "No Domains Found to Delete");
             return;
         }
 
@@ -34,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             domainListDiv!.appendChild(wrapper);
         });
     } catch (err) {
-        domainListDiv!.innerHTML = "<p>Failed to load domains.</p>";
+        displayError(domainListDiv, "Failed to load domains");
         console.error("Error fetching domains:", err);
     }
 

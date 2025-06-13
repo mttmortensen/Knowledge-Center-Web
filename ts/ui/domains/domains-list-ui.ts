@@ -1,5 +1,6 @@
 import { getAllDomains } from "../../services/domain-services.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
@@ -29,7 +30,7 @@ async function loadAndRenderDomainList(container: HTMLElement)
 
     if (domains.length == 0) 
     {
-        container.textContent = "No Domains found.";
+        displayError(container, "No Domains Found");
         return;
     }
 

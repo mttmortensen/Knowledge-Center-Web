@@ -1,16 +1,18 @@
 import { getADomainById } from "../../services/domain-services.js";
 import { Domains } from "../../types/domains.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {
     const domainId = getDomainIdFromUrl();
+    const container = document.getElementById("domain-details") as HTMLElement;
 
     if (domainId == null)
     {
-        displayError("No Domain ID provided in URL.");
+        displayError(container, "No Domain ID provided in URL.");
         return;
     }
 
@@ -18,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if(!domain) 
     {
-        displayError(`Could not load Domain with ID ${domainId}.`);
+        displayError(container, `Could not load Domain with ID ${domainId}.`);
         return;
     }
 
@@ -40,19 +42,6 @@ function getDomainIdFromUrl(): number | null
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     return id ? parseInt(id) : null;
-}
-
-function displayError(message: string) 
-{
-    const container = document.getElementById("domain-details");
-    if (container)
-    {
-        const p = document.createElement("p");
-        p.style.color = "red";
-        p.textContent = message; // ← safely inserts raw text only
-        container.innerHTML = ""; // Clear existing content if needed
-        container.appendChild(p);
-    }
 }
 
 function renderDomainDetails(domain: Domains)
