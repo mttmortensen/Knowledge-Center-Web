@@ -15,7 +15,15 @@
     <li><button id="delete-domain">5. Delete a Domain</button></li>
   </ul>
 
-    <button id="back-button">⬅️ Back</button>
+  <!-- Global Nav -->
+  <div id="nav-container"></div>
+  <script>
+    fetch("/partials/global-nav.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("nav-container").innerHTML = html;
+      });
+  </script>
 
   <!-- Script will go here -->
   <script type="module" src="/ui/domains/domains-main-ui.js"></script>

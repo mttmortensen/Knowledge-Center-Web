@@ -26,6 +26,16 @@
     </ul>
   </section>
 
+  <!-- Global Nav -->
+  <div id="nav-container"></div>
+  <script>
+    fetch("/partials/global-nav.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("nav-container").innerHTML = html;
+      });
+  </script>
+
   <script type="module" src="/ui/knowledge-center-main-ui.js"></script>
 </body>
 </html>

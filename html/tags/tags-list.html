@@ -13,8 +13,15 @@
   </ul>
 
   <br />
-
-  <button id="back-button">⬅️ Back </button>
+  <!-- Global Nav -->
+  <div id="nav-container"></div>
+  <script>
+    fetch("/partials/global-nav.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("nav-container").innerHTML = html;
+      });
+  </script>
 
   <script type="module" src="/ui/tags/tags-list-ui.js"></script>
 </body>
