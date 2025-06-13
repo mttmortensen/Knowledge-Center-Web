@@ -2,6 +2,7 @@ import { getADomainById, updateADomain } from "../../services/domain-services.js
 import { Domains } from "../../types/domains.js";
 import { requireAuth } from "../../services/auth-check.js";
 import { displayError } from "../../services/ui-utils.js";
+import { validateField } from "../../services/ui-utils.js";
 
 requireAuth();
 
@@ -41,6 +42,18 @@ document.addEventListener("DOMContentLoaded", async () =>
             CreatedAt: domain.CreatedAt,         // Preserve original timestamps
             LastUsed: domain.LastUsed
         };
+
+        if 
+        (
+            !validateField(updatedDomain.DomainName, { label: "Domain Name", required: true, minLength: 3, maxLength: 100 }) ||
+            !validateField(updatedDomain.DomainDescription, { label: "Domain Description", required: true, minLength: 10, maxLength: 500 }) ||
+            !validateField(updatedDomain.DomainStatus, { label: "Domain Status", required: true, allowedValues: ["Active", "Inactive"] })
+        ) 
+        {
+            console.error("❌ One or more validation checks failed.");
+            return;
+        }
+
 
         const success = await updateADomain(updatedDomain);
 

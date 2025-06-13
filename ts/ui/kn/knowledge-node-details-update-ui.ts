@@ -3,6 +3,7 @@ import { getAllDomains } from "../../services/domain-services.js";
 import { KnowledgeNode } from "../../types/knowledge-node.js";
 import { requireAuth } from "../../services/auth-check.js";
 import { displayError } from "../../services/ui-utils.js";
+import { validateField } from "../../services/ui-utils.js";
 
 requireAuth();
 
@@ -48,6 +49,19 @@ document.addEventListener("DOMContentLoaded", async () =>
             CreatedAt: node.CreatedAt,
             LastUpdated: new Date().toISOString()
         };
+
+        if (
+            !validateField(updatedNode.Title, { label: "Title", required: true, minLength: 3, maxLength: 100 }) ||
+            !validateField(updatedNode.Description, { label: "Description", required: true, minLength: 10, maxLength: 500 }) ||
+            !validateField(updatedNode.NodeType, { label: "Node Type", required: true, allowedValues: ["Concept", "Project"] }) ||
+            !validateField(updatedNode.Status, { label: "Status", required: true, allowedValues: ["Exploring", "Learning", "Mastered"] }) ||
+            !validateField(updatedNode.ConfidenceLevel, { label: "Confidence", required: true, minValue: 1, maxValue: 10 }) ||
+            !validateField(updatedNode.DomainId, { label: "Domain", required: true, minValue: 1 })
+        ) {
+            console.error("❌ One or more validation checks failed.");
+            return;
+        }
+
 
         const success = await updateAKnowledgeNode(updatedNode);
 

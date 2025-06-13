@@ -2,6 +2,7 @@ import { getATagById, updateATag } from "../../services/tag-service.js";
 import { Tag } from "../../types/tags.js";
 import { requireAuth } from "../../services/auth-check.js";
 import { displayError } from "../../services/ui-utils.js";
+import { validateField } from "../../services/ui-utils.js";
 
 requireAuth();
 
@@ -37,6 +38,14 @@ document.addEventListener("DOMContentLoaded", async () =>
             TagId: tag.TagId,
             Name: formData.get("tag-name") as string
         };
+
+        if (
+            !validateField(updatedTag.Name, { label: "Tag Name", required: true, minLength: 3, maxLength: 100 }) 
+        ) {
+            console.error("❌ One or more validation checks failed.");
+            return;
+        }
+
 
         const success = await updateATag(updatedTag);
 
