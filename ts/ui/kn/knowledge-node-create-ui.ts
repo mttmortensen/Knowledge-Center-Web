@@ -1,6 +1,7 @@
 import { createKnowledgeNode } from "../../services/knowledge-node-service.js";
 import { getAllDomains } from "../../services/domain-services.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { validateField } from "../../services/ui-utils.js";
 
 requireAuth();
 
@@ -23,6 +24,21 @@ document.addEventListener("DOMContentLoaded", () =>
         const Description = formData.get("description") as string;
         const ConfidenceLevel = parseInt(formData.get("confidence") as string);
         const Status = formData.get("status") as string;
+        
+        // === ✅ Validation ===
+        if 
+        (
+            !validateField(Title, { label: "Title", required: true, minLength: 3, maxLength: 100 }) ||
+            !validateField(Description, { label: "Description", required: true, minLength: 10, maxLength: 500 }) ||
+            !validateField(NodeType, { label: "Node Type", required: true, allowedValues: ["Concept", "Project"] }) ||
+            !validateField(Status, { label: "Status", required: true, allowedValues: ["Active", "Paused"] }) ||
+            !validateField(ConfidenceLevel, { label: "Confidence", required: true, minValue: 1, maxValue: 10 }) ||
+            !validateField(DomainId, { label: "Domain", required: true, minValue: 1 })
+        ) 
+        {
+            console.error("❌ One or more validation checks failed.");
+            return;
+        }
 
         const now = new Date().toISOString();
 
