@@ -1,5 +1,9 @@
-import { getAllTags, getATagById, updateATag } from "../../services/tag-service.js";
+import { getATagById, updateATag } from "../../services/tag-service.js";
 import { Tag } from "../../types/tags.js";
+import { requireAuth } from "../../services/auth-check.js";
+
+requireAuth();
+
 
 document.addEventListener("DOMContentLoaded", async () => 
 {

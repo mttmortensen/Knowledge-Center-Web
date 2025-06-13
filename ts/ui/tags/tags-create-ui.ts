@@ -1,4 +1,8 @@
 import { createTag } from "../../services/tag-service.js";
+import { requireAuth } from "../../services/auth-check.js";
+
+requireAuth();
+
 
 document.addEventListener("DOMContentLoaded", () => 
 {
