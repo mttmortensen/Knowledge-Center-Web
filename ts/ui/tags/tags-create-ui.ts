@@ -1,5 +1,6 @@
 import { createTag } from "../../services/tag-service.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { validateField } from "../../services/ui-utils.js";
 
 requireAuth();
 
@@ -14,6 +15,16 @@ document.addEventListener("DOMContentLoaded", () =>
 
         const formData = new FormData(form);
         const Name = formData.get("tagName") as string;
+
+        // === ✅ Validation ===
+        if 
+        (
+            !validateField(Name, { label: "Tag Name", required: true, minLength: 3, maxLength: 100 }) 
+        ) 
+        {
+            console.error("❌ One or more validation checks failed.");
+            return;
+        }
 
         const newTag = { Name };
 

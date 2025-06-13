@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () =>
             !validateField(Title, { label: "Title", required: true, minLength: 3, maxLength: 100 }) ||
             !validateField(Description, { label: "Description", required: true, minLength: 10, maxLength: 500 }) ||
             !validateField(NodeType, { label: "Node Type", required: true, allowedValues: ["Concept", "Project"] }) ||
-            !validateField(Status, { label: "Status", required: true, allowedValues: ["Active", "Paused"] }) ||
+            !validateField(Status, { label: "Status", required: true, allowedValues: ["Exploring", "Learning", "Mastered"] }) ||
             !validateField(ConfidenceLevel, { label: "Confidence", required: true, minValue: 1, maxValue: 10 }) ||
             !validateField(DomainId, { label: "Domain", required: true, minValue: 1 })
         ) 
