@@ -1,5 +1,8 @@
 import { getAKnowledgeNodeById } from "../../services/knowledge-node-service.js";
 import { KnowledgeNode } from "../../types/knowledge-node.js";
+import { requireAuth } from "../../services/auth-check.js";
+
+requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {

@@ -1,4 +1,7 @@
 import { getAllKnowledgeNodes, deleteAKnowledgeNode } from "../../services/knowledge-node-service.js";
+import { requireAuth } from "../../services/auth-check.js";
+
+requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {
