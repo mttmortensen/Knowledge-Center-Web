@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if (domainId == null)
     {
-        displayError("No Knowledge Node ID provided in URL.");
+        displayError("No Domain ID provided in URL.");
         return;
     }
 
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if(!domain) 
     {
-        displayError(`Could not load Knowledge Node with ID ${domainId}.`);
+        displayError(`Could not load Domain with ID ${domainId}.`);
         return;
     }
 
@@ -44,10 +44,14 @@ function getDomainIdFromUrl(): number | null
 
 function displayError(message: string) 
 {
-    const container = document.getElementById("kn-details");
+    const container = document.getElementById("domain-details");
     if (container)
     {
-        container.innerHTML = `<p style="color:red;">${message}<\p>`;
+        const p = document.createElement("p");
+        p.style.color = "red";
+        p.textContent = message; // ← safely inserts raw text only
+        container.innerHTML = ""; // Clear existing content if needed
+        container.appendChild(p);
     }
 }
 

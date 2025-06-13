@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if (logId == null)
     {
-        displayError("No Knowledge Node ID provided in URL.");
+        displayError("No Log ID provided in URL.");
         return;
     }
 
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if(!log) 
     {
-        displayError(`Could not load Knowledge Node with ID ${logId}.`);
+        displayError(`Could not load Log with ID ${logId}.`);
         return;
     }
 
@@ -44,10 +44,14 @@ function getLogIdFromUrl(): number | null
 
 function displayError(message: string) 
 {
-    const container = document.getElementById("kn-details");
+    const container = document.getElementById("log-details");
     if (container)
     {
-        container.innerHTML = `<p style="color:red;">${message}<\p>`;
+        const p = document.createElement("p");
+        p.style.color = "red";
+        p.textContent = message;
+        container.innerHTML = "";
+        container.appendChild(p);
     }
 }
 
