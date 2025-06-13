@@ -1,16 +1,18 @@
 import { getATagById, updateATag } from "../../services/tag-service.js";
 import { Tag } from "../../types/tags.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {
     const tagId = getTagIdFromUrl();
+    const tagFormContainer = document.getElementById("edit-tag-form") as HTMLFormElement;
 
     if (tagId == null) 
     {
-        alert("❌ No Tag ID provided in URL.");
+        displayError(tagFormContainer, "No Tag ID provided in URL.");
         return;
     }
 
@@ -18,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if (!tag) 
     {
-        alert(`❌ Could not load Tag with ID ${tagId}.`);
+        displayError(tagFormContainer, `Could not load Tag with ID ${tagId}.`);
         return;
     }
 

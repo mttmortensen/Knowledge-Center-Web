@@ -1,17 +1,18 @@
 import { getAllTags, deleteATag } from "../../services/tag-service.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const tagListDiv = document.getElementById("tag-list");
+    const tagListDiv = document.getElementById("tag-list") as HTMLElement;
     const form = document.getElementById("tag-delete-form") as HTMLFormElement;
 
     try {
         const tags = await getAllTags();
 
         if (tags.length === 0) {
-            tagListDiv!.innerHTML = "<p>No Tags found.</p>";
+            displayError(tagListDiv, "No Tags found.");
             return;
         }
 
@@ -34,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             tagListDiv!.appendChild(wrapper);
         });
     } catch (err) {
-        tagListDiv!.innerHTML = "<p>Failed to load tags.</p>";
+        displayError(tagListDiv, "Failed to load tags.");
         console.error("Error fetching tags:", err);
     }
 

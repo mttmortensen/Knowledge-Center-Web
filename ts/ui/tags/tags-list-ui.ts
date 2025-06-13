@@ -1,5 +1,6 @@
 import { getAllTags } from "../../services/tag-service.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
@@ -29,7 +30,7 @@ async function loadAndRenderTagList(container: HTMLElement)
 
     if (tags.length == 0) 
     {
-        container.textContent = "No Tags found.";
+        displayError(container, "No Tags found.");
         return;
     }
 
