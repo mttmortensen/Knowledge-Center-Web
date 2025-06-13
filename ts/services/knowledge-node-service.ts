@@ -1,4 +1,5 @@
 import { KnowledgeNode  } from "../types/knowledge-node";
+import { authFetch } from "./fetch-wrapper.js";
 
 const API_BASE_URL = "http://localhost:8080/api/knowledge-nodes";
 
@@ -6,7 +7,8 @@ export async function getAllKnowledgeNodes(): Promise<KnowledgeNode[]>
 {
     try
     {
-        const response = await fetch(API_BASE_URL);
+        const response = await authFetch(API_BASE_URL); // <-- token is now included automatically
+
         if (!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`)
@@ -26,7 +28,7 @@ export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode |
 {
     try 
     {
-        const response = await fetch(`${API_BASE_URL}/${id}`);
+        const response = await authFetch(`${API_BASE_URL}/${id}`);
         if(!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -44,16 +46,12 @@ export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode |
 
 export async function createKnowledgeNode(node: Omit<KnowledgeNode, "Id">): Promise<boolean> {
     try {
-        const response = await fetch(API_BASE_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(node)
-        });
 
+        const response = await authFetch(API_BASE_URL);
         return response.ok;
-    } catch (error) {
+    } 
+    catch (error) 
+    {
         console.error("❌ Failed to create Knowledge Node:", error);
         return false;
     }
@@ -63,15 +61,7 @@ export async function updateAKnowledgeNode(KnowledgeNode: any): Promise<boolean>
 {
     try 
     {
-        const response = await fetch(`${API_BASE_URL}/${KnowledgeNode.Id}`, 
-        {
-            method: "PUT",
-            headers: 
-            {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(KnowledgeNode)
-        })
+        const response = await authFetch(`${API_BASE_URL}/${KnowledgeNode.Id}`)
 
         return response.ok
     }
@@ -85,9 +75,7 @@ export async function updateAKnowledgeNode(KnowledgeNode: any): Promise<boolean>
 export async function deleteAKnowledgeNode(nodeId: number): Promise<boolean> 
 {
         try {
-        const response = await fetch(`${API_BASE_URL}/${nodeId}`, {
-            method: "DELETE"
-        });
+        const response = await authFetch(`${API_BASE_URL}/${nodeId}`);
 
         if (!response.ok) {
             console.error(`Failed to delete node ${nodeId}:`, await response.text());

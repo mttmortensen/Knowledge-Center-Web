@@ -1,4 +1,5 @@
 import { Tag } from "../types/tags";
+import { authFetch } from "./fetch-wrapper.js";
 
 const API_BASE_URL = "http://localhost:8080/api/tags";
 
@@ -6,7 +7,7 @@ export async function getAllTags(): Promise<Tag[]>
 {
     try
     {
-        const response = await fetch(API_BASE_URL);
+        const response = await authFetch(API_BASE_URL);
         if (!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`)
@@ -26,7 +27,7 @@ export async function getATagById(tagId: number): Promise<any | null>
 {
     try 
     {
-        const response = await fetch(`${API_BASE_URL}/${tagId}`);
+        const response = await authFetch(`${API_BASE_URL}/${tagId}`);
 
         if (!response.ok) 
         {
@@ -65,15 +66,7 @@ export async function createTag(tagData: { Name: string }): Promise<boolean> {
 export async function updateATag(tag: any): Promise<boolean> {
     try 
     {
-        const response = await fetch(`${API_BASE_URL}/${tag.TagId}`, 
-        {
-            method: "PUT",
-            headers: 
-            {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(tag)
-        });
+        const response = await authFetch(`${API_BASE_URL}/${tag.TagId}`);
 
         return response.ok;
     } 
@@ -86,9 +79,7 @@ export async function updateATag(tag: any): Promise<boolean> {
 
 export async function deleteATag(tagId: number): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/tags/${tagId}`, {
-            method: "DELETE"
-        });
+        const response = await authFetch(`${API_BASE_URL}/tags/${tagId}`);
         return response.ok;
     } catch (error) {
         console.error("Failed to delete tag:", error);

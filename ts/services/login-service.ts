@@ -1,3 +1,5 @@
+import { authFetch } from "./fetch-wrapper.js";
+
 const loginForm = document.getElementById("login-form") as HTMLFormElement;
 const errorMessage = document.getElementById("error-message") as HTMLParagraphElement;
 
@@ -10,13 +12,7 @@ loginForm.addEventListener("submit", async (event) => {
   const password = (document.getElementById("password") as HTMLInputElement).value;
 
   try {
-    const response = await fetch(API_BASE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ username, password })
-    });
+    const response = await authFetch(API_BASE_URL);
 
     if (response.ok) {
       const data = await response.json();

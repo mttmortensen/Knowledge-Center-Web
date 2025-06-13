@@ -1,4 +1,5 @@
 import { Domains  } from "../types/domains";
+import { authFetch } from "./fetch-wrapper.js";
 
 const API_BASE_URL = "http://localhost:8080/api/domains";
 
@@ -6,7 +7,7 @@ export async function getAllDomains(): Promise<Domains[]>
 {
     try
     {
-        const response = await fetch(API_BASE_URL);
+        const response = await authFetch(API_BASE_URL);
         if (!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`)
@@ -26,7 +27,7 @@ export async function getADomainById(id: number): Promise<Domains | null>
 {
     try 
     {
-        const response = await fetch(`${API_BASE_URL}/${id}`);
+        const response = await authFetch(`${API_BASE_URL}/${id}`);
         if(!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -46,15 +47,7 @@ export async function createDomain(domain: any): Promise<boolean>
 {
     try
     {
-        const response = await fetch(API_BASE_URL, 
-        {
-            method: "POST",
-            headers: 
-            {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(domain)
-        })
+        const response = await authFetch(API_BASE_URL)
 
         return response.ok;
     }
@@ -69,15 +62,7 @@ export async function updateADomain(domain: any): Promise<boolean>
 {
     try 
     {
-        const response = await fetch(`${API_BASE_URL}/${domain.DomainId}`, 
-        {
-            method: "PUT",
-            headers: 
-            {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(domain)
-        });
+        const response = await authFetch(`${API_BASE_URL}/${domain.DomainId}`);
 
         return response.ok;
     } 
@@ -90,9 +75,7 @@ export async function updateADomain(domain: any): Promise<boolean>
 
 export async function deleteADomain(domainId: number): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/${domainId}`, {
-            method: "DELETE"
-        });
+        const response = await authFetch(`${API_BASE_URL}/${domainId}`);
         return response.ok;
     } catch (error) {
         console.error("Failed to delete domain:", error);

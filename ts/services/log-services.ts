@@ -1,4 +1,5 @@
 import { LogEntry } from "../types/log-entry";
+import { authFetch } from "./fetch-wrapper.js";
 
 const API_BASE_URL = "http://localhost:8080/api/logs";
 
@@ -6,7 +7,7 @@ export async function getAllLogs(): Promise<LogEntry[]>
 {
     try
     {
-        const response = await fetch(API_BASE_URL);
+        const response = await authFetch(API_BASE_URL);
         if (!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`)
@@ -26,7 +27,7 @@ export async function getALogById(id: number): Promise<LogEntry | null>
 {
     try 
     {
-        const response = await fetch(`${API_BASE_URL}/${id}`);
+        const response = await authFetch(`${API_BASE_URL}/${id}`);
         if(!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -46,15 +47,7 @@ export async function createLog(log: any): Promise<boolean>
 {
   try 
   {
-    const response = await fetch(API_BASE_URL, 
-    {
-      method: "POST",
-      headers: 
-      {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(log),
-    });
+    const response = await authFetch(API_BASE_URL);
 
     return response.ok;
   } 
