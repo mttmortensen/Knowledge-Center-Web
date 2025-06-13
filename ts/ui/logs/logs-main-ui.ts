@@ -1,3 +1,7 @@
+import { requireAuth } from "../../services/auth-check.js";
+
+requireAuth();
+
 document.addEventListener("DOMContentLoaded", () => 
 {
     // === Logs Menu Button Logic ===

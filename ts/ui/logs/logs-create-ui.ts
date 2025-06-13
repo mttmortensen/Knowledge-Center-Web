@@ -1,6 +1,9 @@
 import { createLog } from "../../services/log-services.js";
 import { getAllKnowledgeNodes } from "../../services/knowledge-node-service.js";
 import { getAllTags } from "../../services/tag-service.js";
+import { requireAuth } from "../../services/auth-check.js";
+
+requireAuth();
 
 document.addEventListener("DOMContentLoaded", () => 
 {

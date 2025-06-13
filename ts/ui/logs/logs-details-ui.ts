@@ -1,5 +1,8 @@
 import { getALogById } from "../../services/log-services.js";
 import { LogEntry } from "../../types/log-entry.js";
+import { requireAuth } from "../../services/auth-check.js";
+
+requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {
