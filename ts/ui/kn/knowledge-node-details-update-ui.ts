@@ -2,16 +2,18 @@ import { getAKnowledgeNodeById, updateAKnowledgeNode } from "../../services/know
 import { getAllDomains } from "../../services/domain-services.js";
 import { KnowledgeNode } from "../../types/knowledge-node.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {
     const nodeId = getNodeIdFromUrl();
+    const knDetailsContainer = document.getElementById("edit-node-form") as HTMLFormElement;
 
     if (nodeId == null)
     {
-        alert("❌ No Knowledge Node ID provided in URL.");
+        displayError(knDetailsContainer, "No Knowledge Node ID provided in URL.");
         return;
     }
 
@@ -20,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if (!node)
     {
-        alert(`❌ Could not load Knowledge Node with ID ${nodeId}.`);
+        displayError(knDetailsContainer, `Could not load Knowledge Node with ID ${nodeId}.`);
         return;
     }
 

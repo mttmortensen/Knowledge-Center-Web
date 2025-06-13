@@ -1,16 +1,18 @@
 import { getAKnowledgeNodeById } from "../../services/knowledge-node-service.js";
 import { KnowledgeNode } from "../../types/knowledge-node.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {
     const nodeId = getNodeIdFromUrl();
+    const knNodeContainer = document.getElementById("kn-details") as HTMLElement;
 
     if (nodeId == null)
     {
-        displayError("No Knowledge Node ID provided in URL.");
+        displayError(knNodeContainer, "No Knowledge Node ID provided in URL.");
         return;
     }
 
@@ -18,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if(!node) 
     {
-        displayError(`Could not load Knowledge Node with ID ${nodeId}.`);
+        displayError(knNodeContainer, `Could not load Knowledge Node with ID ${nodeId}.`);
         return;
     }
 
@@ -40,19 +42,6 @@ function getNodeIdFromUrl(): number | null
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     return id ? parseInt(id) : null;
-}
-
-function displayError(message: string) 
-{
-    const container = document.getElementById("kn-details");
-    if (container)
-    {
-        const p = document.createElement("p");
-        p.style.color = "red";
-        p.textContent = message;
-        container.innerHTML = "";
-        container.appendChild(p);
-    }
 }
 
 function renderNodeDetails(node: KnowledgeNode)

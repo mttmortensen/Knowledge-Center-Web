@@ -1,11 +1,12 @@
 import { getAllKnowledgeNodes } from "../../services/knowledge-node-service.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {
-     const knListDiv = document.getElementById("kn-list");
+    const knListDiv = document.getElementById("kn-list") as HTMLElement;
     const form = document.getElementById("kn-update-form") as HTMLFormElement;
 
     try 
@@ -13,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () =>
         const nodes = await getAllKnowledgeNodes();
 
         if (nodes.length === 0) {
-            knListDiv!.innerHTML = "<p>No Knowledge Nodes found.</p>";
+            displayError(knListDiv, "No Knowledge Nodes found.");
             return;
         }
 
@@ -38,7 +39,7 @@ document.addEventListener("DOMContentLoaded", async () =>
     } 
     catch (err) 
     {
-        knListDiv!.innerHTML = "<p>Failed to load Knowledge Nodes.</p>";
+        displayError(knListDiv, "Failed to load Knowledge Nodes.");
         console.error("Error fetching nodes:", err);
     }
 

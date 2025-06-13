@@ -1,5 +1,6 @@
 import { getAllKnowledgeNodes } from "../../services/knowledge-node-service.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
@@ -29,7 +30,7 @@ async function loadAndRenderNodeList(container: HTMLElement)
 
     if (nodes.length == 0) 
     {
-        container.textContent = "No Knowledge Nodes found.";
+        displayError(container, "No Knowledge Nodes found.");
         return;
     }
 
