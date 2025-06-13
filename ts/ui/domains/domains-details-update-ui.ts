@@ -1,5 +1,8 @@
 import { getADomainById, updateADomain } from "../../services/domain-services.js";
 import { Domains } from "../../types/domains.js";
+import { requireAuth } from "../../services/auth-check.js";
+
+requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {

@@ -1,4 +1,7 @@
 import { createDomain } from "../../services/domain-services.js";
+import { requireAuth } from "../../services/auth-check.js";
+
+requireAuth();
 
 document.addEventListener("DOMContentLoaded", () => 
 {
