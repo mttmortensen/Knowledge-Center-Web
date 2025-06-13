@@ -1,16 +1,18 @@
 import { getALogById } from "../../services/log-services.js";
 import { LogEntry } from "../../types/log-entry.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {
     const logId = getLogIdFromUrl();
+    const logDetailsContainer = document.getElementById("log-details") as HTMLElement;
 
     if (logId == null)
     {
-        displayError("No Log ID provided in URL.");
+        displayError(logDetailsContainer, "No Log ID provided in URL.");
         return;
     }
 
@@ -18,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if(!log) 
     {
-        displayError(`Could not load Log with ID ${logId}.`);
+        displayError(logDetailsContainer, `Could not load Log with ID ${logId}.`);
         return;
     }
 
@@ -40,19 +42,6 @@ function getLogIdFromUrl(): number | null
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     return id ? parseInt(id) : null;
-}
-
-function displayError(message: string) 
-{
-    const container = document.getElementById("log-details");
-    if (container)
-    {
-        const p = document.createElement("p");
-        p.style.color = "red";
-        p.textContent = message;
-        container.innerHTML = "";
-        container.appendChild(p);
-    }
 }
 
 function renderLogDetails(log: LogEntry)

@@ -2,6 +2,7 @@ import { getAllLogs } from "../../services/log-services.js";
 import { getAllKnowledgeNodes } from "../../services/knowledge-node-service.js";
 import { LogEntry } from "../../types/log-entry.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
@@ -30,7 +31,7 @@ async function loadAndRenderLogList(container: HTMLElement) {
     const knowledgeNodes = await getAllKnowledgeNodes();
 
     if (logs.length === 0) {
-        container.textContent = "No log entries found.";
+        displayError(container, "No log entries found.");
         return;
     }
 
@@ -48,10 +49,13 @@ async function loadAndRenderLogList(container: HTMLElement) {
         const nodeId = parseInt(nodeIdStr);
         const node = knowledgeNodes.find(kn => kn.Id === nodeId);
 
-        const title = node ? node.Title : `Unknown Node (ID: ${nodeId})`;
+        if (!node) {
+            displayError(container, `Missing Knowledge Node for Log group with Node ID: ${nodeId}`);
+            return; // Stop processing further if KN isn't found
+        }
 
         const header = document.createElement("h3");
-        header.textContent = title;
+        header.textContent = node.Title;
         container.appendChild(header);
 
         const ul = document.createElement("ul");
