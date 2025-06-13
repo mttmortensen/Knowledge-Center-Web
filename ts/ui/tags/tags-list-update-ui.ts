@@ -3,7 +3,6 @@ import { requireAuth } from "../../services/auth-check.js";
 
 requireAuth();
 
-
 document.addEventListener("DOMContentLoaded", async () => 
 {
     const tagListDiv = document.getElementById("tag-list");

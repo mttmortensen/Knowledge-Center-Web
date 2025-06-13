@@ -3,7 +3,6 @@ import { requireAuth } from "../../services/auth-check.js";
 
 requireAuth();
 
-
 document.addEventListener("DOMContentLoaded", () => 
 {
     // === Tags List Page Logic ===
