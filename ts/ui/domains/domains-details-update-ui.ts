@@ -1,16 +1,18 @@
 import { getADomainById, updateADomain } from "../../services/domain-services.js";
 import { Domains } from "../../types/domains.js";
 import { requireAuth } from "../../services/auth-check.js";
+import { displayError } from "../../services/ui-utils.js";
 
 requireAuth();
 
 document.addEventListener("DOMContentLoaded", async () => 
 {
     const domainId = getDomainIdFromUrl();
+    const domainForm = document.getElementById("edit-domain-form") as HTMLFormElement;
 
     if (domainId == null) 
     {
-        alert("❌ No Domain ID provided in URL.");
+        displayError(domainForm, "No Domain ID provided in URL.");
         return;
     }
 
@@ -18,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
     if (!domain) 
     {
-        alert(`❌ Could not load Domain with ID ${domainId}.`);
+        displayError(domainForm, `Could not load Domain with ID ${domainId}.`);
         return;
     }
 
