@@ -44,10 +44,14 @@ export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode |
     }
 }
 
-export async function createKnowledgeNode(node: Omit<KnowledgeNode, "Id">): Promise<boolean> {
+export async function createKnowledgeNode(KnowledgeNode: Omit<KnowledgeNode, "Id">): Promise<boolean> {
     try {
 
-        const response = await authFetch(API_BASE_URL);
+        const response = await authFetch(API_BASE_URL, {
+            method: "POST",
+            body: JSON.stringify(KnowledgeNode)
+        });
+
         return response.ok;
     } 
     catch (error) 
@@ -61,7 +65,10 @@ export async function updateAKnowledgeNode(KnowledgeNode: any): Promise<boolean>
 {
     try 
     {
-        const response = await authFetch(`${API_BASE_URL}/${KnowledgeNode.Id}`)
+        const response = await authFetch(`${API_BASE_URL}/${KnowledgeNode.id}`, {
+            method: "PUT",
+            body: JSON.stringify(KnowledgeNode)
+        });
 
         return response.ok
     }
@@ -75,7 +82,9 @@ export async function updateAKnowledgeNode(KnowledgeNode: any): Promise<boolean>
 export async function deleteAKnowledgeNode(nodeId: number): Promise<boolean> 
 {
         try {
-        const response = await authFetch(`${API_BASE_URL}/${nodeId}`);
+        const response = await authFetch(`${API_BASE_URL}/${nodeId}`, {
+            method: "DELETE",
+        });
 
         if (!response.ok) {
             console.error(`Failed to delete node ${nodeId}:`, await response.text());

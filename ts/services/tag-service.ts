@@ -48,11 +48,9 @@ export async function getATagById(tagId: number): Promise<any | null>
 
 export async function createTag(tagData: { Name: string }): Promise<boolean> {
     try {
-        const response = await fetch(API_BASE_URL, {
+        
+        const response = await authFetch(API_BASE_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify(tagData)
         });
 
@@ -66,7 +64,11 @@ export async function createTag(tagData: { Name: string }): Promise<boolean> {
 export async function updateATag(tag: any): Promise<boolean> {
     try 
     {
-        const response = await authFetch(`${API_BASE_URL}/${tag.TagId}`);
+        const response = await authFetch(`${API_BASE_URL}/${tag.TagId}`, 
+        {
+           method: "PUT",
+           body: JSON.stringify(tag) 
+        });
 
         return response.ok;
     } 
@@ -79,7 +81,10 @@ export async function updateATag(tag: any): Promise<boolean> {
 
 export async function deleteATag(tagId: number): Promise<boolean> {
     try {
-        const response = await authFetch(`${API_BASE_URL}/tags/${tagId}`);
+        const response = await authFetch(`${API_BASE_URL}/tags/${tagId}`, {
+            method: "DELETE",
+        });
+
         return response.ok;
     } catch (error) {
         console.error("Failed to delete tag:", error);

@@ -47,7 +47,10 @@ export async function createDomain(domain: any): Promise<boolean>
 {
     try
     {
-        const response = await authFetch(API_BASE_URL)
+        const response = await authFetch(API_BASE_URL, {
+            method: "POST",
+            body: JSON.stringify(domain)
+        });
 
         return response.ok;
     }
@@ -62,7 +65,10 @@ export async function updateADomain(domain: any): Promise<boolean>
 {
     try 
     {
-        const response = await authFetch(`${API_BASE_URL}/${domain.DomainId}`);
+        const response = await authFetch(`${API_BASE_URL}/${domain.domainId}`, {
+            method: "POST",
+            body: JSON.stringify(domain)
+        });
 
         return response.ok;
     } 
@@ -75,7 +81,10 @@ export async function updateADomain(domain: any): Promise<boolean>
 
 export async function deleteADomain(domainId: number): Promise<boolean> {
     try {
-        const response = await authFetch(`${API_BASE_URL}/${domainId}`);
+        const response = await authFetch(`${API_BASE_URL}/${domainId}`, {
+            method: "DELETE",
+        });;
+
         return response.ok;
     } catch (error) {
         console.error("Failed to delete domain:", error);

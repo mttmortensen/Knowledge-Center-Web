@@ -47,7 +47,10 @@ export async function createLog(log: any): Promise<boolean>
 {
   try 
   {
-    const response = await authFetch(API_BASE_URL);
+    const response = await authFetch(API_BASE_URL, {
+        method: "POST",
+        body: JSON.stringify(log)
+    });
 
     return response.ok;
   } 
