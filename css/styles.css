@@ -1,0 +1,61 @@
+/* === Base Reset === */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* === Global Styling === */
+body {
+  font-family: sans-serif;
+  padding: 1rem;
+  line-height: 1.5;
+  max-width: 800px;
+  margin: auto;
+}
+
+/* === Remove bullet points from all ul/li === */
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+/* === Buttons and Form Elements === */
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+form {
+  margin-top: 1rem;
+}
+
+/* === Mobile-First: Stack Layout === */
+@media (min-width: 600px) {
+  body {
+    padding: 2rem;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+}
