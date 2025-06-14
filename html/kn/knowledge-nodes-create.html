@@ -19,10 +19,15 @@
     </select><br /><br />
 
     <label>Node Type:</label><br />
-    <input type="radio" id="type-project" name="nodeType" value="Project" required />
-    <label for="type-project">Project</label><br />
-    <input type="radio" id="type-concept" name="nodeType" value="Concept" />
-    <label for="type-concept">Concept</label><br /><br />
+    <label>
+      <input type="radio" name="nodeType" value="Project" required />
+      Project
+    </label><br />
+    
+    <label>
+      <input type="radio" name="nodeType" value="Concept" required />
+      Concept
+    </label><br /><br />
 
     <label for="description">Description:</label><br />
     <textarea id="description" name="description" rows="5" cols="40" required></textarea><br /><br />
@@ -34,12 +39,18 @@
     </select><br /><br />
 
     <label>Status:</label><br />
-    <input type="radio" id="status-exploring" name="status" value="exploring" required />
-    <label for="status-exploring">Exploring</label><br />
-    <input type="radio" id="status-learning" name="status" value="learning" />
-    <label for="status-learning">Learning</label><br />
-    <input type="radio" id="status-mastered" name="status" value="mastered" />
-    <label for="status-mastered">Mastered</label><br /><br />
+    <label>
+      <input type="radio" name="status" value="exploring" required />
+      Exploring
+    </label><br />
+    <label>
+      <input type="radio" name="status" value="learning" />
+      Learning
+    </label><br />
+    <label>
+      <input type="radio" id="status-mastered" name="status" value="mastered" />
+      Mastered
+    </label><br /><br />
 
     <button type="submit">Create Node</button>
   </form>
