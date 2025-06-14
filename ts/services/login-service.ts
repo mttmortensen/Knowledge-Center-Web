@@ -11,8 +11,14 @@ loginForm.addEventListener("submit", async (event) => {
   const username = (document.getElementById("username") as HTMLInputElement).value;
   const password = (document.getElementById("password") as HTMLInputElement).value;
 
+  const body = { username, password };
+
   try {
-    const response = await authFetch(API_BASE_URL);
+    const response = await authFetch(API_BASE_URL, 
+    {
+      method: "POST",
+      body: JSON.stringify(body)
+    });
 
     if (response.ok) {
       const data = await response.json();
