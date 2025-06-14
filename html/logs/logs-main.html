@@ -14,16 +14,13 @@
   </ul>
 
   <!-- Global Nav -->
-  <div id="nav-container"></div>
-  <script>
-    fetch("/partials/global-nav.html")
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById("nav-container").innerHTML = html;
-      });
-  </script>
-
-  <!-- Script will go here -->
+  <nav id="global-nav">
+    <button id="back-button">Back</button>
+    <button id="home-button">Home</button>
+    <button id="logout-button">Logout</button>
+  </nav>
+  
+  <script type="module" src="/ui/partials/global-nav-ui.js"></script>
   <script type="module" src="/ui/logs/logs-main-ui.js"></script>
 </body>
 </html>
