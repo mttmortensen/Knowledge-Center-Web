@@ -13,15 +13,6 @@ document.addEventListener("DOMContentLoaded", () =>
         loadAndRenderDomainList(nodeListContainer);
     }
 
-    // === Back button for Domain List Page ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-            window.history.back();
-        });
-    }
 });
 
 async function loadAndRenderDomainList(container: HTMLElement) 

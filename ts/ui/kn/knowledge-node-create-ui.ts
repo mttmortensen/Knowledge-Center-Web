@@ -64,15 +64,6 @@ document.addEventListener("DOMContentLoaded", () =>
         });
     }
     
-    // === Back button ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-            window.history.back();
-        });
-    }
 });
 
 function populateConfidenceSelect(selectId: string): void {

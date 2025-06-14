@@ -20,15 +20,4 @@ document.addEventListener("DOMContentLoaded", () =>
             window.location.href = "/logs/logs-create.html"
         })
     }
-
-    // === Back button ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-            window.history.back();
-        });
-    }
-    
 })

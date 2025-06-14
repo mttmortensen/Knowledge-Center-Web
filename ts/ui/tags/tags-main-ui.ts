@@ -10,16 +10,6 @@ document.addEventListener("DOMContentLoaded", () =>
     setupTagNav("update-tag", "/tags/tags-list-update.html")
     setupTagNav("delete-tag", "/tags/tags-list-delete.html")
 
-    // === Back button for Main Menu ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-            window.history.back();
-        });
-    }
-    
 })
 
 // This allows me to avoid repeating the same setup of code for each button 

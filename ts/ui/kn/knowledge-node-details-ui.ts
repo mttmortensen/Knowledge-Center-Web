@@ -25,16 +25,6 @@ document.addEventListener("DOMContentLoaded", async () =>
     }
 
     renderNodeDetails(node);
-
-    // === Back button for KN List Page ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-             window.history.back();
-        });
-    }
 });
 
 function getNodeIdFromUrl(): number | null 

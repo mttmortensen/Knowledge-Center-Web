@@ -25,16 +25,6 @@ document.addEventListener("DOMContentLoaded", async () =>
     }
 
     renderLogDetails(log);
-
-    // === Back button ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-             window.history.back();
-        });
-    }
 });
 
 function getLogIdFromUrl(): number | null 

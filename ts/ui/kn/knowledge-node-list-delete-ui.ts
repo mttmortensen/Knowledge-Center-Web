@@ -67,14 +67,4 @@ document.addEventListener("DOMContentLoaded", async () =>
             alert("❌ Failed to delete Knowledge Node.");
         }
     });
-
-    // === Back button ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-            window.history.back();
-        });
-    }
 });

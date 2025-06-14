@@ -14,16 +14,6 @@ document.addEventListener("DOMContentLoaded", () =>
     {
         loadAndRenderLogList(logListContainer);
     }
-
-    // === Back button ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-            window.history.back();
-        });
-    }
 });
 
 async function loadAndRenderLogList(container: HTMLElement) {

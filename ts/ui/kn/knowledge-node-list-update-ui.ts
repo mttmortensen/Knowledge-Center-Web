@@ -57,14 +57,4 @@ document.addEventListener("DOMContentLoaded", async () =>
         const nodeId = selected.value;
         window.location.href = `/kn/knowledge-nodes-details-update.html?id=${nodeId}`;
     });
-
-    // === Back button ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-            window.history.back();
-        });
-    }
 })

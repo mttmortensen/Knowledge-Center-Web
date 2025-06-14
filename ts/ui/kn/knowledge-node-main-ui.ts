@@ -10,16 +10,6 @@ document.addEventListener("DOMContentLoaded", () =>
     setupNodeNav("update-node", "/kn/knowledge-nodes-list-update.html");
     setupNodeNav("delete-node", "/kn/knowledge-nodes-list-delete.html");
 
-    // === Back button for Main Menu ===
-    const backBtn = document.getElementById("back-button");
-    if(backBtn)
-    {
-        backBtn.addEventListener("click", () => 
-        {
-            window.history.back();
-        });
-    }
-    
 })
 
 // This allows me to avoid repeating the same setup of code for each button 
