@@ -26,12 +26,12 @@ document.addEventListener("DOMContentLoaded", async () =>
             const radio = document.createElement("input");
             radio.type = "radio";
             radio.name = "domain";
-            radio.value = domain.domainId.toString();
-            radio.id = `domain-${domain.domainId}`;
+            radio.value = domain.DomainId.toString();
+            radio.id = `domain-${domain.DomainId}`;
 
             const label = document.createElement("label");
             label.htmlFor = radio.id;
-            label.textContent = `${domain.domainName}`;
+            label.textContent = `${domain.DomainName}`;
 
             wrapper.appendChild(radio);
             wrapper.appendChild(label);

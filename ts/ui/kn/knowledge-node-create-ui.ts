@@ -90,8 +90,8 @@ async function populateDomainSelect(selectId: string): Promise<void>
         domains.forEach(domain => 
         {
             const option = document.createElement("option");
-            option.value = domain.domainId.toString();
-            option.textContent = domain.domainName;
+            option.value = domain.DomainId.toString();
+            option.textContent = domain.DomainName;
             select.appendChild(option);
         })
     }

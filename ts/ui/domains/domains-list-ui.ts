@@ -30,10 +30,10 @@ async function loadAndRenderDomainList(container: HTMLElement)
         const li = document.createElement("li");
         
         const button = document.createElement("button");
-        button.textContent = `${domain.domainName}`;
+        button.textContent = `${domain.DomainName}`;
         button.addEventListener("click", () => 
         {
-            window.location.href = `/html/domains/domains-details.html?id=${domain.domainId}`;
+            window.location.href = `/html/domains/domains-details.html?id=${domain.DomainId}`;
         });
 
         li.appendChild(button);
