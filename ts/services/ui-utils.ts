@@ -19,7 +19,7 @@ export interface ValidationOptions {
 }
 
 export function validateField(
-  value: string | number,
+  value: string | number | boolean,
   options: ValidationOptions
 ): boolean {
   const label = options.label ?? "This field";
