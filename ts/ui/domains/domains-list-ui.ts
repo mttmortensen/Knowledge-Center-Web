@@ -30,7 +30,6 @@ async function loadAndRenderDomainList(container: HTMLElement)
         const li = document.createElement("li");
         
         const button = document.createElement("button");
-        // Jump start the page load?
         button.textContent = `${domain.DomainName}`;
         button.addEventListener("click", () => 
         {
