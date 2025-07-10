@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
         if (success) {
             alert("✅ Knowledge Node updated!");
-            window.location.href = "/kn/knowledge-nodes-main.html";
+            window.location.href = "/html/kn/knowledge-nodes-main.html";
         } else {
             alert("❌ Failed to update Knowledge Node.");
         }

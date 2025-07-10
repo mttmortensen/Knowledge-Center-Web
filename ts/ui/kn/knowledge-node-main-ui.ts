@@ -5,10 +5,10 @@ requireAuth();
 document.addEventListener("DOMContentLoaded", () => 
 {
     // === Main Menu Button Logic ===
-    setupNodeNav("view-nodes", "/kn/knowledge-nodes-list.html");
-    setupNodeNav("create-node", "/kn/knowledge-nodes-create.html");
-    setupNodeNav("update-node", "/kn/knowledge-nodes-list-update.html");
-    setupNodeNav("delete-node", "/kn/knowledge-nodes-list-delete.html");
+    setupNodeNav("view-nodes", "/html/kn/knowledge-nodes-list.html");
+    setupNodeNav("create-node", "/html/kn/knowledge-nodes-create.html");
+    setupNodeNav("update-node", "/html/kn/knowledge-nodes-list-update.html");
+    setupNodeNav("delete-node", "/html/kn/knowledge-nodes-list-delete.html");
 
 })
 

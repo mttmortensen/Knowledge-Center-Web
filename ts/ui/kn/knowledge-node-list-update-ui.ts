@@ -55,6 +55,6 @@ document.addEventListener("DOMContentLoaded", async () =>
         }
 
         const nodeId = selected.value;
-        window.location.href = `/kn/knowledge-nodes-details-update.html?id=${nodeId}`;
+        window.location.href = `/html/kn/knowledge-nodes-details-update.html?id=${nodeId}`;
     });
 })
