@@ -38,8 +38,8 @@ function getDomainIdFromUrl(): number | null
 function renderDomainDetails(domain: Domains)
 {
     (document.getElementById("domain-name") as HTMLElement).textContent = domain.domainName;
-    (document.getElementById("domain-description") as HTMLElement).textContent = domain.DomainDescription;
-    (document.getElementById("domain-status") as HTMLElement).textContent = domain.DomainStatus;
-    (document.getElementById("domain-created") as HTMLElement).textContent = domain.CreatedAt;
-    (document.getElementById("domain-updated") as HTMLElement).textContent = domain.LastUsed;
+    (document.getElementById("domain-description") as HTMLElement).textContent = domain.domainDescription;
+    (document.getElementById("domain-status") as HTMLElement).textContent = domain.domainStatus;
+    (document.getElementById("domain-created") as HTMLElement).textContent = domain.createdAt;
+    (document.getElementById("domain-updated") as HTMLElement).textContent = domain.lastUsed;
 }

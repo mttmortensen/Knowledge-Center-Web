@@ -2,8 +2,8 @@ export interface Domains
 {
     domainId: number;
     domainName: string;
-    DomainDescription: string;
-    DomainStatus: string;
-    CreatedAt: string;
-    LastUsed: string;
+    domainDescription: string;
+    domainStatus: string;
+    createdAt: string;
+    lastUsed: string;
 }

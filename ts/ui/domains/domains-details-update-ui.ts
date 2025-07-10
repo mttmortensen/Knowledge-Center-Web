@@ -37,17 +37,17 @@ document.addEventListener("DOMContentLoaded", async () =>
         const updatedDomain: Domains = {
             domainId: domain.domainId,
             domainName: formData.get("domain-name") as string,
-            DomainDescription: formData.get("domain-description") as string,
-            DomainStatus: formData.get("domain-status") as string,
-            CreatedAt: domain.CreatedAt,         // Preserve original timestamps
-            LastUsed: domain.LastUsed
+            domainDescription: formData.get("domain-description") as string,
+            domainStatus: formData.get("domain-status") as string,
+            createdAt: domain.createdAt,         // Preserve original timestamps
+            lastUsed: domain.lastUsed
         };
 
         if 
         (
             !validateField(updatedDomain.domainName, { label: "Domain Name", required: true, minLength: 3, maxLength: 100 }) ||
-            !validateField(updatedDomain.DomainDescription, { label: "Domain Description", required: true, minLength: 10, maxLength: 500 }) ||
-            !validateField(updatedDomain.DomainStatus, { label: "Domain Status", required: true, allowedValues: ["Active", "Inactive"] })
+            !validateField(updatedDomain.domainDescription, { label: "Domain Description", required: true, minLength: 10, maxLength: 500 }) ||
+            !validateField(updatedDomain.domainStatus, { label: "Domain Status", required: true, allowedValues: ["Active", "Inactive"] })
         ) 
         {
             console.error("❌ One or more validation checks failed.");
@@ -82,8 +82,8 @@ function prefillForm(domain: Domains)
 {
     (document.getElementById("domain-id") as HTMLInputElement).value = domain.domainId.toString();
     (document.getElementById("domain-name") as HTMLInputElement).value = domain.domainName;
-    (document.getElementById("domain-description") as HTMLTextAreaElement).value = domain.DomainDescription;
+    (document.getElementById("domain-description") as HTMLTextAreaElement).value = domain.domainDescription;
 
-    const statusRadio = document.querySelector(`input[name="domain-status"][value="${domain.DomainStatus}"]`) as HTMLInputElement;
+    const statusRadio = document.querySelector(`input[name="domain-status"][value="${domain.domainStatus}"]`) as HTMLInputElement;
     if (statusRadio) statusRadio.checked = true;
 }
