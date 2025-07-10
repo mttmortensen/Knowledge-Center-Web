@@ -12,12 +12,12 @@ document.addEventListener("DOMContentLoaded", () =>
     {
         viewBtn.addEventListener("click", async () => 
         {
-            window.location.href = "/logs/logs-list.html"
+            window.location.href = "/html/logs/logs-list.html"
         })
 
         crtBtn.addEventListener("click", () => 
         {
-            window.location.href = "/logs/logs-create.html"
+            window.location.href = "/html/logs/logs-create.html"
         })
     }
 })

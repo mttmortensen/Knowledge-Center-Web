@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () =>
 
         if (success) {
             alert("✅ Tag created successfully!");
-            window.location.href = "tags-main.html"; // Change if you use a different main page
+            window.location.href = "tags-main.html"; 
         } else {
             alert("❌ Failed to create tag.");
         }

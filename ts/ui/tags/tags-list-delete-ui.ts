@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (success) {
             alert("✅ Tag deleted!");
-            window.location.href = "/tags/tags-main.html";
+            window.location.href = "/html/tags/tags-main.html";
         } else {
             alert("❌ Failed to delete tag.");
         }

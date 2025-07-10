@@ -5,10 +5,10 @@ requireAuth();
 document.addEventListener("DOMContentLoaded", () => 
 {
     // === Main Menu Button Logic ===
-    setupTagNav("view-tags", "/tags/tags-list.html")
-    setupTagNav("create-tag", "/tags/tags-create.html")
-    setupTagNav("update-tag", "/tags/tags-list-update.html")
-    setupTagNav("delete-tag", "/tags/tags-list-delete.html")
+    setupTagNav("view-tags", "/html/tags/tags-list.html")
+    setupTagNav("create-tag", "/html/tags/tags-create.html")
+    setupTagNav("update-tag", "/html/tags/tags-list-update.html")
+    setupTagNav("delete-tag", "/html/tags/tags-list-delete.html")
 
 })
 

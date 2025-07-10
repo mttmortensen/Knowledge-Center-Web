@@ -60,7 +60,7 @@ async function loadAndRenderLogList(container: HTMLElement) {
 
             button.textContent = preview;
             button.addEventListener("click", () => {
-                window.location.href = `/logs/logs-details.html?id=${log.LogId}`;
+                window.location.href = `/html/logs/logs-details.html?id=${log.LogId}`;
             });
 
             li.appendChild(button);
