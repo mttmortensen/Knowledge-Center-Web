@@ -24,13 +24,12 @@ document.addEventListener("DOMContentLoaded", () =>
             const Content = formData.get("content") as string;
             const TagId = parseInt(formData.get("tagId") as string);
             const ContributesToProgress = formData.get("contributesToProgress") === "true";
-            const EntryDate = new Date().toISOString(); 
             
             // === ✅ Validation ===
             if 
             (
                 !validateField(Content, { label: "Content", required: true, minLength: 3, maxLength: 2000 }) ||
-                !validateField("ContributesToProgress", { label: "Contribute to Progress", required: true,})
+                !validateField(ContributesToProgress, { label: "Contribute to Progress", required: true,})
             ) 
             {
                 console.error("❌ One or more validation checks failed.");
@@ -42,8 +41,7 @@ document.addEventListener("DOMContentLoaded", () =>
                 NodeId,
                 Content,
                 TagId,
-                ContributesToProgress,
-                EntryDate
+                ContributesToProgress
             }
 
             const success = await createLog(newLog);
