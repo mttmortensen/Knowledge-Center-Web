@@ -1,7 +1,7 @@
 import { KnowledgeNode  } from "../types/knowledge-node";
 import { authFetch } from "./fetch-wrapper.js";
 
-const API_BASE_URL = "http://localhost:8080/api/knowledge-nodes";
+const API_BASE_URL = "https://api.mortensens.xyz/kc/api/knowledge-nodes";
 
 export async function getAllKnowledgeNodes(): Promise<KnowledgeNode[]>
 {

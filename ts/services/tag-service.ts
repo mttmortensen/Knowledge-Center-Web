@@ -1,7 +1,7 @@
 import { Tag } from "../types/tags";
 import { authFetch } from "./fetch-wrapper.js";
 
-const API_BASE_URL = "http://localhost:8080/api/tags";
+const API_BASE_URL = "https://api.mortensens.xyz/kc/api/tags";
 
 export async function getAllTags(): Promise<Tag[]>
 {

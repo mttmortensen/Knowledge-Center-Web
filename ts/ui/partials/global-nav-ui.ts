@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (token) {
         try {
-          await fetch("http://localhost:8080/api/logout", {
+          await fetch("https://api.mortensens.xyz/kc/api/logout", {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${token}`

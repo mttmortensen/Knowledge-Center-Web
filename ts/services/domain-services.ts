@@ -1,7 +1,7 @@
 import { Domains  } from "../types/domains";
 import { authFetch } from "./fetch-wrapper.js";
 
-const API_BASE_URL = "http://localhost:8080/api/domains";
+const API_BASE_URL = "https://api.mortensens.xyz/kc/api/domains";
 
 export async function getAllDomains(): Promise<Domains[]>
 {
