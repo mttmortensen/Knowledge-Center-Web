@@ -1,13 +1,13 @@
 import { Domains  } from "../types/domains";
 import { authFetch } from "./fetch-wrapper.js";
 
-const API_BASE_URL = "https://api.mortensens.xyz/kc/api/domains";
+const API_BASE_URL = "https://api.mortensens.xyz/kc/api";
 
 export async function getAllDomains(): Promise<Domains[]>
 {
     try
     {
-        const response = await authFetch(API_BASE_URL);
+        const response = await authFetch(`${API_BASE_URL}/domains`);
         if (!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`)
@@ -27,7 +27,7 @@ export async function getADomainById(id: number): Promise<Domains | null>
 {
     try 
     {
-        const response = await authFetch(`${API_BASE_URL}/${id}`);
+        const response = await authFetch(`${API_BASE_URL}/domains/${id}`);
         if(!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -47,7 +47,7 @@ export async function createDomain(domain: any): Promise<boolean>
 {
     try
     {
-        const response = await authFetch(API_BASE_URL, {
+        const response = await authFetch(`${API_BASE_URL}/domains`, {
             method: "POST",
             body: JSON.stringify(domain)
         });
@@ -65,7 +65,7 @@ export async function updateADomain(domain: any): Promise<boolean>
 {
     try 
     {
-        const response = await authFetch(`${API_BASE_URL}/${domain.domainId}`, {
+        const response = await authFetch(`${API_BASE_URL}/domains/${domain.domainId}`, {
             method: "POST",
             body: JSON.stringify(domain)
         });
