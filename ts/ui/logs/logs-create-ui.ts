@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () =>
             if(success) 
             {
                 alert("✅ Log created!");
-                window.location.href = "/logs/logs-main.html";            
+                window.location.href = "/html/logs/logs-main.html";            
             }
             else 
             {
