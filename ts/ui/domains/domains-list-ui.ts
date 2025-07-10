@@ -33,7 +33,7 @@ async function loadAndRenderDomainList(container: HTMLElement)
         button.textContent = `${domain.DomainName}`;
         button.addEventListener("click", () => 
         {
-            window.location.href = `/domains/domains-details.html?id=${domain.DomainId}`;
+            window.location.href = `/html/domains/domains-details.html?id=${domain.DomainId}`;
         });
 
         li.appendChild(button);

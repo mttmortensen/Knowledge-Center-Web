@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (success) {
             alert("✅ Domain deleted!");
-            window.location.href = "/domains/domains-main.html";
+            window.location.href = "/html/domains/domains-main.html";
         } else {
             alert("❌ Failed to delete domain.");
         }

@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", async () =>
         }
 
         const domainId = selected.value;
-        window.location.href = `/domains/domains-details-update.html?id=${domainId}`;
+        window.location.href = `/html/domains/domains-details-update.html?id=${domainId}`;
     });
 
     const backBtn = document.getElementById("back-button");

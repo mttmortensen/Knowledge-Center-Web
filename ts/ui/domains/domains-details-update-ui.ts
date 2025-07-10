@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
         if (success) {
             alert("✅ Domain updated!");
-            window.location.href = "/domains/domains-main.html";
+            window.location.href = "/html/domains/domains-main.html";
         } else {
             alert("❌ Failed to update Domain.");
         }
