@@ -3,7 +3,7 @@ import { authFetch } from "./fetch-wrapper.js";
 const loginForm = document.getElementById("login-form") as HTMLFormElement;
 const errorMessage = document.getElementById("error-message") as HTMLParagraphElement;
 
-const API_BASE_URL = "https://api.mortensens.xyz/kc/api/login";
+const API_BASE_URL = "https://api.mortensens.xyz/kc/api/";
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault(); // Stop form from refreshing the page
@@ -14,7 +14,7 @@ loginForm.addEventListener("submit", async (event) => {
   const body = { username, password };
 
   try {
-    const response = await authFetch(API_BASE_URL, 
+    const response = await authFetch(`${API_BASE_URL}/auth/login`, 
     {
       method: "POST",
       body: JSON.stringify(body)
