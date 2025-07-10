@@ -1,7 +1,7 @@
 export interface Domains 
 {
-    DomainId: number;
-    DomainName: string;
+    domainId: number;
+    domainName: string;
     DomainDescription: string;
     DomainStatus: string;
     CreatedAt: string;

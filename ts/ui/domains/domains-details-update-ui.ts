@@ -35,8 +35,8 @@ document.addEventListener("DOMContentLoaded", async () =>
         const formData = new FormData(form);
 
         const updatedDomain: Domains = {
-            DomainId: domain.DomainId,
-            DomainName: formData.get("domain-name") as string,
+            domainId: domain.domainId,
+            domainName: formData.get("domain-name") as string,
             DomainDescription: formData.get("domain-description") as string,
             DomainStatus: formData.get("domain-status") as string,
             CreatedAt: domain.CreatedAt,         // Preserve original timestamps
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", async () =>
 
         if 
         (
-            !validateField(updatedDomain.DomainName, { label: "Domain Name", required: true, minLength: 3, maxLength: 100 }) ||
+            !validateField(updatedDomain.domainName, { label: "Domain Name", required: true, minLength: 3, maxLength: 100 }) ||
             !validateField(updatedDomain.DomainDescription, { label: "Domain Description", required: true, minLength: 10, maxLength: 500 }) ||
             !validateField(updatedDomain.DomainStatus, { label: "Domain Status", required: true, allowedValues: ["Active", "Inactive"] })
         ) 
@@ -80,8 +80,8 @@ function getDomainIdFromUrl(): number | null
 
 function prefillForm(domain: Domains) 
 {
-    (document.getElementById("domain-id") as HTMLInputElement).value = domain.DomainId.toString();
-    (document.getElementById("domain-name") as HTMLInputElement).value = domain.DomainName;
+    (document.getElementById("domain-id") as HTMLInputElement).value = domain.domainId.toString();
+    (document.getElementById("domain-name") as HTMLInputElement).value = domain.domainName;
     (document.getElementById("domain-description") as HTMLTextAreaElement).value = domain.DomainDescription;
 
     const statusRadio = document.querySelector(`input[name="domain-status"][value="${domain.DomainStatus}"]`) as HTMLInputElement;
