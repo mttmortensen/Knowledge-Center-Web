@@ -1,13 +1,13 @@
 import { KnowledgeNode  } from "../types/knowledge-node";
 import { authFetch } from "./fetch-wrapper.js";
 
-const API_BASE_URL = "https://api.mortensens.xyz/kc/api/knowledge-nodes";
+const API_BASE_URL = "https://api.mortensens.xyz/kc/api";
 
 export async function getAllKnowledgeNodes(): Promise<KnowledgeNode[]>
 {
     try
     {
-        const response = await authFetch(API_BASE_URL); // <-- token is now included automatically
+        const response = await authFetch(`${API_BASE_URL}/knowledge-nodes`); // <-- token is now included automatically
 
         if (!response.ok) 
         {
@@ -28,7 +28,7 @@ export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode |
 {
     try 
     {
-        const response = await authFetch(`${API_BASE_URL}/${id}`);
+        const response = await authFetch(`${API_BASE_URL}/knowledge-nodes/${id}`);
         if(!response.ok) 
         {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -47,7 +47,7 @@ export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode |
 export async function createKnowledgeNode(KnowledgeNode: Omit<KnowledgeNode, "Id">): Promise<boolean> {
     try {
 
-        const response = await authFetch(API_BASE_URL, {
+        const response = await authFetch(`${API_BASE_URL}/knowledge-nodes`, {
             method: "POST",
             body: JSON.stringify(KnowledgeNode)
         });
@@ -65,7 +65,7 @@ export async function updateAKnowledgeNode(KnowledgeNode: any): Promise<boolean>
 {
     try 
     {
-        const response = await authFetch(`${API_BASE_URL}/${KnowledgeNode.id}`, {
+        const response = await authFetch(`${API_BASE_URL}/knowledge-nodes/${KnowledgeNode.id}`, {
             method: "PUT",
             body: JSON.stringify(KnowledgeNode)
         });
@@ -82,7 +82,7 @@ export async function updateAKnowledgeNode(KnowledgeNode: any): Promise<boolean>
 export async function deleteAKnowledgeNode(nodeId: number): Promise<boolean> 
 {
         try {
-        const response = await authFetch(`${API_BASE_URL}/${nodeId}`, {
+        const response = await authFetch(`${API_BASE_URL}/knowledge-nodes/${nodeId}`, {
             method: "DELETE",
         });
 
