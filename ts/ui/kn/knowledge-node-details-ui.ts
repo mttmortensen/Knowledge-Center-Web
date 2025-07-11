@@ -1,4 +1,5 @@
 import { getAKnowledgeNodeById } from "../../services/knowledge-node-service.js";
+import { getADomainById } from "../../services/domain-services.js";
 import { KnowledgeNode } from "../../types/knowledge-node.js";
 import { requireAuth } from "../../services/auth-check.js";
 import { displayError } from "../../services/ui-utils.js";
@@ -24,7 +25,14 @@ document.addEventListener("DOMContentLoaded", async () =>
         return;
     }
 
-    renderNodeDetails(node);
+    const domain = await getADomainById(node.DomainId);
+
+    if (!domain) {
+        displayError(knNodeContainer, `Could not load Domain with ID ${node.DomainId}.`);
+    return;
+    }
+
+    renderNodeDetails(node, domain.DomainName);
 });
 
 function getNodeIdFromUrl(): number | null 
@@ -34,10 +42,11 @@ function getNodeIdFromUrl(): number | null
     return id ? parseInt(id) : null;
 }
 
-function renderNodeDetails(node: KnowledgeNode)
+function renderNodeDetails(node: KnowledgeNode, domainName: string)
 {
     (document.getElementById("kn-title") as HTMLElement).textContent = node.Title;
     (document.getElementById("kn-type") as HTMLElement).textContent = node.NodeType;
+    (document.getElementById("kn-domain") as HTMLElement).textContent = domainName;
     (document.getElementById("kn-description") as HTMLElement).textContent = node.Description;
     (document.getElementById("kn-confidence") as HTMLElement).textContent = node.ConfidenceLevel.toString();
     (document.getElementById("kn-status") as HTMLElement).textContent = node.Status;
