@@ -10,12 +10,11 @@ body {
   font-family: sans-serif;
   padding: 1rem;
   line-height: 1.5;
-  margin: auto;
+  margin: 0 auto;
 }
 
 h1,
-h2 
-{
+h2 {
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
 }
@@ -26,7 +25,7 @@ ul {
   padding-left: 0;
 }
 
-/* === Keep radio + label inline === */
+/* === Radio Buttons === */
 input[type="radio"] {
   margin-right: 0.5rem;
   width: auto;
@@ -50,10 +49,11 @@ button {
 input,
 select,
 textarea {
-  width: auto;
+  width: 100%;
   max-width: 100%;
   padding: 0.5rem;
   font-size: 1rem;
+  margin-top: 0.25rem;
 }
 
 label {
@@ -64,23 +64,20 @@ label {
 
 form {
   margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
-/* === Mobile-First: Stack Layout === */
-@media (max-width: 800px) {
+/* === Desktop / Larger Screens === */
+@media (min-width: 800px) {
   body {
     padding: 2rem;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
+    max-width: 800px;
   }
 
   input,
   select,
   textarea {
-    width: 100%;
-    margin-top: 0.25rem;
+    width: auto;
   }
 }
