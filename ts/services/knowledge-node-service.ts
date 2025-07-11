@@ -65,7 +65,7 @@ export async function updateAKnowledgeNode(KnowledgeNode: any): Promise<boolean>
 {
     try 
     {
-        const response = await authFetch(`${API_BASE_URL}/knowledge-nodes/${KnowledgeNode.id}`, {
+        const response = await authFetch(`${API_BASE_URL}/knowledge-nodes/${KnowledgeNode.Id}`, {
             method: "PUT",
             body: JSON.stringify(KnowledgeNode)
         });

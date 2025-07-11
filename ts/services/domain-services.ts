@@ -65,8 +65,8 @@ export async function updateADomain(domain: any): Promise<boolean>
 {
     try 
     {
-        const response = await authFetch(`${API_BASE_URL}/domains/${domain.domainId}`, {
-            method: "POST",
+        const response = await authFetch(`${API_BASE_URL}/domains/${domain.DomainId}`, {
+            method: "PUT",
             body: JSON.stringify(domain)
         });
 
@@ -81,7 +81,7 @@ export async function updateADomain(domain: any): Promise<boolean>
 
 export async function deleteADomain(domainId: number): Promise<boolean> {
     try {
-        const response = await authFetch(`${API_BASE_URL}/${domainId}`, {
+        const response = await authFetch(`${API_BASE_URL}/domains/${domainId}`, {
             method: "DELETE",
         });;
 
