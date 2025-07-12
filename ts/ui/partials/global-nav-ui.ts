@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       sessionStorage.removeItem("token");
+      sessionStorage.removeItem("isDemo");
       window.location.href = "/login.html";
     });
   }
