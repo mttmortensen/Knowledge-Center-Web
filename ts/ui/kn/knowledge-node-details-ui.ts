@@ -1,6 +1,6 @@
 import { getAKnowledgeNodeById } from "../../services/knowledge-node-service.js";
 import { getADomainById } from "../../services/domain-services.js";
-import { KnowledgeNode } from "../../types/knowledge-node.js";
+import { KnowledgeNodeWithLogs } from "../../types/knowledge-node.js";
 import { requireAuth } from "../../services/auth-check.js";
 import { displayError } from "../../services/ui-utils.js";
 
@@ -42,7 +42,7 @@ function getNodeIdFromUrl(): number | null
     return id ? parseInt(id) : null;
 }
 
-function renderNodeDetails(node: KnowledgeNode, domainName: string)
+function renderNodeDetails(node: KnowledgeNodeWithLogs, domainName: string)
 {
     (document.getElementById("kn-title") as HTMLElement).textContent = node.Title;
     (document.getElementById("kn-type") as HTMLElement).textContent = node.NodeType;
@@ -52,4 +52,26 @@ function renderNodeDetails(node: KnowledgeNode, domainName: string)
     (document.getElementById("kn-status") as HTMLElement).textContent = node.Status;
     (document.getElementById("kn-created") as HTMLElement).textContent = node.CreatedAt;
     (document.getElementById("kn-updated") as HTMLElement).textContent = node.LastUpdated;
+
+    // Logs attached to a KnowledgeNode
+    const logsListContainer = document.getElementById("kn-logs-list") as HTMLElement;
+    logsListContainer.innerHTML = ""; // Clear in case of rerender
+
+    if (node.Logs && node.Logs.length > 0) {
+        node.Logs.forEach(log => {
+            const btn = document.createElement("button");
+
+            btn.textContent = log.Content.length > 20
+                ? log.Content.slice(0, 20) + "..."
+                : log.Content;
+
+            btn.classList.add("log-link-button");
+            btn.addEventListener("click", () => {
+                window.location.href = `/html/logs/logs-details.html?id=${log.LogId}`;
+            });
+            logsListContainer.appendChild(btn);
+        });
+    } else {
+        logsListContainer.textContent = "No logs found for this Knowledge Node.";
+    }   
 }
