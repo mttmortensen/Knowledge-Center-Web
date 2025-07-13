@@ -1,3 +1,10 @@
+export interface LogEntryInline {
+    LogId: number;
+    Content: string;
+    EntryDate: string;
+    ContributesToProgress: boolean;
+}
+
 export interface KnowledgeNode 
 {
     Id: number;
@@ -9,4 +16,8 @@ export interface KnowledgeNode
     Status: string
     CreatedAt: string;
     LastUpdated: string;
+}
+
+export interface KnowledgeNodeWithLogs extends KnowledgeNode {
+    Logs: LogEntryInline[];
 }
