@@ -1,4 +1,4 @@
-import { Domains  } from "../types/domains";
+import { Domains, DomainWithKnowledgeNodes  } from "../types/domains";
 import { authFetch } from "./fetch-wrapper.js";
 
 const API_BASE_URL = "https://api.mortensens.xyz/kc/api";
@@ -23,7 +23,7 @@ export async function getAllDomains(): Promise<Domains[]>
     }    
 }
 
-export async function getADomainById(id: number): Promise<Domains | null> 
+export async function getADomainById(id: number): Promise<DomainWithKnowledgeNodes | null> 
 {
     try 
     {
@@ -33,7 +33,7 @@ export async function getADomainById(id: number): Promise<Domains | null>
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: Domains = await response.json();
+        const data: DomainWithKnowledgeNodes = await response.json();
         return data;
     }
     catch(error)
