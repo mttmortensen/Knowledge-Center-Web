@@ -1,4 +1,4 @@
-import { KnowledgeNode  } from "../types/knowledge-node";
+import { KnowledgeNode, KnowledgeNodeWithLogs  } from "../types/knowledge-node";
 import { authFetch } from "./fetch-wrapper.js";
 
 const API_BASE_URL = "https://api.mortensens.xyz/kc/api";
@@ -24,7 +24,7 @@ export async function getAllKnowledgeNodes(): Promise<KnowledgeNode[]>
     }    
 }
 
-export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode | null> 
+export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNodeWithLogs | null> 
 {
     try 
     {
@@ -34,7 +34,7 @@ export async function getAKnowledgeNodeById(id: number): Promise<KnowledgeNode |
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: KnowledgeNode = await response.json();
+        const data: KnowledgeNodeWithLogs = await response.json();
         return data;
     }
     catch(error)
