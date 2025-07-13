@@ -55,7 +55,7 @@ function renderDomainDetails(domain: DomainWithKnowledgeNodes)
 
             btn.classList.add("kn-link-button");
             btn.addEventListener("click", () => {
-                window.location.href = `/html/knowledge-nodes/knowledge-nodes-details.html?id=${domain.DomainId}`;
+                window.location.href = `/html/kn/knowledge-nodes-details.html?id=${domain.DomainId}`;
             });
             knsListContainer.appendChild(btn);
         });
