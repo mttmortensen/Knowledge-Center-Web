@@ -7,3 +7,14 @@ export interface Domains
     CreatedAt: string;
     LastUsed: string;
 }
+
+export interface KnowledgeNodeInline 
+{
+    Title: string,
+    NodeType: string,
+    Status: string    
+}
+
+export interface DomainWithKnowledgeNodes extends Domains {
+    KnowledgeNodes: KnowledgeNodeInline[];
+}
