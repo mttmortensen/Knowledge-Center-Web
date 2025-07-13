@@ -23,7 +23,6 @@ function setupNodeNav(buttonId: string, targetUrl: string): void
     if (!btn) return;
 
     const isDemo = sessionStorage.getItem("isDemo") === "true";
-    console.log(isDemo)
 
     // === If in demo mode, disable delete/update routes ===
     if (isDemo && (buttonId === "update-node" || buttonId === "delete-node")) 
