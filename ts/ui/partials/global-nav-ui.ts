@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (token) {
         try {
-          await fetch("https://api.mortensens.xyz/kc/api/auth/logout", {
+          await fetch("https://api.mortensens.cc/kc/api/auth/logout", {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${token}`
