@@ -4,7 +4,7 @@ const loginForm = document.getElementById("login-form") as HTMLFormElement;
 const demoLoginButton = document.getElementById("demo-login-btn") as HTMLButtonElement;
 const errorMessage = document.getElementById("error-message") as HTMLParagraphElement;
 
-const API_BASE_URL = "https://api.mortensens.xyz/kc/api";
+const API_BASE_URL = "https://api.mortensens.cc/kc/api";
 
 
 // This is to handle when a user hits that login button

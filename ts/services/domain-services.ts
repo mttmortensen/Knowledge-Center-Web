@@ -1,7 +1,7 @@
 import { Domains, DomainWithKnowledgeNodes  } from "../types/domains";
 import { authFetch } from "./fetch-wrapper.js";
 
-const API_BASE_URL = "https://api.mortensens.xyz/kc/api";
+const API_BASE_URL = "https://api.mortensens.cc/kc/api";
 
 export async function getAllDomains(): Promise<Domains[]>
 {
