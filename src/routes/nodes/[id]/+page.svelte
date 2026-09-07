@@ -26,6 +26,9 @@
 		error = '';
 		try {
 			node = await knowledgeNodesApi.getById(nodeId);
+			// Demo mode's GET-by-id returns a bare KnowledgeNode (no Logs array),
+			// unlike the real API's KnowledgeNodeDetailsWithLogsDto.
+			node.Logs ??= [];
 			editTitle = node.Title;
 			editType = node.NodeType;
 			editDescription = node.Description;
