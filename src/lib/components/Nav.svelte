@@ -13,6 +13,8 @@
 	<div class="row" style="gap: 1.25rem;">
 		<a href="/domains" style="font-weight: 700; color: var(--text);">Knowledge Center</a>
 		<a href="/domains">Domains</a>
+		<a href="/nodes">Knowledge Nodes</a>
+		<a href="/logs">Logs</a>
 		<a href="/tags">Tags</a>
 	</div>
 	<div class="row">
