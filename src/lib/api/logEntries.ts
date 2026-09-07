@@ -1,9 +1,8 @@
 import { api } from './client';
-import type { LogEntry, LogEntryCreateInput, LogEntryInline, LogEntryUpdateInput } from '$lib/types/api';
+import type { LogEntry, LogEntryCreateInput, LogEntryUpdateInput } from '$lib/types/api';
 
 export const logEntriesApi = {
-	getAll: (nodeId?: number) =>
-		api.get<LogEntryInline[]>(nodeId ? `/logs?nodeId=${nodeId}` : '/logs'),
+	getAll: (nodeId?: number) => api.get<LogEntry[]>(nodeId ? `/logs?nodeId=${nodeId}` : '/logs'),
 	getById: (id: number) => api.get<LogEntry>(`/logs/${id}`),
 	create: (input: LogEntryCreateInput) => api.post<LogEntry>('/logs', input),
 	update: (id: number, input: LogEntryUpdateInput) => api.put<LogEntry>(`/logs/${id}`, input),
