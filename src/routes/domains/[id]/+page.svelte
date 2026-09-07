@@ -33,6 +33,10 @@
 		error = '';
 		try {
 			domain = await domainsApi.getById(domainId);
+			// Demo mode's GET-by-id returns a bare Domain (no KnowledgeNodes array),
+			// unlike the real API's DomainWithKNsDto — default it so the list below
+			// doesn't blow up on undefined.
+			domain.KnowledgeNodes ??= [];
 			editName = domain.DomainName;
 			editDescription = domain.DomainDescription;
 			editStatus = domain.DomainStatus;
