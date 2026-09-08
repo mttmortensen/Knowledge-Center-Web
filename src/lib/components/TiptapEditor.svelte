@@ -35,7 +35,7 @@
 			element,
 			editable,
 			extensions: [
-				StarterKit,
+				StarterKit.configure({ link: false }),
 				Image,
 				Link.configure({ openOnClick: false }),
 				Placeholder.configure({ placeholder }),
