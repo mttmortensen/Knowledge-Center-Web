@@ -2,6 +2,7 @@
 	import { domainsApi } from '$lib/api/domains';
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import type { Domain, KnowledgeNode } from '$lib/types/api';
+	import KnowledgeNodeTable from '$lib/components/KnowledgeNodeTable.svelte';
 	import { onMount } from 'svelte';
 
 	let domains = $state<Domain[]>([]);
@@ -53,15 +54,7 @@
 				<h2 class="group-header">
 					<a href="/domains/{group.domain.DomainId}">{group.domain.DomainName}</a>
 				</h2>
-				{#each group.nodes as node (node.Id)}
-					<a class="card card-link" href="/nodes/{node.Id}">
-						<div class="row-between">
-							<h3>{node.Title}</h3>
-							<span class="tag-pill">{node.Status}</span>
-						</div>
-						<p class="muted">{node.NodeType}</p>
-					</a>
-				{/each}
+				<KnowledgeNodeTable nodes={group.nodes} />
 			</section>
 		{/each}
 	{/if}

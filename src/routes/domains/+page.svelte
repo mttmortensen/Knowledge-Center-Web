@@ -2,6 +2,7 @@
 	import { domainsApi } from '$lib/api/domains';
 	import type { Domain } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
+	import DomainTable from '$lib/components/DomainTable.svelte';
 	import { onMount } from 'svelte';
 
 	let domains = $state<Domain[]>([]);
@@ -91,16 +92,6 @@
 	{:else if domains.length === 0}
 		<div class="empty-state">No domains yet. Create one to get started.</div>
 	{:else}
-		{#each domains as domain (domain.DomainId)}
-			<a class="card card-link" href="/domains/{domain.DomainId}">
-				<div class="row-between">
-					<h3>{domain.DomainName}</h3>
-					<span class="tag-pill">{domain.DomainStatus}</span>
-				</div>
-				{#if domain.DomainDescription}
-					<p class="muted">{domain.DomainDescription}</p>
-				{/if}
-			</a>
-		{/each}
+		<DomainTable {domains} />
 	{/if}
 </div>
