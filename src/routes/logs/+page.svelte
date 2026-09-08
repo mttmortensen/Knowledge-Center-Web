@@ -46,7 +46,10 @@
 </script>
 
 <div class="container">
-	<h1>Logs</h1>
+	<div class="row-between">
+		<h1>Logs</h1>
+		<a href="/logs/new"><button class="primary">New log entry</button></a>
+	</div>
 
 	{#if error}
 		<div class="error-banner">{error}</div>

@@ -10,6 +10,15 @@
 	let loading = $state(true);
 	let error = $state('');
 
+	let showCreate = $state(false);
+	let nodeDomainId = $state<number | ''>('');
+	let nodeTitle = $state('');
+	let nodeType = $state('Concept');
+	let nodeDescription = $state('');
+	let nodeConfidence = $state(3);
+	let nodeStatus = $state('Active');
+	let creatingNode = $state(false);
+
 	async function load() {
 		loading = true;
 		error = '';
@@ -23,6 +32,36 @@
 	}
 
 	onMount(load);
+
+	async function createNode(event: SubmitEvent) {
+		event.preventDefault();
+		if (!nodeDomainId) {
+			error = 'Please select a domain.';
+			return;
+		}
+		creatingNode = true;
+		error = '';
+		try {
+			await knowledgeNodesApi.create({
+				Title: nodeTitle,
+				DomainId: nodeDomainId,
+				NodeType: nodeType,
+				Description: nodeDescription,
+				ConfidenceLevel: nodeConfidence,
+				Status: nodeStatus
+			});
+			nodeDomainId = '';
+			nodeTitle = '';
+			nodeDescription = '';
+			nodeConfidence = 3;
+			showCreate = false;
+			await load();
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to create knowledge node.';
+		} finally {
+			creatingNode = false;
+		}
+	}
 
 	let groups = $derived(
 		domains
@@ -38,10 +77,61 @@
 </script>
 
 <div class="container">
-	<h1>Knowledge Nodes</h1>
+	<div class="row-between">
+		<h1>Knowledge Nodes</h1>
+		<button class="primary" onclick={() => (showCreate = !showCreate)}>
+			{showCreate ? 'Cancel' : 'New node'}
+		</button>
+	</div>
 
 	{#if error}
 		<div class="error-banner">{error}</div>
+	{/if}
+
+	{#if showCreate}
+		<form class="card" onsubmit={createNode}>
+			<div class="field">
+				<label for="node-domain">Domain</label>
+				<select id="node-domain" bind:value={nodeDomainId} required>
+					<option value="" disabled>Select a domain…</option>
+					{#each domains as domain (domain.DomainId)}
+						<option value={domain.DomainId}>{domain.DomainName}</option>
+					{/each}
+				</select>
+			</div>
+			<div class="field">
+				<label for="node-title">Title</label>
+				<input id="node-title" type="text" bind:value={nodeTitle} required />
+			</div>
+			<div class="field">
+				<label for="node-type">Type</label>
+				<input id="node-type" type="text" bind:value={nodeType} />
+			</div>
+			<div class="field">
+				<label for="node-description">Description</label>
+				<textarea id="node-description" rows="2" bind:value={nodeDescription}></textarea>
+			</div>
+			<div class="field">
+				<label for="node-confidence">Confidence (1-5)</label>
+				<input
+					id="node-confidence"
+					type="number"
+					min="1"
+					max="5"
+					bind:value={nodeConfidence}
+				/>
+			</div>
+			<div class="field">
+				<label for="node-status">Status</label>
+				<select id="node-status" bind:value={nodeStatus}>
+					<option>Active</option>
+					<option>Archived</option>
+				</select>
+			</div>
+			<button type="submit" class="primary" disabled={creatingNode}>
+				{creatingNode ? 'Creating…' : 'Create node'}
+			</button>
+		</form>
 	{/if}
 
 	{#if loading}

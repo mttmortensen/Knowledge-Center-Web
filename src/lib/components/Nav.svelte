@@ -21,6 +21,7 @@
 		{#if auth.isDemo}
 			<span class="tag-pill">demo mode</span>
 		{/if}
+		<a href="/logs/new"><button class="primary">Add log</button></a>
 		<button onclick={handleLogout}>Log out</button>
 	</div>
 </nav>
