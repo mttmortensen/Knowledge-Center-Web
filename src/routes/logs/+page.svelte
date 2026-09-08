@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import { logEntriesApi } from '$lib/api/logEntries';
+	import LogTable from '$lib/components/LogTable.svelte';
 	import type { KnowledgeNode, LogEntry } from '$lib/types/api';
 	import { onMount } from 'svelte';
 
@@ -9,11 +10,6 @@
 	let groups = $state<NodeGroup[]>([]);
 	let loading = $state(true);
 	let error = $state('');
-
-	function preview(content: string): string {
-		const plain = content.replace(/[#*_`>-]/g, '').trim();
-		return plain.length > 100 ? `${plain.slice(0, 100)}…` : plain;
-	}
 
 	async function load() {
 		loading = true;
@@ -66,24 +62,7 @@
 				<h2 class="group-header">
 					<a href="/nodes/{group.node.Id}">{group.node.Title}</a>
 				</h2>
-				{#each group.logs as log (log.LogId)}
-					<a class="log-row" href="/logs/{log.LogId}">
-						<div class="log-row-main">
-							<span class="log-title">{log.Title || preview(log.Content) || 'Empty entry'}</span>
-							{#if log.Tags.length > 0 || log.ContributesToProgress}
-								<div class="log-tags">
-									{#if log.ContributesToProgress}
-										<span class="tag-pill">progress</span>
-									{/if}
-									{#each log.Tags as tag (tag.TagId)}
-										<span class="tag-pill">{tag.Name}</span>
-									{/each}
-								</div>
-							{/if}
-						</div>
-						<span class="muted log-date">{new Date(log.EntryDate).toLocaleDateString()}</span>
-					</a>
-				{/each}
+				<LogTable logs={group.logs} />
 			</section>
 		{/each}
 	{/if}
@@ -100,42 +79,5 @@
 	}
 	.group-header a {
 		color: var(--text);
-	}
-
-	.log-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		padding: 0.5rem 0.75rem;
-		border-radius: var(--radius);
-		color: inherit;
-	}
-	.log-row:hover {
-		background: var(--bg-hover);
-		text-decoration: none;
-	}
-	.log-row + .log-row {
-		border-top: 1px solid var(--border);
-	}
-
-	.log-row-main {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-		min-width: 0;
-	}
-	.log-title {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.log-tags {
-		display: flex;
-		gap: 0.3rem;
-		flex-shrink: 0;
-	}
-	.log-date {
-		flex-shrink: 0;
 	}
 </style>

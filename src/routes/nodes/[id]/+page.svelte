@@ -3,13 +3,16 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
-	import type { KnowledgeNodeWithLogs } from '$lib/types/api';
+	import { logEntriesApi } from '$lib/api/logEntries';
+	import LogTable from '$lib/components/LogTable.svelte';
+	import type { KnowledgeNodeWithLogs, LogEntry } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
 
 	const nodeId = $derived(Number(page.params.id));
 
 	let node = $state<KnowledgeNodeWithLogs | null>(null);
+	let logs = $state<LogEntry[]>([]);
 	let loading = $state(true);
 	let error = $state('');
 
@@ -25,10 +28,14 @@
 		loading = true;
 		error = '';
 		try {
-			node = await knowledgeNodesApi.getById(nodeId);
-			// Demo mode's GET-by-id returns a bare KnowledgeNode (no Logs array),
-			// unlike the real API's KnowledgeNodeDetailsWithLogsDto.
-			node.Logs ??= [];
+			const [nodeResult, logsResult] = await Promise.all([
+				knowledgeNodesApi.getById(nodeId),
+				logEntriesApi.getAll(nodeId)
+			]);
+			node = nodeResult;
+			logs = [...logsResult].sort(
+				(a, b) => new Date(b.EntryDate).getTime() - new Date(a.EntryDate).getTime()
+			);
 			editTitle = node.Title;
 			editType = node.NodeType;
 			editDescription = node.Description;
@@ -79,10 +86,6 @@
 		}
 	}
 
-	function preview(content: string): string {
-		const plain = content.replace(/[#*_`>-]/g, '').trim();
-		return plain.length > 140 ? `${plain.slice(0, 140)}…` : plain;
-	}
 </script>
 
 <div class="container">
@@ -155,20 +158,10 @@
 			<a href="/nodes/{nodeId}/logs/new"><button class="primary">New entry</button></a>
 		</div>
 
-		{#if node.Logs.length === 0}
+		{#if logs.length === 0}
 			<div class="empty-state">No log entries yet.</div>
 		{:else}
-			{#each [...node.Logs].sort((a, b) => b.EntryDate.localeCompare(a.EntryDate)) as log (log.LogId)}
-				<a class="card card-link" href="/logs/{log.LogId}">
-					<div class="row-between">
-						<h3>{log.Title ?? preview(log.Content) ?? 'Untitled entry'}</h3>
-						{#if log.ContributesToProgress}
-							<span class="tag-pill">progress</span>
-						{/if}
-					</div>
-					<p class="muted">{new Date(log.EntryDate).toLocaleString()}</p>
-				</a>
-			{/each}
+			<LogTable {logs} />
 		{/if}
 	{/if}
 </div>
