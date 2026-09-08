@@ -7,6 +7,7 @@
 	import type { DomainWithKNs } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
+	import KnowledgeNodeTable from '$lib/components/KnowledgeNodeTable.svelte';
 
 	const domainId = $derived(Number(page.params.id));
 
@@ -214,15 +215,7 @@
 		{#if domain.KnowledgeNodes.length === 0}
 			<div class="empty-state">No knowledge nodes in this domain yet.</div>
 		{:else}
-			{#each domain.KnowledgeNodes as node (node.Id)}
-				<a class="card card-link" href="/nodes/{node.Id}">
-					<div class="row-between">
-						<h3>{node.Title}</h3>
-						<span class="tag-pill">{node.Status}</span>
-					</div>
-					<p class="muted">{node.NodeType} · confidence {node.ConfidenceLevel}/5</p>
-				</a>
-			{/each}
+			<KnowledgeNodeTable nodes={domain.KnowledgeNodes} />
 		{/if}
 	{/if}
 </div>
