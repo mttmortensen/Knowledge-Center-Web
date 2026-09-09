@@ -15,6 +15,7 @@
 		<a href="/domains">Domains</a>
 		<a href="/nodes">Knowledge Nodes</a>
 		<a href="/logs">Logs</a>
+		<a href="/actions">Actions</a>
 		<a href="/tags">Tags</a>
 	</div>
 	<div class="row">
@@ -22,6 +23,7 @@
 			<span class="tag-pill">demo mode</span>
 		{/if}
 		<a href="/logs/new"><button class="primary">Add log</button></a>
+		<a href="/actions/new"><button class="primary">Add action</button></a>
 		<button onclick={handleLogout}>Log out</button>
 	</div>
 </nav>

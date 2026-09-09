@@ -4,8 +4,10 @@
 	import { onMount } from 'svelte';
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import { logEntriesApi } from '$lib/api/logEntries';
+	import { actionsApi } from '$lib/api/actions';
 	import LogTable from '$lib/components/LogTable.svelte';
-	import type { KnowledgeNodeWithLogs, LogEntry } from '$lib/types/api';
+	import ActionTable from '$lib/components/ActionTable.svelte';
+	import type { KnowledgeNodeWithLogs, LogEntry, ActionItem } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
 
@@ -13,6 +15,7 @@
 
 	let node = $state<KnowledgeNodeWithLogs | null>(null);
 	let logs = $state<LogEntry[]>([]);
+	let actions = $state<ActionItem[]>([]);
 	let loading = $state(true);
 	let error = $state('');
 
@@ -28,14 +31,26 @@
 		loading = true;
 		error = '';
 		try {
-			const [nodeResult, logsResult] = await Promise.all([
+			const [nodeResult, logsResult, openActionsResult, completedActionsResult] = await Promise.all([
 				knowledgeNodesApi.getById(nodeId),
-				logEntriesApi.getAll(nodeId)
+				logEntriesApi.getAll(nodeId),
+				actionsApi.getOpenForNode(nodeId),
+				actionsApi.getCompletedForNode(nodeId)
 			]);
 			node = nodeResult;
 			logs = [...logsResult].sort(
 				(a, b) => new Date(b.EntryDate).getTime() - new Date(a.EntryDate).getTime()
 			);
+			actions = [
+				...[...openActionsResult].sort(
+					(a, b) => new Date(b.CreatedAt).getTime() - new Date(a.CreatedAt).getTime()
+				),
+				...[...completedActionsResult].sort(
+					(a, b) =>
+						new Date(b.CompletedAt ?? b.CreatedAt).getTime() -
+						new Date(a.CompletedAt ?? a.CreatedAt).getTime()
+				)
+			];
 			editTitle = node.Title;
 			editType = node.NodeType;
 			editDescription = node.Description;
@@ -88,7 +103,7 @@
 
 </script>
 
-<div class="container">
+<div class="container wide">
 	<div class="breadcrumb">
 		<a href="/domains">Domains</a> /
 		<a href="/domains/{node?.DomainId}">Domain</a> / {node?.Title ?? '…'}
@@ -157,15 +172,49 @@
 			{/if}
 		</div>
 
-		<div class="row-between">
-			<h2>Log Entries</h2>
-			<a href="/nodes/{nodeId}/logs/new"><button class="primary">New entry</button></a>
-		</div>
+		<div class="split-columns">
+			<div class="column">
+				<div class="row-between">
+					<h2>Log Entries</h2>
+					<a href="/nodes/{nodeId}/logs/new"><button class="primary">New entry</button></a>
+				</div>
 
-		{#if logs.length === 0}
-			<div class="empty-state">No log entries yet.</div>
-		{:else}
-			<LogTable {logs} />
-		{/if}
+				{#if logs.length === 0}
+					<div class="empty-state">No log entries yet.</div>
+				{:else}
+					<LogTable {logs} />
+				{/if}
+			</div>
+
+			<div class="column">
+				<div class="row-between">
+					<h2>Actions</h2>
+					<a href="/nodes/{nodeId}/actions/new"><button class="primary">New action</button></a>
+				</div>
+
+				{#if actions.length === 0}
+					<div class="empty-state">No actions yet.</div>
+				{:else}
+					<ActionTable {actions} />
+				{/if}
+			</div>
+		</div>
 	{/if}
 </div>
+
+<style>
+	.container.wide {
+		max-width: 1200px;
+	}
+	.split-columns {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2rem;
+		align-items: start;
+	}
+	@media (max-width: 700px) {
+		.split-columns {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

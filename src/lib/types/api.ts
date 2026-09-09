@@ -91,6 +91,24 @@ export interface LogEntryUpdateInput {
 	ContributesToProgress?: boolean;
 }
 
+export interface ActionItem {
+	Id: number;
+	KnowledgeNodeId: number;
+	ActionText: string;
+	Status: string;
+	CreatedAt: string;
+	CompletedAt?: string | null;
+}
+
+export interface ActionItemCreateInput {
+	KnowledgeNodeId: number;
+	ActionText: string;
+}
+
+export interface ActionItemUpdateInput {
+	ActionText?: string;
+}
+
 export interface Tag {
 	TagId: number;
 	Name: string;

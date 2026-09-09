@@ -162,6 +162,14 @@ label {
 	font-size: 0.8rem;
 	color: var(--text-muted);
 }
+.tag-pill.open {
+	color: var(--accent);
+	border-color: var(--accent);
+}
+.tag-pill.completed {
+	color: var(--success);
+	border-color: var(--success);
+}
 
 .error-banner {
 	background: rgba(242, 119, 122, 0.12);
