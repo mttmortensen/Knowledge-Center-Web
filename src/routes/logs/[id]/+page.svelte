@@ -9,6 +9,7 @@
 	import type { LogEntry } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
+	import { comicTitle, comicByline } from '$lib/utils/comicTitle';
 
 	const logId = $derived(Number(page.params.id));
 
@@ -111,10 +112,14 @@
 			{#if editing}
 				<input type="text" placeholder="Title (optional)" bind:value={editTitle} style="font-size: 1.4rem; font-weight: 600;" />
 			{:else}
-				<h1>{entry.Title || 'Untitled entry'}</h1>
+				<h1>{entry.Title || comicTitle(entry.LogId)}</h1>
 			{/if}
 			<span class="muted">{new Date(entry.EntryDate).toLocaleString()}</span>
 		</div>
+
+		{#if !editing && !entry.Title}
+			<p class="muted" style="margin-top: -0.5rem;">{comicByline(entry.LogId)}</p>
+		{/if}
 
 		{#if !editing}
 			<div class="row" style="margin-bottom: 1rem; flex-wrap: wrap;">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { LogEntry } from '$lib/types/api';
+	import { comicTitle } from '$lib/utils/comicTitle';
 
 	let { logs }: { logs: LogEntry[] } = $props();
 
@@ -22,7 +23,7 @@
 		{#each logs as log (log.LogId)}
 			<tr onclick={() => goto(`/logs/${log.LogId}`)}>
 				<td class="col-entry">
-					<a href="/logs/{log.LogId}">{log.Title || preview(log.Content) || 'Empty entry'}</a>
+					<a href="/logs/{log.LogId}">{log.Title || preview(log.Content) || comicTitle(log.LogId)}</a>
 				</td>
 				<td class="col-tags">
 					{#if log.ContributesToProgress || log.Tags.length > 0}
