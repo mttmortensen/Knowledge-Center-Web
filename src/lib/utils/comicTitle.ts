@@ -2,22 +2,34 @@
 // a comic book issue credit line. Seeded by LogId so the same entry always
 // renders the same generated title/series/year/writer.
 
-const SERIES = [
-	'Rocket Ranger',
-	'The Crimson Comet',
-	'Nightshade Vigil',
-	'Ironclad Sentinel',
-	'The Amazing Voltage',
-	'Captain Aegis',
-	'The Unstoppable Meridian',
-	'Shadowbyte',
-	'The Astonishing Halcyon',
-	'Quantum Wraith',
-	'The Silver Cipher',
-	'Blackout Squadron',
-	'The Uncanny Lodestar',
-	'Timberwolf Six',
-	'The Invincible Static'
+// Real, instantly-recognizable heroes only — no deep-cut characters from a
+// short-lived '90s miniseries nobody's heard of. Each is paired with the
+// publisher that actually put out their books.
+const HEROES: { name: string; publisher: string }[] = [
+	{ name: 'Spider-Man', publisher: 'Marvel Comics' },
+	{ name: 'Wolverine', publisher: 'Marvel Comics' },
+	{ name: 'The Punisher', publisher: 'Marvel Comics' },
+	{ name: 'Iron Man', publisher: 'Marvel Comics' },
+	{ name: 'Deadpool', publisher: 'Marvel Comics' },
+	{ name: 'Daredevil', publisher: 'Marvel Comics' },
+	{ name: 'Thor', publisher: 'Marvel Comics' },
+	{ name: 'Ms. Marvel', publisher: 'Marvel Comics' },
+	{ name: 'Black Panther', publisher: 'Marvel Comics' },
+	{ name: 'Captain America', publisher: 'Marvel Comics' },
+	{ name: 'Batman', publisher: 'DC Comics' },
+	{ name: 'Superman', publisher: 'DC Comics' },
+	{ name: 'Wonder Woman', publisher: 'DC Comics' },
+	{ name: 'The Flash', publisher: 'DC Comics' },
+	{ name: 'Green Lantern', publisher: 'DC Comics' },
+	{ name: 'Nightwing', publisher: 'DC Comics' },
+	{ name: 'Aquaman', publisher: 'DC Comics' },
+	{ name: 'Green Arrow', publisher: 'DC Comics' },
+	{ name: 'Spawn', publisher: 'Image Comics' },
+	{ name: 'Invincible', publisher: 'Image Comics' },
+	{ name: 'Savage Dragon', publisher: 'Image Comics' },
+	{ name: 'Hellboy', publisher: 'Dark Horse Comics' },
+	{ name: 'Teenage Mutant Ninja Turtles', publisher: 'IDW Publishing' },
+	{ name: 'Mighty Morphin Power Rangers', publisher: 'BOOM! Studios' }
 ];
 
 const SUBTITLE_TEMPLATES = [
@@ -93,17 +105,6 @@ const LAST_NAMES = [
 	'Blackwood'
 ];
 
-// Kept to the handful of publishers most people would actually recognize —
-// no deep-cut indie imprints from a real-world '80s black-and-white boom.
-const PUBLISHERS = [
-	'Marvel Comics',
-	'DC Comics',
-	'Image Comics',
-	'Dark Horse Comics',
-	'IDW Publishing',
-	'BOOM! Studios'
-];
-
 export interface ComicIssue {
 	series: string;
 	issueNumber: number;
@@ -138,14 +139,15 @@ function fillTemplate(rand: () => number, template: string): string {
 
 export function generateComicIssue(logId: number): ComicIssue {
 	const rand = mulberry32(logId);
+	const hero = pick(rand, HEROES);
 
 	return {
-		series: pick(rand, SERIES),
+		series: hero.name,
+		publisher: hero.publisher,
 		issueNumber: 1 + Math.floor(rand() * 999),
 		subtitle: fillTemplate(rand, pick(rand, SUBTITLE_TEMPLATES)),
 		year: 1963 + Math.floor(rand() * (2025 - 1963 + 1)),
-		writer: `${pick(rand, FIRST_NAMES)} ${pick(rand, LAST_NAMES)}`,
-		publisher: pick(rand, PUBLISHERS)
+		writer: `${pick(rand, FIRST_NAMES)} ${pick(rand, LAST_NAMES)}`
 	};
 }
 
