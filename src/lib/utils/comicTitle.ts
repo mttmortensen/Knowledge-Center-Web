@@ -93,12 +93,24 @@ const LAST_NAMES = [
 	'Blackwood'
 ];
 
+// Kept to the handful of publishers most people would actually recognize —
+// no deep-cut indie imprints from a real-world '80s black-and-white boom.
+const PUBLISHERS = [
+	'Marvel Comics',
+	'DC Comics',
+	'Image Comics',
+	'Dark Horse Comics',
+	'IDW Publishing',
+	'BOOM! Studios'
+];
+
 export interface ComicIssue {
 	series: string;
 	issueNumber: number;
 	subtitle: string;
 	year: number;
 	writer: string;
+	publisher: string;
 }
 
 // mulberry32 - small, fast, seedable PRNG. Good enough for cosmetic flavor text.
@@ -132,7 +144,8 @@ export function generateComicIssue(logId: number): ComicIssue {
 		issueNumber: 1 + Math.floor(rand() * 999),
 		subtitle: fillTemplate(rand, pick(rand, SUBTITLE_TEMPLATES)),
 		year: 1963 + Math.floor(rand() * (2025 - 1963 + 1)),
-		writer: `${pick(rand, FIRST_NAMES)} ${pick(rand, LAST_NAMES)}`
+		writer: `${pick(rand, FIRST_NAMES)} ${pick(rand, LAST_NAMES)}`,
+		publisher: pick(rand, PUBLISHERS)
 	};
 }
 
@@ -143,5 +156,5 @@ export function comicTitle(logId: number): string {
 
 export function comicByline(logId: number): string {
 	const issue = generateComicIssue(logId);
-	return `${issue.series} · ${issue.year} · Written by ${issue.writer}`;
+	return `${issue.publisher} · ${issue.year} · Written by ${issue.writer}`;
 }
