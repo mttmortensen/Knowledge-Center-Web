@@ -2,7 +2,15 @@
 	import { goto } from '$app/navigation';
 	import type { KnowledgeNodeInline } from '$lib/types/api';
 
-	let { nodes }: { nodes: KnowledgeNodeInline[] } = $props();
+	let {
+		nodes,
+		logCounts,
+		actionCounts
+	}: {
+		nodes: KnowledgeNodeInline[];
+		logCounts: Map<number, number>;
+		actionCounts: Map<number, number>;
+	} = $props();
 </script>
 
 <table class="node-table">
@@ -10,6 +18,8 @@
 		<tr>
 			<th class="col-title">Title</th>
 			<th class="col-type">Type</th>
+			<th class="col-count">Logs</th>
+			<th class="col-count">Actions</th>
 			<th class="col-confidence">Confidence</th>
 			<th class="col-status">Status</th>
 			<th class="col-date">Updated</th>
@@ -22,6 +32,8 @@
 					<a href="/nodes/{node.Id}">{node.Title}</a>
 				</td>
 				<td class="col-type muted">{node.NodeType}</td>
+				<td class="col-count muted">{logCounts.get(node.Id) ?? 0}</td>
+				<td class="col-count muted">{actionCounts.get(node.Id) ?? 0}</td>
 				<td class="col-confidence muted">{node.ConfidenceLevel}/5</td>
 				<td class="col-status"><span class="tag-pill">{node.Status}</span></td>
 				<td class="col-date muted">{new Date(node.LastUpdated).toLocaleDateString()}</td>
@@ -70,6 +82,11 @@
 	}
 	.col-type {
 		width: 20%;
+	}
+	.col-count {
+		width: 1%;
+		white-space: nowrap;
+		text-align: right;
 	}
 	.col-confidence {
 		width: 1%;

@@ -1,14 +1,27 @@
 <script lang="ts">
 	import { domainsApi } from '$lib/api/domains';
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
+	import { logEntriesApi } from '$lib/api/logEntries';
+	import { actionsApi } from '$lib/api/actions';
 	import type { Domain, KnowledgeNode } from '$lib/types/api';
 	import KnowledgeNodeTable from '$lib/components/KnowledgeNodeTable.svelte';
 	import { onMount } from 'svelte';
 
 	let domains = $state<Domain[]>([]);
 	let nodes = $state<KnowledgeNode[]>([]);
+	let logCounts = $state<Map<number, number>>(new Map());
+	let actionCounts = $state<Map<number, number>>(new Map());
 	let loading = $state(true);
 	let error = $state('');
+
+	function countBy<T>(items: T[], keyOf: (item: T) => number): Map<number, number> {
+		const counts = new Map<number, number>();
+		for (const item of items) {
+			const key = keyOf(item);
+			counts.set(key, (counts.get(key) ?? 0) + 1);
+		}
+		return counts;
+	}
 
 	let showCreate = $state(false);
 	let nodeDomainId = $state<number | ''>('');
@@ -23,7 +36,17 @@
 		loading = true;
 		error = '';
 		try {
-			[domains, nodes] = await Promise.all([domainsApi.getAll(), knowledgeNodesApi.getAll()]);
+			const [domainsResult, nodesResult, logs, openActions, completedActions] = await Promise.all([
+				domainsApi.getAll(),
+				knowledgeNodesApi.getAll(),
+				logEntriesApi.getAll(),
+				actionsApi.getAllOpen(),
+				actionsApi.getAllCompleted()
+			]);
+			domains = domainsResult;
+			nodes = nodesResult;
+			logCounts = countBy(logs, (log) => log.NodeId);
+			actionCounts = countBy([...openActions, ...completedActions], (action) => action.KnowledgeNodeId);
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load knowledge nodes.';
 		} finally {
@@ -148,7 +171,7 @@
 				<h2 class="group-header">
 					<a href="/domains/{group.domain.DomainId}">{group.domain.DomainName}</a>
 				</h2>
-				<KnowledgeNodeTable nodes={group.nodes} />
+				<KnowledgeNodeTable nodes={group.nodes} {logCounts} {actionCounts} />
 			</section>
 		{/each}
 	{/if}

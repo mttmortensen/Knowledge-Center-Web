@@ -4,6 +4,8 @@
 	import { onMount } from 'svelte';
 	import { domainsApi } from '$lib/api/domains';
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
+	import { logEntriesApi } from '$lib/api/logEntries';
+	import { actionsApi } from '$lib/api/actions';
 	import type { DomainWithKNs } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
@@ -12,8 +14,19 @@
 	const domainId = $derived(Number(page.params.id));
 
 	let domain = $state<DomainWithKNs | null>(null);
+	let logCounts = $state<Map<number, number>>(new Map());
+	let actionCounts = $state<Map<number, number>>(new Map());
 	let loading = $state(true);
 	let error = $state('');
+
+	function countBy<T>(items: T[], keyOf: (item: T) => number): Map<number, number> {
+		const counts = new Map<number, number>();
+		for (const item of items) {
+			const key = keyOf(item);
+			counts.set(key, (counts.get(key) ?? 0) + 1);
+		}
+		return counts;
+	}
 
 	let editing = $state(false);
 	let editName = $state('');
@@ -33,11 +46,19 @@
 		loading = true;
 		error = '';
 		try {
-			domain = await domainsApi.getById(domainId);
+			const [domainResult, logs, openActions, completedActions] = await Promise.all([
+				domainsApi.getById(domainId),
+				logEntriesApi.getAll(),
+				actionsApi.getAllOpen(),
+				actionsApi.getAllCompleted()
+			]);
+			domain = domainResult;
 			// Demo mode's GET-by-id returns a bare Domain (no KnowledgeNodes array),
 			// unlike the real API's DomainWithKNsDto — default it so the list below
 			// doesn't blow up on undefined.
 			domain.KnowledgeNodes ??= [];
+			logCounts = countBy(logs, (log) => log.NodeId);
+			actionCounts = countBy([...openActions, ...completedActions], (action) => action.KnowledgeNodeId);
 			editName = domain.DomainName;
 			editDescription = domain.DomainDescription;
 			editStatus = domain.DomainStatus;
@@ -219,7 +240,7 @@
 		{#if domain.KnowledgeNodes.length === 0}
 			<div class="empty-state">No knowledge nodes in this domain yet.</div>
 		{:else}
-			<KnowledgeNodeTable nodes={domain.KnowledgeNodes} />
+			<KnowledgeNodeTable nodes={domain.KnowledgeNodes} {logCounts} {actionCounts} />
 		{/if}
 	{/if}
 </div>
