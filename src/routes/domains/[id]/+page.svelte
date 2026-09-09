@@ -26,7 +26,7 @@
 	let nodeType = $state('Concept');
 	let nodeDescription = $state('');
 	let nodeConfidence = $state(3);
-	let nodeStatus = $state('Active');
+	let nodeStatus = $state('Exploring');
 	let creatingNode = $state(false);
 
 	async function load() {
@@ -140,7 +140,7 @@
 						<label for="edit-status">Status</label>
 						<select id="edit-status" bind:value={editStatus}>
 							<option>Active</option>
-							<option>Archived</option>
+							<option>Inactive</option>
 						</select>
 					</div>
 					<div class="row">
@@ -183,7 +183,10 @@
 				</div>
 				<div class="field">
 					<label for="node-type">Type</label>
-					<input id="node-type" type="text" bind:value={nodeType} />
+					<select id="node-type" bind:value={nodeType}>
+						<option>Concept</option>
+						<option>Project</option>
+					</select>
 				</div>
 				<div class="field">
 					<label for="node-description">Description</label>
@@ -202,8 +205,9 @@
 				<div class="field">
 					<label for="node-status">Status</label>
 					<select id="node-status" bind:value={nodeStatus}>
-						<option>Active</option>
-						<option>Archived</option>
+						<option>Exploring</option>
+						<option>Learning</option>
+						<option>Mastered</option>
 					</select>
 				</div>
 				<button type="submit" class="primary" disabled={creatingNode}>

@@ -78,7 +78,7 @@
 				<label for="status">Status</label>
 				<select id="status" bind:value={status}>
 					<option>Active</option>
-					<option>Archived</option>
+					<option>Inactive</option>
 				</select>
 			</div>
 			<button type="submit" class="primary" disabled={creating}>

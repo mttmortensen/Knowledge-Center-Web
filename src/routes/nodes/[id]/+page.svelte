@@ -110,7 +110,10 @@
 					</div>
 					<div class="field">
 						<label for="edit-type">Type</label>
-						<input id="edit-type" type="text" bind:value={editType} />
+						<select id="edit-type" bind:value={editType}>
+							<option>Concept</option>
+							<option>Project</option>
+						</select>
 					</div>
 					<div class="field">
 						<label for="edit-description">Description</label>
@@ -123,8 +126,9 @@
 					<div class="field">
 						<label for="edit-status">Status</label>
 						<select id="edit-status" bind:value={editStatus}>
-							<option>Active</option>
-							<option>Archived</option>
+							<option>Exploring</option>
+							<option>Learning</option>
+							<option>Mastered</option>
 						</select>
 					</div>
 					<div class="row">
