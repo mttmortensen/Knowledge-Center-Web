@@ -97,6 +97,11 @@
 			.filter((group) => group.nodes.length > 0)
 			.sort((a, b) => a.domain.DomainName.localeCompare(b.domain.DomainName))
 	);
+
+	let collapsed = $state<Record<number, boolean>>({});
+	function toggleGroup(domainId: number) {
+		collapsed[domainId] = !collapsed[domainId];
+	}
 </script>
 
 <div class="container">
@@ -168,10 +173,24 @@
 	{:else}
 		{#each groups as group (group.domain.DomainId)}
 			<section class="group">
-				<h2 class="group-header">
-					<a href="/domains/{group.domain.DomainId}">{group.domain.DomainName}</a>
-				</h2>
-				<KnowledgeNodeTable nodes={group.nodes} {logCounts} {actionCounts} />
+				<div class="group-header-row">
+					<button
+						type="button"
+						class="chevron-btn"
+						onclick={() => toggleGroup(group.domain.DomainId)}
+						aria-expanded={!collapsed[group.domain.DomainId]}
+						aria-label={collapsed[group.domain.DomainId] ? 'Expand section' : 'Collapse section'}
+					>
+						<span class="chevron" class:collapsed={collapsed[group.domain.DomainId]}>▾</span>
+					</button>
+					<h2 class="group-header">
+						<a href="/domains/{group.domain.DomainId}">{group.domain.DomainName}</a>
+					</h2>
+					<span class="group-count muted">{group.nodes.length}</span>
+				</div>
+				{#if !collapsed[group.domain.DomainId]}
+					<KnowledgeNodeTable nodes={group.nodes} {logCounts} {actionCounts} />
+				{/if}
 			</section>
 		{/each}
 	{/if}
@@ -181,12 +200,41 @@
 	.group {
 		margin-bottom: 2rem;
 	}
-	.group-header {
+	.group-header-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		margin-bottom: 0.75rem;
 		padding-bottom: 0.4rem;
 		border-bottom: 1px solid var(--border);
 	}
+	.group-header {
+		margin: 0;
+	}
 	.group-header a {
 		color: var(--text);
+	}
+	.group-count {
+		margin-left: auto;
+		font-size: 0.85rem;
+	}
+	.chevron-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		padding: 0.2rem;
+		margin: -0.2rem;
+		cursor: pointer;
+		line-height: 1;
+	}
+	.chevron {
+		display: inline-block;
+		color: var(--text-muted);
+		transition: transform 0.15s ease;
+	}
+	.chevron.collapsed {
+		transform: rotate(-90deg);
 	}
 </style>

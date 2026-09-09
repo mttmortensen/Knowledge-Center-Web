@@ -43,6 +43,11 @@
 	}
 
 	onMount(load);
+
+	let collapsed = $state<Record<number, boolean>>({});
+	function toggleGroup(nodeId: number) {
+		collapsed[nodeId] = !collapsed[nodeId];
+	}
 </script>
 
 <div class="container">
@@ -62,10 +67,24 @@
 	{:else}
 		{#each groups as group (group.node.Id)}
 			<section class="group">
-				<h2 class="group-header">
-					<a href="/nodes/{group.node.Id}">{group.node.Title}</a>
-				</h2>
-				<LogTable logs={group.logs} />
+				<div class="group-header-row">
+					<button
+						type="button"
+						class="chevron-btn"
+						onclick={() => toggleGroup(group.node.Id)}
+						aria-expanded={!collapsed[group.node.Id]}
+						aria-label={collapsed[group.node.Id] ? 'Expand section' : 'Collapse section'}
+					>
+						<span class="chevron" class:collapsed={collapsed[group.node.Id]}>▾</span>
+					</button>
+					<h2 class="group-header">
+						<a href="/nodes/{group.node.Id}">{group.node.Title}</a>
+					</h2>
+					<span class="group-count muted">{group.logs.length}</span>
+				</div>
+				{#if !collapsed[group.node.Id]}
+					<LogTable logs={group.logs} />
+				{/if}
 			</section>
 		{/each}
 	{/if}
@@ -75,12 +94,41 @@
 	.group {
 		margin-bottom: 2rem;
 	}
-	.group-header {
+	.group-header-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		margin-bottom: 0.5rem;
 		padding-bottom: 0.4rem;
 		border-bottom: 1px solid var(--border);
 	}
+	.group-header {
+		margin: 0;
+	}
 	.group-header a {
 		color: var(--text);
+	}
+	.group-count {
+		margin-left: auto;
+		font-size: 0.85rem;
+	}
+	.chevron-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		padding: 0.2rem;
+		margin: -0.2rem;
+		cursor: pointer;
+		line-height: 1;
+	}
+	.chevron {
+		display: inline-block;
+		color: var(--text-muted);
+		transition: transform 0.15s ease;
+	}
+	.chevron.collapsed {
+		transform: rotate(-90deg);
 	}
 </style>
