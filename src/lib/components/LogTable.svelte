@@ -25,7 +25,11 @@
 				<td class="col-entry">
 					<a href="/logs/{log.LogId}">{log.Title || preview(log.Content) || comicTitle(log.LogId)}</a>
 				</td>
-				<td class="col-tags">
+				<td
+					class="col-tags"
+					class:no-tags={!(log.ContributesToProgress || log.Tags.length > 0)}
+					data-label="Tags"
+				>
 					{#if log.ContributesToProgress || log.Tags.length > 0}
 						<div class="tag-row">
 							{#if log.ContributesToProgress}
@@ -37,7 +41,9 @@
 						</div>
 					{/if}
 				</td>
-				<td class="col-date muted">{new Date(log.EntryDate).toLocaleDateString()}</td>
+				<td class="col-date muted" data-label="Date"
+					>{new Date(log.EntryDate).toLocaleDateString()}</td
+				>
 			</tr>
 		{/each}
 	</tbody>
@@ -93,5 +99,56 @@
 		width: 1%;
 		white-space: nowrap;
 		text-align: right;
+	}
+
+	@media (max-width: 640px) {
+		.log-table thead {
+			display: none;
+		}
+		.log-table,
+		.log-table tbody,
+		.log-table tr,
+		.log-table td {
+			display: block;
+			width: 100%;
+		}
+		.log-table tr {
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 0.75rem 0.85rem;
+			margin-bottom: 0.6rem;
+		}
+		.log-table td {
+			border-bottom: none;
+			padding: 0.3rem 0;
+		}
+		.col-entry {
+			max-width: none;
+			padding-bottom: 0.5rem !important;
+			border-bottom: 1px solid var(--border) !important;
+			margin-bottom: 0.35rem;
+		}
+		.col-entry a {
+			white-space: normal;
+			overflow: visible;
+			font-weight: 600;
+		}
+		.log-table td.col-tags.no-tags {
+			display: none;
+		}
+		.log-table td:not(.col-entry) {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			text-align: left;
+			gap: 0.75rem;
+		}
+		.log-table td::before {
+			content: attr(data-label);
+			font-size: 0.75rem;
+			color: var(--text-muted);
+			font-weight: 600;
+			flex-shrink: 0;
+		}
 	}
 </style>

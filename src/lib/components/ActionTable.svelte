@@ -23,7 +23,7 @@
 				<td class="col-action">
 					<a href="/actions/{action.Id}">{action.ActionText}</a>
 				</td>
-				<td class="col-status">
+				<td class="col-status" data-label="Status">
 					<span
 						class="tag-pill"
 						class:open={action.Status === 'Open'}
@@ -32,7 +32,7 @@
 						{statusLabel(action.Status)}
 					</span>
 				</td>
-				<td class="col-date muted">
+				<td class="col-date muted" data-label="Date">
 					{new Date(action.CompletedAt ?? action.CreatedAt).toLocaleDateString()}
 				</td>
 			</tr>
@@ -85,5 +85,53 @@
 		width: 1%;
 		white-space: nowrap;
 		text-align: right;
+	}
+
+	@media (max-width: 640px) {
+		.action-table thead {
+			display: none;
+		}
+		.action-table,
+		.action-table tbody,
+		.action-table tr,
+		.action-table td {
+			display: block;
+			width: 100%;
+		}
+		.action-table tr {
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 0.75rem 0.85rem;
+			margin-bottom: 0.6rem;
+		}
+		.action-table td {
+			border-bottom: none;
+			padding: 0.3rem 0;
+		}
+		.col-action {
+			max-width: none;
+			padding-bottom: 0.5rem !important;
+			border-bottom: 1px solid var(--border) !important;
+			margin-bottom: 0.35rem;
+		}
+		.col-action a {
+			white-space: normal;
+			overflow: visible;
+			font-weight: 600;
+		}
+		.action-table td:not(.col-action) {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			text-align: left;
+			gap: 0.75rem;
+		}
+		.action-table td::before {
+			content: attr(data-label);
+			font-size: 0.75rem;
+			color: var(--text-muted);
+			font-weight: 600;
+			flex-shrink: 0;
+		}
 	}
 </style>

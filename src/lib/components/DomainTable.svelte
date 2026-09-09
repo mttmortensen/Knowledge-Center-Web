@@ -20,9 +20,13 @@
 				<td class="col-name">
 					<a href="/domains/{domain.DomainId}">{domain.DomainName}</a>
 				</td>
-				<td class="col-description muted">{domain.DomainDescription}</td>
-				<td class="col-status"><span class="tag-pill">{domain.DomainStatus}</span></td>
-				<td class="col-date muted">{new Date(domain.LastUpdated).toLocaleDateString()}</td>
+				<td class="col-description muted" data-label="Description">{domain.DomainDescription}</td>
+				<td class="col-status" data-label="Status"
+					><span class="tag-pill">{domain.DomainStatus}</span></td
+				>
+				<td class="col-date muted" data-label="Updated"
+					>{new Date(domain.LastUpdated).toLocaleDateString()}</td
+				>
 			</tr>
 		{/each}
 	</tbody>
@@ -81,5 +85,58 @@
 		width: 1%;
 		white-space: nowrap;
 		text-align: right;
+	}
+
+	@media (max-width: 640px) {
+		.domain-table thead {
+			display: none;
+		}
+		.domain-table,
+		.domain-table tbody,
+		.domain-table tr,
+		.domain-table td {
+			display: block;
+			width: 100%;
+		}
+		.domain-table tr {
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 0.75rem 0.85rem;
+			margin-bottom: 0.6rem;
+		}
+		.domain-table td {
+			border-bottom: none;
+			padding: 0.3rem 0;
+		}
+		.col-name {
+			max-width: none;
+			padding-bottom: 0.5rem !important;
+			border-bottom: 1px solid var(--border) !important;
+			margin-bottom: 0.35rem;
+		}
+		.col-name a {
+			white-space: normal;
+			overflow: visible;
+			font-weight: 600;
+		}
+		.col-description {
+			max-width: none;
+			overflow: visible;
+			white-space: normal;
+		}
+		.domain-table td:not(.col-name) {
+			display: flex;
+			align-items: flex-start;
+			justify-content: space-between;
+			text-align: left;
+			gap: 0.75rem;
+		}
+		.domain-table td::before {
+			content: attr(data-label);
+			font-size: 0.75rem;
+			color: var(--text-muted);
+			font-weight: 600;
+			flex-shrink: 0;
+		}
 	}
 </style>
