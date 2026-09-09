@@ -23,7 +23,9 @@
 		{#each logs as log (log.LogId)}
 			<tr onclick={() => goto(`/logs/${log.LogId}`)}>
 				<td class="col-entry">
-					<a href="/logs/{log.LogId}">{log.Title || preview(log.Content) || comicTitle(log.LogId)}</a>
+					<a class:has-title={!!log.Title} href="/logs/{log.LogId}"
+						>{log.Title || preview(log.Content) || comicTitle(log.LogId)}</a
+					>
 				</td>
 				<td
 					class="col-tags"
@@ -131,6 +133,8 @@
 		.col-entry a {
 			white-space: normal;
 			overflow: visible;
+		}
+		.col-entry a.has-title {
 			font-weight: 600;
 		}
 		.log-table td.col-tags.no-tags {

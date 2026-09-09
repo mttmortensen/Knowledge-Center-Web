@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { domainsApi } from '$lib/api/domains';
+	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import type { Domain } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import DomainTable from '$lib/components/DomainTable.svelte';
 	import { onMount } from 'svelte';
 
 	let domains = $state<Domain[]>([]);
+	let nodeCounts = $state<Map<number, number>>(new Map());
 	let loading = $state(true);
 	let error = $state('');
 
@@ -19,7 +21,16 @@
 		loading = true;
 		error = '';
 		try {
-			domains = await domainsApi.getAll();
+			const [domainsResult, nodes] = await Promise.all([
+				domainsApi.getAll(),
+				knowledgeNodesApi.getAll()
+			]);
+			domains = domainsResult;
+			const counts = new Map<number, number>();
+			for (const node of nodes) {
+				counts.set(node.DomainId, (counts.get(node.DomainId) ?? 0) + 1);
+			}
+			nodeCounts = counts;
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load domains.';
 		} finally {
@@ -92,6 +103,6 @@
 	{:else if domains.length === 0}
 		<div class="empty-state">No domains yet. Create one to get started.</div>
 	{:else}
-		<DomainTable {domains} />
+		<DomainTable {domains} {nodeCounts} />
 	{/if}
 </div>

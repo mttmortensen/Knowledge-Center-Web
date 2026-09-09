@@ -118,7 +118,7 @@
 		</div>
 
 		{#if !editing && !entry.Title}
-			<p class="muted" style="margin-top: -0.5rem;">{comicByline(entry.LogId)}</p>
+			<p class="muted entry-byline">{comicByline(entry.LogId)}</p>
 		{/if}
 
 		{#if !editing}
@@ -172,3 +172,14 @@
 		{/if}
 	{/if}
 </div>
+
+<style>
+	.entry-byline {
+		margin-top: -0.5rem;
+	}
+	@media (max-width: 640px) {
+		.entry-byline {
+			margin-top: 0.35rem;
+		}
+	}
+</style>

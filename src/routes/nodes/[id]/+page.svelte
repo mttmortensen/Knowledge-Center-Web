@@ -19,6 +19,9 @@
 	let loading = $state(true);
 	let error = $state('');
 
+	let logsExpanded = $state(true);
+	let actionsExpanded = $state(true);
+
 	let editing = $state(false);
 	let editTitle = $state('');
 	let editType = $state('');
@@ -175,27 +178,47 @@
 		<div class="split-columns">
 			<div class="column">
 				<div class="row-between">
-					<h2>Log Entries</h2>
+					<button
+						type="button"
+						class="section-toggle"
+						onclick={() => (logsExpanded = !logsExpanded)}
+						aria-expanded={logsExpanded}
+					>
+						<span class="chevron" class:collapsed={!logsExpanded}>▾</span>
+						<h2>Log Entries</h2>
+					</button>
 					<a href="/nodes/{nodeId}/logs/new"><button class="primary">New entry</button></a>
 				</div>
 
-				{#if logs.length === 0}
-					<div class="empty-state">No log entries yet.</div>
-				{:else}
-					<LogTable {logs} />
+				{#if logsExpanded}
+					{#if logs.length === 0}
+						<div class="empty-state">No log entries yet.</div>
+					{:else}
+						<LogTable {logs} />
+					{/if}
 				{/if}
 			</div>
 
 			<div class="column">
 				<div class="row-between">
-					<h2>Actions</h2>
+					<button
+						type="button"
+						class="section-toggle"
+						onclick={() => (actionsExpanded = !actionsExpanded)}
+						aria-expanded={actionsExpanded}
+					>
+						<span class="chevron" class:collapsed={!actionsExpanded}>▾</span>
+						<h2>Actions</h2>
+					</button>
 					<a href="/nodes/{nodeId}/actions/new"><button class="primary">New action</button></a>
 				</div>
 
-				{#if actions.length === 0}
-					<div class="empty-state">No actions yet.</div>
-				{:else}
-					<ActionTable {actions} />
+				{#if actionsExpanded}
+					{#if actions.length === 0}
+						<div class="empty-state">No actions yet.</div>
+					{:else}
+						<ActionTable {actions} />
+					{/if}
 				{/if}
 			</div>
 		</div>
@@ -216,5 +239,25 @@
 		.split-columns {
 			grid-template-columns: 1fr;
 		}
+	}
+	.section-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+	}
+	.section-toggle h2 {
+		margin: 0;
+	}
+	.chevron {
+		display: inline-block;
+		color: var(--text-muted);
+		transition: transform 0.15s ease;
+	}
+	.chevron.collapsed {
+		transform: rotate(-90deg);
 	}
 </style>

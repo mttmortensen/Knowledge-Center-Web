@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import type { Domain } from '$lib/types/api';
 
-	let { domains }: { domains: Domain[] } = $props();
+	let { domains, nodeCounts }: { domains: Domain[]; nodeCounts: Map<number, number> } = $props();
 </script>
 
 <table class="domain-table">
@@ -10,6 +10,7 @@
 		<tr>
 			<th class="col-name">Name</th>
 			<th class="col-description">Description</th>
+			<th class="col-count">Nodes</th>
 			<th class="col-status">Status</th>
 			<th class="col-date">Updated</th>
 		</tr>
@@ -21,6 +22,9 @@
 					<a href="/domains/{domain.DomainId}">{domain.DomainName}</a>
 				</td>
 				<td class="col-description muted" data-label="Description">{domain.DomainDescription}</td>
+				<td class="col-count muted" data-label="Knowledge Nodes"
+					>{nodeCounts.get(domain.DomainId) ?? 0}</td
+				>
 				<td class="col-status" data-label="Status"
 					><span class="tag-pill">{domain.DomainStatus}</span></td
 				>
@@ -76,6 +80,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+	.col-count {
+		width: 1%;
+		white-space: nowrap;
+		text-align: right;
 	}
 	.col-status {
 		width: 1%;
