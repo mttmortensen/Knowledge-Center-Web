@@ -37,6 +37,7 @@
 
 	<div class="nav-collapse" class:open={menuOpen}>
 		<div class="nav-links">
+			<a href="/dashboard" onclick={closeMenu}>Dashboard</a>
 			<a href="/domains" onclick={closeMenu}>Domains</a>
 			<a href="/nodes" onclick={closeMenu}>Knowledge Nodes</a>
 			<a href="/logs" onclick={closeMenu}>Logs</a>

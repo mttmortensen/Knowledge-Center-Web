@@ -131,3 +131,55 @@ export interface DemoLoginResponse {
 export interface ApiErrorBody {
 	message?: string;
 }
+
+export interface CtpDayCount {
+	Date: string;
+	Count: number;
+}
+
+export interface EntityCounts {
+	Total: number;
+	Active: number;
+	Archived: number;
+}
+
+export interface LogEntryStats {
+	Total: number;
+	ContributingToProgress: number;
+	WithTitle: number;
+	WithoutTitle: number;
+}
+
+export interface ActionStats {
+	Total: number;
+	Open: number;
+	Completed: number;
+}
+
+export interface TagStats {
+	Total: number;
+}
+
+export interface LogStreak {
+	CurrentStreak: number;
+	LongestStreak: number;
+	LastEntryDate: string | null;
+}
+
+export interface TagCount {
+	TagId: number;
+	Name: string;
+	Count: number;
+}
+
+export interface Stats {
+	Domains: EntityCounts;
+	KnowledgeNodes: EntityCounts;
+	LogEntries: LogEntryStats;
+	Actions: ActionStats;
+	Tags: TagStats;
+	LogStreak: LogStreak;
+	CtpByDay: CtpDayCount[];
+	TopTags: TagCount[];
+	RecentActions: ActionItem[];
+}
