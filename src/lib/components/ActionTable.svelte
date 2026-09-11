@@ -148,6 +148,18 @@
 			text-align: left;
 			gap: 0.75rem;
 		}
+		.col-node {
+			/* Flex items don't shrink below their content's min-content width by
+			   default — without this, a long nowrap node title (from the desktop
+			   ellipsis rule) forces the whole card, and the grid track it sits
+			   in, wider than the viewport. */
+			min-width: 0;
+		}
+		.col-node a {
+			white-space: normal;
+			overflow: visible;
+			text-align: right;
+		}
 		.action-table td::before {
 			content: attr(data-label);
 			font-size: 0.75rem;

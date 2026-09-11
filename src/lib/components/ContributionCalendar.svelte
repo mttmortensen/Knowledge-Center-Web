@@ -3,12 +3,13 @@
 
 	let { data }: { data: CtpDayCount[] } = $props();
 
-	const MAX_WEEKS = 53;
+	const MAX_WEEKS = 105; // ~2 years, a sane ceiling for an unusually wide card
 	const CELL_SIZE = 11;
 	const CELL_GAP = 3;
 	const CELL_PITCH = CELL_SIZE + CELL_GAP;
 	const LABEL_COLUMN_WIDTH = 28;
 	const LABEL_GRID_GAP = 6;
+	const MIN_LABEL_GAP_WEEKS = 2; // minimum columns between month labels so text can't overlap
 
 	interface Day {
 		date: Date;
@@ -35,7 +36,19 @@
 
 	let containerWidth = $state(0);
 
-	let allWeeks = $derived.by(() => {
+	// Rather than letting the grid overflow into a scrollbar, generate exactly as
+	// many of the most recent weeks as fit the available width at a fixed cell
+	// size — like GitHub's graph showing fewer months on a narrower profile
+	// column, but also filling a wider one instead of leaving it blank.
+	let weeksToShow = $derived.by(() => {
+		const available = containerWidth - LABEL_COLUMN_WIDTH - LABEL_GRID_GAP;
+		if (available <= 0) return 1;
+
+		const fit = Math.floor((available + CELL_GAP) / CELL_PITCH);
+		return Math.max(1, Math.min(fit, MAX_WEEKS));
+	});
+
+	let weeks = $derived.by(() => {
 		const counts = new Map<string, number>();
 		for (const entry of data) {
 			counts.set(entry.Date.slice(0, 10), entry.Count);
@@ -45,7 +58,7 @@
 		today.setHours(0, 0, 0, 0);
 
 		const start = new Date(today);
-		start.setDate(start.getDate() - (MAX_WEEKS * 7 - 1));
+		start.setDate(start.getDate() - (weeksToShow * 7 - 1));
 		start.setDate(start.getDate() - start.getDay());
 
 		const result: Day[][] = [];
@@ -66,35 +79,32 @@
 		}
 		if (column.length > 0) result.push(column);
 
-		return result;
+		// Aligning the start date back to the nearest Sunday can add one extra
+		// leading week beyond what weeksToShow asked for — trim back down to the
+		// exact count so the rendered grid never exceeds the measured width.
+		return result.slice(-weeksToShow);
 	});
-
-	// Rather than letting the grid overflow into a scrollbar, only ever show as
-	// many of the most recent weeks as actually fit at a fixed cell size — like
-	// GitHub's graph showing fewer months on a narrower profile column.
-	let weeksToShow = $derived.by(() => {
-		const available = containerWidth - LABEL_COLUMN_WIDTH - LABEL_GRID_GAP;
-		if (available <= 0) return 1;
-
-		const fit = Math.floor((available + CELL_GAP) / CELL_PITCH);
-		return Math.max(1, Math.min(fit, allWeeks.length));
-	});
-
-	let weeks = $derived(allWeeks.slice(-weeksToShow));
 
 	let monthLabels = $derived.by(() => {
 		const labels: { index: number; label: string }[] = [];
 		let lastMonth = -1;
+		let lastLabelIndex = -Infinity;
 
 		weeks.forEach((week, index) => {
 			const firstDay = week[0];
 			if (!firstDay) return;
 
 			const month = firstDay.date.getMonth();
-			if (month !== lastMonth) {
-				labels.push({ index, label: firstDay.date.toLocaleString(undefined, { month: 'short' }) });
-				lastMonth = month;
-			}
+			if (month === lastMonth) return;
+			lastMonth = month;
+
+			// Skip a label that would land too close to the previous one — e.g. the
+			// visible window starting just a week or two into a new month — since
+			// there isn't room to render its text without overlapping.
+			if (index - lastLabelIndex < MIN_LABEL_GAP_WEEKS) return;
+
+			labels.push({ index, label: firstDay.date.toLocaleString(undefined, { month: 'short' }) });
+			lastLabelIndex = index;
 		});
 
 		return labels;
@@ -153,6 +163,13 @@
 		--heat-2: #006d32;
 		--heat-3: #26a641;
 		--heat-4: #39d353;
+		/* Without an explicit width, this element's own intrinsic content (the
+		   pixel-width week grid) can pull its ancestor grid/flex tracks wider
+		   than the space actually available, which then gets measured back in
+		   as a bigger clientWidth — a self-reinforcing sizing loop. Pinning to
+		   100% ties this strictly to the parent's box instead. */
+		width: 100%;
+		overflow: hidden;
 	}
 	.month-row {
 		display: grid;
