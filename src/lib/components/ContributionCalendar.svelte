@@ -3,7 +3,12 @@
 
 	let { data }: { data: CtpDayCount[] } = $props();
 
-	const WEEKS = 53;
+	const MAX_WEEKS = 53;
+	const CELL_SIZE = 11;
+	const CELL_GAP = 3;
+	const CELL_PITCH = CELL_SIZE + CELL_GAP;
+	const LABEL_COLUMN_WIDTH = 28;
+	const LABEL_GRID_GAP = 6;
 
 	interface Day {
 		date: Date;
@@ -28,7 +33,9 @@
 		return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 	}
 
-	let weeks = $derived.by(() => {
+	let containerWidth = $state(0);
+
+	let allWeeks = $derived.by(() => {
 		const counts = new Map<string, number>();
 		for (const entry of data) {
 			counts.set(entry.Date.slice(0, 10), entry.Count);
@@ -38,7 +45,7 @@
 		today.setHours(0, 0, 0, 0);
 
 		const start = new Date(today);
-		start.setDate(start.getDate() - (WEEKS * 7 - 1));
+		start.setDate(start.getDate() - (MAX_WEEKS * 7 - 1));
 		start.setDate(start.getDate() - start.getDay());
 
 		const result: Day[][] = [];
@@ -62,6 +69,19 @@
 		return result;
 	});
 
+	// Rather than letting the grid overflow into a scrollbar, only ever show as
+	// many of the most recent weeks as actually fit at a fixed cell size — like
+	// GitHub's graph showing fewer months on a narrower profile column.
+	let weeksToShow = $derived.by(() => {
+		const available = containerWidth - LABEL_COLUMN_WIDTH - LABEL_GRID_GAP;
+		if (available <= 0) return 1;
+
+		const fit = Math.floor((available + CELL_GAP) / CELL_PITCH);
+		return Math.max(1, Math.min(fit, allWeeks.length));
+	});
+
+	let weeks = $derived(allWeeks.slice(-weeksToShow));
+
 	let monthLabels = $derived.by(() => {
 		const labels: { index: number; label: string }[] = [];
 		let lastMonth = -1;
@@ -81,21 +101,10 @@
 	});
 
 	let total = $derived(data.reduce((sum, entry) => sum + entry.Count, 0));
-
-	let scrollEl = $state<HTMLDivElement>();
-
-	$effect(() => {
-		// Re-run whenever the grid changes (new data) and jump to the right edge
-		// so today is visible by default instead of the oldest week.
-		weeks;
-		if (scrollEl) {
-			scrollEl.scrollLeft = scrollEl.scrollWidth;
-		}
-	});
 </script>
 
-<div class="calendar-wrap" bind:this={scrollEl}>
-	<div class="month-row" style={`grid-template-columns: repeat(${weeks.length}, 1fr)`}>
+<div class="calendar-wrap" bind:clientWidth={containerWidth}>
+	<div class="month-row" style={`grid-template-columns: repeat(${weeks.length}, ${CELL_SIZE}px)`}>
 		{#each monthLabels as month (month.index)}
 			<span class="month-label" style={`grid-column: ${month.index + 1}`}>{month.label}</span>
 		{/each}
@@ -110,7 +119,7 @@
 			<span>Fri</span>
 			<span></span>
 		</div>
-		<div class="grid" style={`grid-template-columns: repeat(${weeks.length}, 1fr)`}>
+		<div class="grid" style={`grid-template-columns: repeat(${weeks.length}, ${CELL_SIZE}px)`}>
 			{#each weeks as week, index (index)}
 				<div class="week-col">
 					{#each week as day (day.key)}
@@ -144,29 +153,12 @@
 		--heat-2: #006d32;
 		--heat-3: #26a641;
 		--heat-4: #39d353;
-		overflow-x: auto;
-		scrollbar-width: thin;
-		scrollbar-color: var(--border) transparent;
-	}
-	.calendar-wrap::-webkit-scrollbar {
-		height: 6px;
-	}
-	.calendar-wrap::-webkit-scrollbar-track {
-		background: transparent;
-	}
-	.calendar-wrap::-webkit-scrollbar-thumb {
-		background: var(--border);
-		border-radius: 999px;
-	}
-	.calendar-wrap::-webkit-scrollbar-thumb:hover {
-		background: var(--text-muted);
 	}
 	.month-row {
 		display: grid;
 		gap: 3px;
 		padding-left: 28px;
 		margin-bottom: 0.25rem;
-		min-width: 640px;
 	}
 	.month-label {
 		font-size: 0.75rem;
@@ -175,7 +167,6 @@
 	.calendar-body {
 		display: flex;
 		gap: 6px;
-		min-width: 640px;
 	}
 	.weekday-labels {
 		display: grid;
@@ -192,7 +183,6 @@
 		display: grid;
 		grid-auto-flow: column;
 		gap: 3px;
-		flex: 1;
 	}
 	.week-col {
 		display: grid;
