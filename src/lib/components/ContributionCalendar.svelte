@@ -12,7 +12,7 @@
 	} = $props();
 
 	const MAX_WEEKS = 105; // ~2 years, a sane ceiling for an unusually wide card
-	const CELL_SIZE = 11;
+	const CELL_SIZE = 14;
 	const CELL_GAP = 2;
 	const CELL_PITCH = CELL_SIZE + CELL_GAP;
 	const LABEL_COLUMN_WIDTH = 28;
@@ -202,14 +202,14 @@
 	}
 	.weekday-labels {
 		display: grid;
-		grid-template-rows: repeat(7, 11px);
+		grid-template-rows: repeat(7, 14px);
 		gap: 2px;
 		flex-shrink: 0;
 	}
 	.weekday-labels span {
 		font-size: 0.65rem;
 		color: var(--text-muted);
-		line-height: 11px;
+		line-height: 14px;
 	}
 	.grid {
 		display: grid;
@@ -218,12 +218,12 @@
 	}
 	.week-col {
 		display: grid;
-		grid-template-rows: repeat(7, 11px);
+		grid-template-rows: repeat(7, 14px);
 		gap: 2px;
 	}
 	.day-cell {
-		width: 11px;
-		height: 11px;
+		width: 14px;
+		height: 14px;
 		border-radius: 0;
 		background: var(--heat-0);
 	}

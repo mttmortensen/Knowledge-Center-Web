@@ -209,7 +209,12 @@
 
 	.dashboard-grid {
 		display: grid;
-		grid-template-columns: 2fr 1fr;
+		/* Plain "2fr 1fr" lets a track's content-driven min-width (recent
+		   actions' heading/text) win out over its fr share at typical widths,
+		   squeezing the heatmap column instead of the intended ~3:1 split.
+		   minmax(0, …) forces both tracks to honor the ratio, and capping
+		   recent-actions' own max keeps it from ballooning on wide screens. */
+		grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
 		gap: 1rem;
 		align-items: start;
 	}
