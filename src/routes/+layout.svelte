@@ -23,8 +23,7 @@
 	const WORKSPACE_ROUTES: Record<string, string> = {
 		'1': '/dashboard',
 		'2': '/domains',
-		'3': '/actions',
-		'4': '/tags'
+		'3': '/tags'
 	};
 
 	function onKeydown(e: KeyboardEvent) {

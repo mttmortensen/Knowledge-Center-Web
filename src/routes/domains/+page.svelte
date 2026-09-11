@@ -5,7 +5,8 @@
 	import { domainsApi } from '$lib/api/domains';
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import { logEntriesApi } from '$lib/api/logEntries';
-	import type { Domain, KnowledgeNode, LogEntry } from '$lib/types/api';
+	import { actionsApi } from '$lib/api/actions';
+	import type { Domain, KnowledgeNode, LogEntry, ActionItem } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { palette } from '$lib/stores/palette.svelte';
 	import { footer } from '$lib/stores/footer.svelte';
@@ -15,20 +16,27 @@
 	import TiptapEditor from '$lib/components/TiptapEditor.svelte';
 
 	type Pane = 'domains' | 'nodes' | 'logs';
+	// 'logs' identifies column 3 as a whole (the tiling-column focus target);
+	// which of its two stacked sub-panes is active is tracked separately.
+	type Column3SubPane = 'logs' | 'actions';
 
 	let domains = $state<Domain[]>([]);
 	let nodes = $state<KnowledgeNode[]>([]);
 	let logs = $state<LogEntry[]>([]);
+	let nodeActions = $state<ActionItem[]>([]);
 	let loadingBase = $state(true);
 	let logsLoading = $state(false);
+	let actionsLoading = $state(false);
 	let error = $state('');
 
 	let selectedDomainId = $state<number | null>(null);
 	let selectedNodeId = $state<number | null>(null);
 	let selectedLogId = $state<number | null>(null);
 	let logCursor = $state<number | null>(null);
+	let actionCursor = $state<number | null>(null);
 
 	let focusedPane = $state<Pane>('domains');
+	let column3SubPane = $state<Column3SubPane>('logs');
 
 	let showCreateDomain = $state(false);
 	let newDomainName = $state('');
@@ -39,6 +47,10 @@
 	let newNodeTitle = $state('');
 	let newNodeType = $state('Concept');
 	let creatingNode = $state(false);
+
+	let showCreateAction = $state(false);
+	let newActionText = $state('');
+	let creatingAction = $state(false);
 
 	let nodesInDomain = $derived(
 		[...nodes]
@@ -76,17 +88,50 @@
 		}
 	}
 
-	// Loads the logs for a node into local state without touching the URL —
-	// shared by user-initiated selection and by syncFromUrl().
+	let actionsRequestId = 0;
+
+	async function loadActionsForNode(nodeId: number) {
+		const requestId = ++actionsRequestId;
+		actionsLoading = true;
+		try {
+			const [open, completed] = await Promise.all([
+				actionsApi.getOpenForNode(nodeId),
+				actionsApi.getCompletedForNode(nodeId)
+			]);
+			if (requestId !== actionsRequestId) return;
+			nodeActions = [
+				...[...open].sort(
+					(a, b) => new Date(b.CreatedAt).getTime() - new Date(a.CreatedAt).getTime()
+				),
+				...[...completed].sort(
+					(a, b) =>
+						new Date(b.CompletedAt ?? b.CreatedAt).getTime() -
+						new Date(a.CompletedAt ?? a.CreatedAt).getTime()
+				)
+			];
+		} catch (err) {
+			if (requestId === actionsRequestId) {
+				error = err instanceof Error ? err.message : 'Failed to load actions.';
+			}
+		} finally {
+			if (requestId === actionsRequestId) actionsLoading = false;
+		}
+	}
+
+	// Loads the logs and actions for a node into local state without touching
+	// the URL — shared by user-initiated selection and by syncFromUrl().
 	async function applyNode(nodeId: number | null) {
 		selectedNodeId = nodeId;
 		selectedLogId = null;
 		if (nodeId != null) {
-			await loadLogsForNode(nodeId);
+			await Promise.all([loadLogsForNode(nodeId), loadActionsForNode(nodeId)]);
 			logCursor = logs[0]?.LogId ?? null;
+			actionCursor = nodeActions[0]?.Id ?? null;
 		} else {
 			logs = [];
 			logCursor = null;
+			nodeActions = [];
+			actionCursor = null;
 		}
 	}
 
@@ -227,6 +272,31 @@
 		}
 	}
 
+	async function createAction(event: SubmitEvent) {
+		event.preventDefault();
+		if (!newActionText.trim() || selectedNodeId == null) return;
+		creatingAction = true;
+		error = '';
+		try {
+			const created = await actionsApi.create({
+				KnowledgeNodeId: selectedNodeId,
+				ActionText: newActionText
+			});
+			nodeActions = [created, ...nodeActions];
+			actionCursor = created.Id;
+			newActionText = '';
+			showCreateAction = false;
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to create action.';
+		} finally {
+			creatingAction = false;
+		}
+	}
+
+	function actionStatusLabel(status: string): string {
+		return status === 'Completed' ? 'Done' : status;
+	}
+
 	function newLogEntryHref(): string {
 		if (selectedNodeId == null) return '';
 		const params = new URLSearchParams();
@@ -250,11 +320,16 @@
 			const idx = nodesInDomain.findIndex((n) => n.Id === selectedNodeId);
 			const next = Math.min(Math.max(idx + direction, 0), nodesInDomain.length - 1);
 			if (nodesInDomain[next]) selectNode(nodesInDomain[next].Id);
-		} else if (focusedPane === 'logs' && selectedLogId == null) {
+		} else if (focusedPane === 'logs' && column3SubPane === 'logs' && selectedLogId == null) {
 			const curId = logCursor ?? logs[0]?.LogId ?? null;
 			const idx = logs.findIndex((l) => l.LogId === curId);
 			const next = Math.min(Math.max(idx + direction, 0), logs.length - 1);
 			if (logs[next]) logCursor = logs[next].LogId;
+		} else if (focusedPane === 'logs' && column3SubPane === 'actions') {
+			const curId = actionCursor ?? nodeActions[0]?.Id ?? null;
+			const idx = nodeActions.findIndex((a) => a.Id === curId);
+			const next = Math.min(Math.max(idx + direction, 0), nodeActions.length - 1);
+			if (nodeActions[next]) actionCursor = nodeActions[next].Id;
 		}
 	}
 
@@ -267,6 +342,14 @@
 		} else if (e.key === 'ArrowRight' || (e.altKey && e.key.toLowerCase() === 'l')) {
 			e.preventDefault();
 			cyclePane(1);
+		} else if (e.altKey && e.key.toLowerCase() === 'j') {
+			e.preventDefault();
+			focusedPane = 'logs';
+			column3SubPane = 'actions';
+		} else if (e.altKey && e.key.toLowerCase() === 'k') {
+			e.preventDefault();
+			focusedPane = 'logs';
+			column3SubPane = 'logs';
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			moveCursor(-1);
@@ -275,9 +358,11 @@
 			moveCursor(1);
 		} else if (e.key === 'Enter') {
 			e.preventDefault();
-			if (focusedPane === 'logs' && selectedLogId == null && logCursor != null) {
-				selectLog(logCursor);
-			} else if (focusedPane !== 'logs') {
+			if (focusedPane === 'logs' && column3SubPane === 'logs') {
+				if (selectedLogId == null && logCursor != null) selectLog(logCursor);
+			} else if (focusedPane === 'logs' && column3SubPane === 'actions') {
+				if (actionCursor != null) goto(`/actions/${actionCursor}`);
+			} else {
 				cyclePane(1);
 			}
 		} else if (e.key === 'Escape') {
@@ -287,21 +372,33 @@
 			}
 		} else if (e.altKey && e.key.toLowerCase() === 'n') {
 			e.preventDefault();
-			const href = newLogEntryHref();
-			if (href) goto(href);
+			if (focusedPane === 'logs' && column3SubPane === 'actions') {
+				showCreateAction = true;
+			} else {
+				const href = newLogEntryHref();
+				if (href) goto(href);
+			}
 		}
 	}
 
 	$effect(() => {
 		const hints = [
-			{ key: 'ALT+H/L', label: 'Pane' },
+			{ key: 'ALT+H/L', label: 'Columns' },
+			{ key: 'ALT+J/K', label: 'Logs / Actions' },
 			{ key: 'UP/DN', label: 'Move' },
 			{
 				key: 'ENTER',
-				label: focusedPane === 'logs' ? (selectedLogId != null ? 'Viewing' : 'Open') : 'Next pane'
+				label:
+					focusedPane === 'logs'
+						? column3SubPane === 'logs'
+							? selectedLogId != null
+								? 'Viewing'
+								: 'Open'
+							: 'Open action'
+						: 'Next pane'
 			},
 			{ key: 'ESC', label: 'Back' },
-			{ key: 'ALT+N', label: 'New entry' },
+			{ key: 'ALT+N', label: 'New' },
 			{ key: 'ALT+F', label: 'Jump' }
 		];
 		footer.set(hints);
@@ -430,79 +527,150 @@
 				{/if}
 			</TilingPane>
 
-			<TilingPane
-				index={3}
-				title={selectedEntry ? 'Log Entry' : 'Log Entries'}
-				focused={focusedPane === 'logs'}
-				onFocus={() => (focusedPane = 'logs')}
-			>
-				{#snippet actions()}
-					{#if selectedEntry}
+			<div class="column3">
+				<TilingPane
+					index="C1:"
+					title={selectedEntry ? 'Log Entry' : 'Log Entries'}
+					focused={focusedPane === 'logs' && column3SubPane === 'logs'}
+					onFocus={() => {
+						focusedPane = 'logs';
+						column3SubPane = 'logs';
+					}}
+					flex={3}
+				>
+					{#snippet actions()}
+						{#if selectedEntry}
+							<button
+								type="button"
+								onclick={(e) => {
+									e.stopPropagation();
+									selectLog(null);
+								}}
+							>
+								&lt; back
+							</button>
+						{:else}
+							<a
+								href={newLogEntryHref()}
+								onclick={(e) => selectedNodeId == null && e.preventDefault()}
+							>
+								<button type="button" disabled={selectedNodeId == null}>+ new</button>
+							</a>
+						{/if}
+					{/snippet}
+
+					{#if selectedNodeId == null}
+						<div class="empty-state">Select a knowledge node.</div>
+					{:else if logsLoading}
+						<p class="muted" style="padding: 0.75rem;">Loading…</p>
+					{:else if selectedEntry}
+						<div class="entry-detail">
+							<div class="row-between">
+								<h3 style="margin: 0;">{selectedEntry.Title || comicTitle(selectedEntry.LogId)}</h3>
+								<span class="muted">{new Date(selectedEntry.EntryDate).toLocaleString()}</span>
+							</div>
+							{#if !selectedEntry.Title}
+								<p class="muted">{comicByline(selectedEntry.LogId)}</p>
+							{/if}
+							{#if selectedEntry.Tags.length > 0}
+								<div class="row" style="flex-wrap: wrap; margin: 0.5rem 0;">
+									{#each selectedEntry.Tags as tag (tag.TagId)}
+										<span class="tag-pill">{tag.Name}</span>
+									{/each}
+								</div>
+							{/if}
+							{#if selectedEntry.ChatURL}
+								<p>
+									<a href={selectedEntry.ChatURL} target="_blank" rel="noopener">Related chat ↗</a>
+								</p>
+							{/if}
+							<TiptapEditor value={selectedEntry.Content} editable={false} />
+							<p class="muted" style="margin-top: 0.75rem;">
+								<a href="/logs/{selectedEntry.LogId}">Open full page to edit or delete ↗</a>
+							</p>
+						</div>
+					{:else if logs.length === 0}
+						<div class="empty-state">No log entries yet.</div>
+					{:else}
+						{#each logs as log (log.LogId)}
+							<button
+								type="button"
+								class="list-item"
+								class:selected={log.LogId === logCursor}
+								onclick={() => selectLog(log.LogId)}
+							>
+								{log.Title || preview(log.Content) || comicTitle(log.LogId)}
+								<span class="list-item-meta">
+									{new Date(log.EntryDate).toLocaleDateString()}
+									{#each log.Tags as tag (tag.TagId)}
+										<span class="tag-pill">{tag.Name}</span>{' '}
+									{/each}
+								</span>
+							</button>
+						{/each}
+					{/if}
+				</TilingPane>
+
+				<TilingPane
+					index="C2:"
+					title="Actions"
+					focused={focusedPane === 'logs' && column3SubPane === 'actions'}
+					onFocus={() => {
+						focusedPane = 'logs';
+						column3SubPane = 'actions';
+					}}
+					flex={2}
+				>
+					{#snippet actions()}
 						<button
 							type="button"
+							disabled={selectedNodeId == null}
 							onclick={(e) => {
 								e.stopPropagation();
-								selectLog(null);
+								showCreateAction = !showCreateAction;
 							}}
 						>
-							&lt; back
+							{showCreateAction ? 'x' : '+ new'}
 						</button>
-					{:else}
-						<a href={newLogEntryHref()} onclick={(e) => selectedNodeId == null && e.preventDefault()}>
-							<button type="button" disabled={selectedNodeId == null}>+ new</button>
-						</a>
-					{/if}
-				{/snippet}
+					{/snippet}
 
-				{#if selectedNodeId == null}
-					<div class="empty-state">Select a knowledge node.</div>
-				{:else if logsLoading}
-					<p class="muted" style="padding: 0.75rem;">Loading…</p>
-				{:else if selectedEntry}
-					<div class="entry-detail">
-						<div class="row-between">
-							<h3 style="margin: 0;">{selectedEntry.Title || comicTitle(selectedEntry.LogId)}</h3>
-							<span class="muted">{new Date(selectedEntry.EntryDate).toLocaleString()}</span>
-						</div>
-						{#if !selectedEntry.Title}
-							<p class="muted">{comicByline(selectedEntry.LogId)}</p>
-						{/if}
-						{#if selectedEntry.Tags.length > 0}
-							<div class="row" style="flex-wrap: wrap; margin: 0.5rem 0;">
-								{#each selectedEntry.Tags as tag (tag.TagId)}
-									<span class="tag-pill">{tag.Name}</span>
-								{/each}
-							</div>
-						{/if}
-						{#if selectedEntry.ChatURL}
-							<p><a href={selectedEntry.ChatURL} target="_blank" rel="noopener">Related chat ↗</a></p>
-						{/if}
-						<TiptapEditor value={selectedEntry.Content} editable={false} />
-						<p class="muted" style="margin-top: 0.75rem;">
-							<a href="/logs/{selectedEntry.LogId}">Open full page to edit or delete ↗</a>
-						</p>
-					</div>
-				{:else if logs.length === 0}
-					<div class="empty-state">No log entries yet.</div>
-				{:else}
-					{#each logs as log (log.LogId)}
-						<button
-							type="button"
-							class="list-item"
-							class:selected={log.LogId === logCursor}
-							onclick={() => selectLog(log.LogId)}
-						>
-							{log.Title || preview(log.Content) || comicTitle(log.LogId)}
-							<span class="list-item-meta">
-								{new Date(log.EntryDate).toLocaleDateString()}
-								{#each log.Tags as tag (tag.TagId)}
-									<span class="tag-pill">{tag.Name}</span>{' '}
-								{/each}
-							</span>
-						</button>
-					{/each}
-				{/if}
-			</TilingPane>
+					{#if showCreateAction}
+						<form class="inline-form" onsubmit={createAction}>
+							<textarea placeholder="Action text" rows="2" bind:value={newActionText} required
+							></textarea>
+							<button type="submit" class="primary" disabled={creatingAction}>
+								{creatingAction ? 'Creating…' : 'Create'}
+							</button>
+						</form>
+					{/if}
+
+					{#if selectedNodeId == null}
+						<div class="empty-state">Select a knowledge node.</div>
+					{:else if actionsLoading}
+						<p class="muted" style="padding: 0.75rem;">Loading…</p>
+					{:else if nodeActions.length === 0}
+						<div class="empty-state">No actions yet.</div>
+					{:else}
+						{#each nodeActions as action (action.Id)}
+							<a
+								href="/actions/{action.Id}"
+								class="list-item action-row"
+								class:selected={action.Id === actionCursor}
+								class:done={action.Status === 'Completed'}
+							>
+								<span
+									class="tag-pill"
+									class:open={action.Status === 'Open'}
+									class:completed={action.Status === 'Completed'}
+								>
+									{actionStatusLabel(action.Status)}
+								</span>
+								{action.ActionText}
+							</a>
+						{/each}
+					{/if}
+				</TilingPane>
+			</div>
 		</div>
 	{/if}
 </div>
@@ -531,6 +699,25 @@
 		padding: 0.75rem;
 	}
 
+	.column3 {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		min-width: 0;
+	}
+
+	.action-row {
+		display: block;
+	}
+	.action-row.done {
+		color: var(--cyan-dim);
+	}
+	.action-row.done.selected {
+		/* The inverted block already swaps to blue-on-gray; keep that instead
+		   of the dimmed muted tone so the selection state still reads clearly. */
+		color: var(--select-text);
+	}
+
 	@media (max-width: 900px) {
 		.browse {
 			height: auto;
@@ -538,6 +725,9 @@
 		.workspace-grid {
 			grid-template-columns: 1fr;
 			grid-auto-rows: minmax(220px, auto);
+		}
+		.column3 {
+			min-height: 420px;
 		}
 	}
 </style>

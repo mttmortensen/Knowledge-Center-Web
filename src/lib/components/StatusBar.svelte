@@ -7,8 +7,7 @@
 	const WORKSPACES = [
 		{ n: 1, label: 'DASHBOARD', href: '/dashboard' },
 		{ n: 2, label: 'BROWSE', href: '/domains' },
-		{ n: 3, label: 'ACTIONS', href: '/actions' },
-		{ n: 4, label: 'TAGS', href: '/tags' }
+		{ n: 3, label: 'TAGS', href: '/tags' }
 	];
 
 	function isActive(href: string): boolean {
