@@ -36,18 +36,55 @@
 	let bodyLines = $state<string[]>(
 		(isLog ? (logEntry?.Content ?? '') : (actionItem?.ActionText ?? '')).split('\n')
 	);
-	let lineCount = $derived(lineOffset + bodyLines.length);
+
+	function headingLevel(text: string): number {
+		const m = /^(#{1,6})(?:\s|$)/.exec(text);
+		return m ? m[1].length : 0;
+	}
+	function stripHeading(text: string): string {
+		return text.replace(/^#{1,6}\s*/, '');
+	}
+	function withHeading(text: string, level: number): string {
+		return `${'#'.repeat(level)} ${text}`.trimEnd();
+	}
+
+	const dateLabel = new Date(
+		isLog ? (logEntry?.EntryDate ?? Date.now()) : (actionItem?.CreatedAt ?? Date.now())
+	).toLocaleDateString();
+
+	// Context that otherwise only lived in the top bar, brought into the
+	// buffer itself as real (if read-only) markdown-heading lines so the
+	// document defines its own sections instead of relying purely on
+	// chrome outside the editable area. Domain/node aren't real fields on
+	// the entry, so these stay non-editable — 'i' is a no-op on them.
+	const metaLines = [
+		withHeading(domainName, 1),
+		withHeading(nodeTitle, 2),
+		withHeading(`${isLog ? 'log' : 'action'} · ${dateLabel}`, 3),
+		''
+	];
+	const metaCount = metaLines.length;
+
+	let lineCount = $derived(metaCount + lineOffset + bodyLines.length);
+
+	function isEditableLine(i: number): boolean {
+		return i >= metaCount;
+	}
 
 	function getLine(i: number): string {
-		if (isLog && i === 0) return titleLine;
-		return bodyLines[i - lineOffset] ?? '';
+		if (i < metaCount) return metaLines[i];
+		const j = i - metaCount;
+		if (isLog && j === 0) return titleLine ? withHeading(titleLine, 1) : '';
+		return bodyLines[j - lineOffset] ?? '';
 	}
 	function setLine(i: number, value: string) {
-		if (isLog && i === 0) {
-			titleLine = value;
+		if (i < metaCount) return; // read-only context, not real entry data
+		const j = i - metaCount;
+		if (isLog && j === 0) {
+			titleLine = stripHeading(value);
 			return;
 		}
-		bodyLines[i - lineOffset] = value;
+		bodyLines[j - lineOffset] = value;
 	}
 
 	let mode = $state<Mode>('normal');
@@ -80,10 +117,6 @@
 			insertEl?.setSelectionRange(insertEl.value.length, insertEl.value.length);
 		}
 	});
-
-	const dateLabel = new Date(
-		isLog ? (logEntry?.EntryDate ?? Date.now()) : (actionItem?.CreatedAt ?? Date.now())
-	).toLocaleDateString();
 
 	let clockLabel = $derived(
 		`${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ` +
@@ -140,7 +173,18 @@
 	}
 
 	function onWindowKeydown(e: KeyboardEvent) {
-		if (mode === 'insert') return; // the textarea handles its own keys
+		if (mode === 'insert') {
+			// Normally the focused textarea's own onkeydown handles Escape
+			// (and stops propagation so this doesn't double-fire). This is
+			// only a fallback for when it's lost focus some other way —
+			// clicked off it, etc. — so Escape can't get permanently stuck
+			// with nothing listening for it.
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				mode = 'normal';
+			}
+			return;
+		}
 
 		if (mode === 'command') {
 			if (e.key === 'Escape') {
@@ -167,7 +211,11 @@
 			onClose();
 		} else if (e.key === 'i') {
 			e.preventDefault();
-			mode = 'insert';
+			if (isEditableLine(cursorLine)) {
+				mode = 'insert';
+			} else {
+				flashMessage('READ-ONLY LINE');
+			}
 		} else if (e.key === ':') {
 			e.preventDefault();
 			commandBuffer = '';
@@ -241,9 +289,11 @@
 		{/if}
 		<div class="buffer">
 			{#each { length: lineCount } as _, i (i)}
+				{@const level = headingLevel(getLine(i))}
 				<div
 					class="buf-line"
 					class:cursor={i === cursorLine}
+					class:readonly={!isEditableLine(i)}
 					onclick={() => {
 						if (mode === 'normal') cursorLine = i;
 					}}
@@ -264,7 +314,12 @@
 							rows="1"
 						></textarea>
 					{:else}
-						<span class="buf-text">{getLine(i) || ' '}</span>
+						<span
+							class="buf-text"
+							class:h1={level === 1}
+							class:h2={level === 2}
+							class:h3={level >= 3}>{getLine(i) || ' '}</span
+						>
 					{/if}
 				</div>
 			{/each}
@@ -348,6 +403,9 @@
 		background: var(--gray);
 		color: var(--bios-blue-dark);
 	}
+	.buf-line.readonly .buf-text {
+		opacity: 0.85;
+	}
 	.gutter {
 		flex-shrink: 0;
 		width: 2.5rem;
@@ -364,6 +422,31 @@
 		white-space: pre-wrap;
 		word-break: break-word;
 		flex: 1;
+	}
+	/* Syntax-highlight detected #/##/### syntax so headings read as
+	   distinct sections — the raw markdown characters stay fully visible,
+	   this is color/weight only, never hidden or re-rendered. */
+	.buf-text.h1 {
+		color: var(--yellow);
+		font-weight: 700;
+	}
+	.buf-text.h2 {
+		color: var(--cyan);
+		font-weight: 700;
+	}
+	.buf-text.h3 {
+		color: var(--cyan-dim);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+	}
+	.buf-line.cursor .buf-text.h1,
+	.buf-line.cursor .buf-text.h2,
+	.buf-line.cursor .buf-text.h3 {
+		/* Inside the inverted cursor-line block, inherit its blue text
+		   instead of keeping the heading's own color, or yellow/cyan on
+		   top of the gray highlight would be unreadable. */
+		color: inherit;
 	}
 	.buf-input {
 		flex: 1;
