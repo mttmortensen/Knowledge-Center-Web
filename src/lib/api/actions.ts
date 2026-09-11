@@ -12,7 +12,7 @@ export const actionsApi = {
 		api.get<ActionItem[]>(`/actions/knowledge-node/${nodeId}/completed`),
 	getAllOpen: () => api.get<ActionItem[]>('/actions/open'),
 	getAllCompleted: () => api.get<ActionItem[]>('/actions/completed'),
-	getRecent: (limit = 8) => api.get<RecentAction[]>(`/actions/recent?limit=${limit}`),
+	getRecent: (limit = 5) => api.get<RecentAction[]>(`/actions/recent?limit=${limit}`),
 	getById: (id: number) => api.get<ActionItem>(`/actions/${id}`),
 	create: (input: ActionItemCreateInput) => api.post<ActionItem>('/actions', input),
 	update: (id: number, input: ActionItemUpdateInput) => api.put<ActionItem>(`/actions/${id}`, input),
