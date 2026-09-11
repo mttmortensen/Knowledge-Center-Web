@@ -11,14 +11,15 @@
 	import { palette } from '$lib/stores/palette.svelte';
 	import { footer } from '$lib/stores/footer.svelte';
 	import { isTypingTarget } from '$lib/utils/keyboard';
-	import { comicTitle, comicByline } from '$lib/utils/comicTitle';
+	import { comicTitle } from '$lib/utils/comicTitle';
 	import TilingPane from '$lib/components/TilingPane.svelte';
-	import TiptapEditor from '$lib/components/TiptapEditor.svelte';
+	import ZoomEditor from '$lib/components/ZoomEditor.svelte';
 
 	type Pane = 'domains' | 'nodes' | 'logs';
 	// 'logs' identifies column 3 as a whole (the tiling-column focus target);
 	// which of its two stacked sub-panes is active is tracked separately.
 	type Column3SubPane = 'logs' | 'actions';
+	type ZoomTarget = { kind: 'log' | 'action'; id: number };
 
 	let domains = $state<Domain[]>([]);
 	let nodes = $state<KnowledgeNode[]>([]);
@@ -52,13 +53,23 @@
 	let newActionText = $state('');
 	let creatingAction = $state(false);
 
+	let zoomTarget = $state<ZoomTarget | null>(null);
+
 	let nodesInDomain = $derived(
 		[...nodes]
 			.filter((n) => n.DomainId === selectedDomainId)
 			.sort((a, b) => a.Title.localeCompare(b.Title))
 	);
+	let selectedDomain = $derived(domains.find((d) => d.DomainId === selectedDomainId) ?? null);
 	let selectedNode = $derived(nodes.find((n) => n.Id === selectedNodeId) ?? null);
-	let selectedEntry = $derived(logs.find((l) => l.LogId === selectedLogId) ?? null);
+	let zoomedLog = $derived(
+		zoomTarget?.kind === 'log' ? (logs.find((l) => l.LogId === zoomTarget!.id) ?? null) : null
+	);
+	let zoomedAction = $derived(
+		zoomTarget?.kind === 'action'
+			? (nodeActions.find((a) => a.Id === zoomTarget!.id) ?? null)
+			: null
+	);
 
 	function syncUrl() {
 		const params = new URLSearchParams();
@@ -123,6 +134,10 @@
 	async function applyNode(nodeId: number | null) {
 		selectedNodeId = nodeId;
 		selectedLogId = null;
+		// The node's changing out from under whatever was zoomed (if
+		// anything) — syncFromUrl re-opens it right after if the URL still
+		// names a log that belongs to the new node.
+		zoomTarget = null;
 		if (nodeId != null) {
 			await Promise.all([loadLogsForNode(nodeId), loadActionsForNode(nodeId)]);
 			logCursor = logs[0]?.LogId ?? null;
@@ -155,10 +170,38 @@
 		syncUrl();
 	}
 
-	function selectLog(id: number | null) {
+	// Opening a log zooms it fullscreen (see ZoomEditor) and reflects the log
+	// id in the URL, same as domain/node selection, so palette jumps and
+	// browser back/forward can deep-link straight into it. Actions aren't
+	// URL-synced (they never were, pre-zoom) — only their in-list cursor.
+	function openZoomLog(id: number, sync = true) {
+		zoomTarget = { kind: 'log', id };
 		selectedLogId = id;
-		if (id != null) logCursor = id;
-		syncUrl();
+		logCursor = id;
+		if (sync) syncUrl();
+	}
+
+	function openZoomAction(id: number) {
+		zoomTarget = { kind: 'action', id };
+		actionCursor = id;
+	}
+
+	function closeZoom() {
+		zoomTarget = null;
+		if (selectedLogId != null) {
+			selectedLogId = null;
+			syncUrl();
+		}
+	}
+
+	function handleZoomSaved(updated: LogEntry | ActionItem) {
+		if (zoomTarget?.kind === 'log') {
+			const u = updated as LogEntry;
+			logs = logs.map((l) => (l.LogId === u.LogId ? u : l));
+		} else if (zoomTarget?.kind === 'action') {
+			const u = updated as ActionItem;
+			nodeActions = nodeActions.map((a) => (a.Id === u.Id ? u : a));
+		}
 	}
 
 	// URL-driven: reconciles local state to whatever the URL says. Runs on
@@ -192,7 +235,14 @@
 
 		const logId = logs.some((l) => l.LogId === logParam) ? logParam : null;
 		selectedLogId = logId;
-		if (logId != null) logCursor = logId;
+		if (logId != null) {
+			logCursor = logId;
+			if (!(zoomTarget?.kind === 'log' && zoomTarget.id === logId)) {
+				zoomTarget = { kind: 'log', id: logId };
+			}
+		} else if (zoomTarget?.kind === 'log') {
+			zoomTarget = null;
+		}
 	}
 
 	onMount(async () => {
@@ -320,7 +370,7 @@
 			const idx = nodesInDomain.findIndex((n) => n.Id === selectedNodeId);
 			const next = Math.min(Math.max(idx + direction, 0), nodesInDomain.length - 1);
 			if (nodesInDomain[next]) selectNode(nodesInDomain[next].Id);
-		} else if (focusedPane === 'logs' && column3SubPane === 'logs' && selectedLogId == null) {
+		} else if (focusedPane === 'logs' && column3SubPane === 'logs') {
 			const curId = logCursor ?? logs[0]?.LogId ?? null;
 			const idx = logs.findIndex((l) => l.LogId === curId);
 			const next = Math.min(Math.max(idx + direction, 0), logs.length - 1);
@@ -334,7 +384,10 @@
 	}
 
 	function onKeydown(e: KeyboardEvent) {
-		if (palette.open || isTypingTarget(e.target)) return;
+		// ZoomEditor owns the keyboard entirely while it's mounted (its own
+		// <svelte:window> listener) — bail so pane navigation doesn't also
+		// silently run in the background underneath it.
+		if (zoomTarget || palette.open || isTypingTarget(e.target)) return;
 
 		if (e.key === 'ArrowLeft' || (e.altKey && e.key.toLowerCase() === 'h')) {
 			e.preventDefault();
@@ -359,16 +412,11 @@
 		} else if (e.key === 'Enter') {
 			e.preventDefault();
 			if (focusedPane === 'logs' && column3SubPane === 'logs') {
-				if (selectedLogId == null && logCursor != null) selectLog(logCursor);
+				if (logCursor != null) openZoomLog(logCursor);
 			} else if (focusedPane === 'logs' && column3SubPane === 'actions') {
-				if (actionCursor != null) goto(`/actions/${actionCursor}`);
+				if (actionCursor != null) openZoomAction(actionCursor);
 			} else {
 				cyclePane(1);
-			}
-		} else if (e.key === 'Escape') {
-			if (selectedLogId != null) {
-				e.preventDefault();
-				selectLog(null);
 			}
 		} else if (e.altKey && e.key.toLowerCase() === 'n') {
 			e.preventDefault();
@@ -382,22 +430,14 @@
 	}
 
 	$effect(() => {
+		// Irrelevant while zoomed — ZoomEditor's fullscreen overlay covers the
+		// footer bar entirely — but harmless to leave computing in the
+		// background, and it's immediately right again once closed.
 		const hints = [
 			{ key: 'ALT+H/L', label: 'Columns' },
 			{ key: 'ALT+J/K', label: 'Logs / Actions' },
 			{ key: 'UP/DN', label: 'Move' },
-			{
-				key: 'ENTER',
-				label:
-					focusedPane === 'logs'
-						? column3SubPane === 'logs'
-							? selectedLogId != null
-								? 'Viewing'
-								: 'Open'
-							: 'Open action'
-						: 'Next pane'
-			},
-			{ key: 'ESC', label: 'Back' },
+			{ key: 'ENTER', label: focusedPane === 'logs' ? 'Zoom' : 'Next pane' },
 			{ key: 'ALT+N', label: 'New' },
 			{ key: 'ALT+F', label: 'Jump' }
 		];
@@ -420,6 +460,18 @@
 
 	{#if loadingBase}
 		<p class="muted" style="padding: 1rem;">Loading workspace…</p>
+	{:else if zoomTarget}
+		{#key `${zoomTarget.kind}:${zoomTarget.id}`}
+			<ZoomEditor
+				kind={zoomTarget.kind}
+				logEntry={zoomedLog ?? undefined}
+				actionItem={zoomedAction ?? undefined}
+				domainName={selectedDomain?.DomainName ?? ''}
+				nodeTitle={selectedNode?.Title ?? ''}
+				onClose={closeZoom}
+				onSaved={handleZoomSaved}
+			/>
+		{/key}
 	{:else}
 		<div class="workspace-grid">
 			<TilingPane
@@ -530,7 +582,7 @@
 			<div class="column3">
 				<TilingPane
 					index="C1:"
-					title={selectedEntry ? 'Log Entry' : 'Log Entries'}
+					title="Log Entries"
 					focused={focusedPane === 'logs' && column3SubPane === 'logs'}
 					onFocus={() => {
 						focusedPane = 'logs';
@@ -539,56 +591,15 @@
 					flex={3}
 				>
 					{#snippet actions()}
-						{#if selectedEntry}
-							<button
-								type="button"
-								onclick={(e) => {
-									e.stopPropagation();
-									selectLog(null);
-								}}
-							>
-								&lt; back
-							</button>
-						{:else}
-							<a
-								href={newLogEntryHref()}
-								onclick={(e) => selectedNodeId == null && e.preventDefault()}
-							>
-								<button type="button" disabled={selectedNodeId == null}>+ new</button>
-							</a>
-						{/if}
+						<a href={newLogEntryHref()} onclick={(e) => selectedNodeId == null && e.preventDefault()}>
+							<button type="button" disabled={selectedNodeId == null}>+ new</button>
+						</a>
 					{/snippet}
 
 					{#if selectedNodeId == null}
 						<div class="empty-state">Select a knowledge node.</div>
 					{:else if logsLoading}
 						<p class="muted" style="padding: 0.75rem;">Loading…</p>
-					{:else if selectedEntry}
-						<div class="entry-detail">
-							<div class="row-between">
-								<h3 style="margin: 0;">{selectedEntry.Title || comicTitle(selectedEntry.LogId)}</h3>
-								<span class="muted">{new Date(selectedEntry.EntryDate).toLocaleString()}</span>
-							</div>
-							{#if !selectedEntry.Title}
-								<p class="muted">{comicByline(selectedEntry.LogId)}</p>
-							{/if}
-							{#if selectedEntry.Tags.length > 0}
-								<div class="row" style="flex-wrap: wrap; margin: 0.5rem 0;">
-									{#each selectedEntry.Tags as tag (tag.TagId)}
-										<span class="tag-pill">{tag.Name}</span>
-									{/each}
-								</div>
-							{/if}
-							{#if selectedEntry.ChatURL}
-								<p>
-									<a href={selectedEntry.ChatURL} target="_blank" rel="noopener">Related chat ↗</a>
-								</p>
-							{/if}
-							<TiptapEditor value={selectedEntry.Content} editable={false} />
-							<p class="muted" style="margin-top: 0.75rem;">
-								<a href="/logs/{selectedEntry.LogId}">Open full page to edit or delete ↗</a>
-							</p>
-						</div>
 					{:else if logs.length === 0}
 						<div class="empty-state">No log entries yet.</div>
 					{:else}
@@ -597,7 +608,7 @@
 								type="button"
 								class="list-item"
 								class:selected={log.LogId === logCursor}
-								onclick={() => selectLog(log.LogId)}
+								onclick={() => openZoomLog(log.LogId)}
 							>
 								{log.Title || preview(log.Content) || comicTitle(log.LogId)}
 								<span class="list-item-meta">
@@ -652,11 +663,12 @@
 						<div class="empty-state">No actions yet.</div>
 					{:else}
 						{#each nodeActions as action (action.Id)}
-							<a
-								href="/actions/{action.Id}"
+							<button
+								type="button"
 								class="list-item action-row"
 								class:selected={action.Id === actionCursor}
 								class:done={action.Status === 'Completed'}
+								onclick={() => openZoomAction(action.Id)}
 							>
 								<span
 									class="tag-pill"
@@ -666,7 +678,7 @@
 									{actionStatusLabel(action.Status)}
 								</span>
 								{action.ActionText}
-							</a>
+							</button>
 						{/each}
 					{/if}
 				</TilingPane>
@@ -695,10 +707,6 @@
 		padding: 0.6rem;
 		border-bottom: 1px solid var(--border);
 	}
-	.entry-detail {
-		padding: 0.75rem;
-	}
-
 	.column3 {
 		display: flex;
 		flex-direction: column;
