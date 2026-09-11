@@ -4,18 +4,16 @@
 	let {
 		data,
 		singular = 'log entry',
-		plural = 'log entries',
-		variant = 'log'
+		plural = 'log entries'
 	}: {
 		data: CtpDayCount[];
 		singular?: string;
 		plural?: string;
-		variant?: 'log' | 'action';
 	} = $props();
 
 	const MAX_WEEKS = 105; // ~2 years, a sane ceiling for an unusually wide card
 	const CELL_SIZE = 11;
-	const CELL_GAP = 3;
+	const CELL_GAP = 2;
 	const CELL_PITCH = CELL_SIZE + CELL_GAP;
 	const LABEL_COLUMN_WIDTH = 28;
 	const LABEL_GRID_GAP = 6;
@@ -39,12 +37,12 @@
 		return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 	}
 
+	// 4-step intensity: empty / low / med / high.
 	function levelFor(count: number): number {
 		if (count <= 0) return 0;
 		if (count === 1) return 1;
 		if (count === 2) return 2;
-		if (count === 3) return 3;
-		return 4;
+		return 3;
 	}
 
 	function formatDate(date: Date): string {
@@ -132,11 +130,9 @@
 
 		return labels;
 	});
-
-	let total = $derived(data.reduce((sum, entry) => sum + entry.Count, 0));
 </script>
 
-<div class="calendar-wrap variant-{variant}" bind:clientWidth={containerWidth}>
+<div class="calendar-wrap" bind:clientWidth={containerWidth}>
 	<div class="month-row" style={`grid-template-columns: repeat(${weeks.length}, ${CELL_SIZE}px)`}>
 		{#each monthLabels as month (month.index)}
 			<span class="month-label" style={`grid-column: ${month.index + 1}`}>{month.label}</span>
@@ -166,22 +162,22 @@
 		</div>
 	</div>
 	<div class="legend">
-		<span class="muted">{total} {total === 1 ? singular : plural} in the last year</span>
-		<div class="legend-scale">
-			<span class="muted">Less</span>
-			<div class="day-cell level-0"></div>
-			<div class="day-cell level-1"></div>
-			<div class="day-cell level-2"></div>
-			<div class="day-cell level-3"></div>
-			<div class="day-cell level-4"></div>
-			<span class="muted">More</span>
-		</div>
+		legend:
+		<span class="legend-key level-0">[ ]</span> empty
+		<span class="legend-key level-1">[.]</span> low
+		<span class="legend-key level-2">[:]</span> med
+		<span class="legend-key level-3">[#]</span> high
 	</div>
 </div>
 
 <style>
 	.calendar-wrap {
-		--heat-0: var(--bg-hover);
+		/* Core-memory-bank palette: empty / low / med / high, shared by every
+		   module — no per-variant color scheme. */
+		--heat-0: var(--bios-blue-dark);
+		--heat-1: #3a3d99;
+		--heat-2: var(--cyan-dim);
+		--heat-3: var(--yellow);
 		/* Without an explicit width, this element's own intrinsic content (the
 		   pixel-width week grid) can pull its ancestor grid/flex tracks wider
 		   than the space actually available, which then gets measured back in
@@ -190,21 +186,9 @@
 		width: 100%;
 		overflow: hidden;
 	}
-	.calendar-wrap.variant-log {
-		--heat-1: #0e4429;
-		--heat-2: #006d32;
-		--heat-3: #26a641;
-		--heat-4: #39d353;
-	}
-	.calendar-wrap.variant-action {
-		--heat-1: #4c1d95;
-		--heat-2: #6d28d9;
-		--heat-3: #8b5cf6;
-		--heat-4: #a78bfa;
-	}
 	.month-row {
 		display: grid;
-		gap: 3px;
+		gap: 2px;
 		padding-left: 28px;
 		margin-bottom: 0.25rem;
 	}
@@ -219,7 +203,7 @@
 	.weekday-labels {
 		display: grid;
 		grid-template-rows: repeat(7, 11px);
-		gap: 3px;
+		gap: 2px;
 		flex-shrink: 0;
 	}
 	.weekday-labels span {
@@ -230,12 +214,12 @@
 	.grid {
 		display: grid;
 		grid-auto-flow: column;
-		gap: 3px;
+		gap: 2px;
 	}
 	.week-col {
 		display: grid;
 		grid-template-rows: repeat(7, 11px);
-		gap: 3px;
+		gap: 2px;
 	}
 	.day-cell {
 		width: 11px;
@@ -252,20 +236,27 @@
 	.day-cell.level-3 {
 		background: var(--heat-3);
 	}
-	.day-cell.level-4 {
-		background: var(--heat-4);
-	}
 	.legend {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: 0.5rem;
 		margin-top: 0.75rem;
+		color: var(--text-muted);
+		font-size: 0.78rem;
 	}
-	.legend-scale {
-		display: flex;
-		align-items: center;
-		gap: 3px;
+	.legend-key {
+		font-weight: 700;
+	}
+	.legend-key.level-0 {
+		/* heat-0 (the empty cell color) is nearly invisible against the page
+		   background — use the muted text color instead so the key stays
+		   legible while still reading as the dimmest of the four. */
+		color: var(--text-muted);
+	}
+	.legend-key.level-1 {
+		color: var(--heat-1);
+	}
+	.legend-key.level-2 {
+		color: var(--heat-2);
+	}
+	.legend-key.level-3 {
+		color: var(--heat-3);
 	}
 </style>

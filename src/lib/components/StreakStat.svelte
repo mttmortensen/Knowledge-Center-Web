@@ -2,56 +2,26 @@
 	let {
 		currentStreak,
 		longestStreak,
-		lastEntryDate,
-		label = 'entry'
+		totalCount,
+		totalSingular,
+		totalPlural
 	}: {
 		currentStreak: number;
 		longestStreak: number;
-		lastEntryDate: string | null;
-		label?: string;
+		totalCount: number;
+		totalSingular: string;
+		totalPlural: string;
 	} = $props();
-
-	function formatDate(value: string): string {
-		return new Date(value).toLocaleDateString(undefined, {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
-	}
 </script>
 
-<div class="streak-stat">
-	<div class="streak-figure">
-		<span class="streak-value">{currentStreak}</span>
-		<span class="muted">day{currentStreak === 1 ? '' : 's'} current streak</span>
-	</div>
-	<div class="streak-figure">
-		<span class="streak-value">{longestStreak}</span>
-		<span class="muted">day{longestStreak === 1 ? '' : 's'} longest streak</span>
-	</div>
-	<span class="muted last-entry">
-		{lastEntryDate ? `Last ${label} on ${formatDate(lastEntryDate)}` : `No ${label} yet`}
-	</span>
-</div>
+<p class="streak-stat">
+	{currentStreak} day{currentStreak === 1 ? '' : 's'} streak, best {longestStreak}
+	-- {totalCount} {totalCount === 1 ? totalSingular : totalPlural}
+</p>
 
 <style>
 	.streak-stat {
-		display: flex;
-		align-items: baseline;
-		flex-wrap: wrap;
-		gap: 1.5rem;
-		margin-bottom: 0.75rem;
-	}
-	.streak-figure {
-		display: flex;
-		align-items: baseline;
-		gap: 0.4rem;
-	}
-	.streak-value {
-		font-size: 1.5rem;
-		font-weight: 700;
-	}
-	.last-entry {
-		margin-left: auto;
+		margin: 0 0 0.5rem;
+		color: var(--text);
 	}
 </style>

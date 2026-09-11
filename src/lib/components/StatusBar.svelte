@@ -28,19 +28,18 @@
 	});
 	onDestroy(() => clearInterval(timer));
 
-	function formatUptime(ms: number): string {
-		const totalSeconds = Math.floor(ms / 1000);
-		const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-		const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-		const s = String(totalSeconds % 60).padStart(2, '0');
-		return `${h}:${m}:${s}`;
+	function formatUptimeDays(ms: number): string {
+		const days = Math.floor(ms / 86400000);
+		return `${days}d`;
 	}
 
-	let uptime = $derived(formatUptime(now.getTime() - bootTime));
+	let uptimeDays = $derived(formatUptimeDays(now.getTime() - bootTime));
 	let dateLabel = $derived(
-		now.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' })
+		`${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 	);
-	let timeLabel = $derived(now.toLocaleTimeString(undefined, { hour12: false }));
+	let timeLabel = $derived(
+		`${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+	);
 </script>
 
 <div class="status-bar">
@@ -61,7 +60,6 @@
 	</div>
 	<span class="app-name">KNOWLEDGE CENTER SETUP UTILITY</span>
 	<div class="clock">
-		<span class="muted">UPTIME {uptime}</span>
-		<span>{dateLabel} {timeLabel}</span>
+		<span>up {uptimeDays}  {dateLabel} {timeLabel}</span>
 	</div>
 </div>

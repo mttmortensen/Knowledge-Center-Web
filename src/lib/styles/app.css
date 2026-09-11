@@ -292,7 +292,7 @@ h3 {
 	height: var(--statusbar-h);
 	padding: 0 0.6rem;
 	background: var(--bg-panel-header);
-	border-bottom: 1px solid var(--border-strong);
+	border-bottom: 1px solid var(--gray);
 	font-size: 0.8rem;
 	white-space: nowrap;
 }
@@ -310,7 +310,7 @@ h3 {
 	align-items: center;
 	gap: 0.3rem;
 	padding: 0.1rem 0.5rem;
-	color: var(--cyan);
+	color: var(--cyan-dim);
 	border: none;
 	background: none;
 	cursor: pointer;
@@ -337,9 +337,6 @@ h3 {
 .status-bar .clock {
 	color: var(--white);
 	flex-shrink: 0;
-}
-.status-bar .clock .muted {
-	margin-right: 0.6rem;
 }
 
 .footer-bar {
