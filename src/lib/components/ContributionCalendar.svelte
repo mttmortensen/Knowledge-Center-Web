@@ -240,7 +240,7 @@
 	.day-cell {
 		width: 11px;
 		height: 11px;
-		border-radius: 2px;
+		border-radius: 0;
 		background: var(--heat-0);
 	}
 	.day-cell.level-1 {

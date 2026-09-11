@@ -7,6 +7,11 @@
 	import { uploadImage } from '$lib/api/images';
 
 	const nodeId = $derived(Number(page.params.id));
+	const backHref = $derived(
+		page.url.searchParams.get('domain')
+			? `/domains?domain=${page.url.searchParams.get('domain')}&node=${nodeId}`
+			: `/nodes/${nodeId}`
+	);
 
 	let title = $state('');
 	let content = $state('');
@@ -31,7 +36,12 @@
 				TagIds: tagIds,
 				ChatURL: chatUrl || undefined
 			});
-			goto(`/nodes/${nodeId}`);
+			const domainId = page.url.searchParams.get('domain');
+			if (domainId) {
+				goto(`/domains?domain=${domainId}&node=${nodeId}&log=${created.LogId}`);
+			} else {
+				goto(`/nodes/${nodeId}`);
+			}
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to create log entry.';
 		} finally {
@@ -41,7 +51,7 @@
 </script>
 
 <div class="container">
-	<div class="breadcrumb"><a href="/nodes/{nodeId}">Back to node</a></div>
+	<div class="breadcrumb"><a href={backHref}>Back</a></div>
 	<h1>New Log Entry</h1>
 
 	{#if error}

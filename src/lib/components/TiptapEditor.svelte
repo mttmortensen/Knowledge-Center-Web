@@ -209,12 +209,12 @@
 	}
 	:global(.tiptap-content img) {
 		max-width: 100%;
-		border-radius: 6px;
+		border-radius: 0;
 	}
 	:global(.tiptap-content pre) {
 		background: var(--bg);
 		border: 1px solid var(--border);
-		border-radius: 6px;
+		border-radius: 0;
 		padding: 0.75rem;
 		overflow-x: auto;
 	}

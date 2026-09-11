@@ -71,6 +71,6 @@
 	button.selected {
 		background: var(--accent);
 		border-color: var(--accent);
-		color: #0b0d12;
+		color: var(--select-text);
 	}
 </style>
