@@ -3,6 +3,7 @@
 	import { logEntriesApi } from '$lib/api/logEntries';
 	import { actionsApi } from '$lib/api/actions';
 	import { DemoForbiddenError } from '$lib/api/client';
+	import { comicTitle } from '$lib/utils/comicTitle';
 	import type { LogEntry, ActionItem } from '$lib/types/api';
 
 	type Mode = 'normal' | 'insert' | 'command';
@@ -76,6 +77,18 @@
 		const j = i - metaCount;
 		if (isLog && j === 0) return titleLine ? withHeading(titleLine, 1) : '';
 		return bodyLines[j - lineOffset] ?? '';
+	}
+	// Static (non-editing) rendering only — falls back to the same
+	// deterministic comic-issue placeholder used everywhere else a titleless
+	// entry is displayed (list rows, etc.), so the heading isn't just blank.
+	// getLine() stays the raw, un-fallback-ed value: entering insert mode on
+	// an empty title starts from a truly empty line, not the placeholder,
+	// so the joke text never gets silently saved as a real title.
+	function displayLine(i: number): string {
+		if (isLog && i === metaCount && !titleLine) {
+			return logEntry ? withHeading(comicTitle(logEntry.LogId), 1) : '';
+		}
+		return getLine(i);
 	}
 	function setLine(i: number, value: string) {
 		if (i < metaCount) return; // read-only context, not real entry data
@@ -289,7 +302,7 @@
 		{/if}
 		<div class="buffer">
 			{#each { length: lineCount } as _, i (i)}
-				{@const level = headingLevel(getLine(i))}
+				{@const level = headingLevel(displayLine(i))}
 				<div
 					class="buf-line"
 					class:cursor={i === cursorLine}
@@ -318,7 +331,7 @@
 							class="buf-text"
 							class:h1={level === 1}
 							class:h2={level === 2}
-							class:h3={level >= 3}>{getLine(i) || ' '}</span
+							class:h3={level >= 3}>{displayLine(i) || ' '}</span
 						>
 					{/if}
 				</div>
