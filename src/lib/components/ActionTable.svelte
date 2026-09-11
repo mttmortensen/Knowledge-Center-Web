@@ -59,6 +59,7 @@
 	.action-table {
 		width: 100%;
 		border-collapse: collapse;
+		table-layout: fixed;
 	}
 	.action-table th {
 		text-align: left;
@@ -79,10 +80,8 @@
 	.action-table tbody tr:hover {
 		background: var(--bg-hover);
 	}
-	.col-action {
-		width: 70%;
-		max-width: 0;
-	}
+	/* col-action has no explicit width: with table-layout:fixed, it's the only
+	   column without one, so it absorbs whatever space the others don't claim. */
 	.col-action a {
 		display: block;
 		overflow: hidden;
@@ -94,17 +93,19 @@
 		text-decoration: none;
 	}
 	.col-node {
-		width: 1%;
-		white-space: nowrap;
+		width: 160px;
 	}
 	.col-node a {
-		color: var(--text-muted);
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	.col-status {
-		width: 20%;
+		width: 110px;
 	}
 	.col-date {
-		width: 1%;
+		width: 90px;
 		white-space: nowrap;
 		text-align: right;
 	}
@@ -131,7 +132,6 @@
 			padding: 0.3rem 0;
 		}
 		.col-action {
-			max-width: none;
 			padding-bottom: 0.5rem !important;
 			border-bottom: 1px solid var(--border) !important;
 			margin-bottom: 0.35rem;
