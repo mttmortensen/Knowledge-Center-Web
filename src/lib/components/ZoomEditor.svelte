@@ -410,7 +410,6 @@
 		font-weight: 400;
 	}
 	.cursor-pos {
-		flex: 1;
 		color: var(--cyan-dim);
 	}
 	.mode-hints {
