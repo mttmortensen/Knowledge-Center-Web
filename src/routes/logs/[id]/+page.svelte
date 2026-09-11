@@ -21,7 +21,6 @@
 	let editTitle = $state('');
 	let editContent = $state('');
 	let editChatUrl = $state('');
-	let editContributesToProgress = $state(false);
 	let editTagIds = $state<number[]>([]);
 	let saving = $state(false);
 
@@ -33,7 +32,6 @@
 			editTitle = entry.Title ?? '';
 			editContent = entry.Content;
 			editChatUrl = entry.ChatURL ?? '';
-			editContributesToProgress = entry.ContributesToProgress;
 			editTagIds = entry.Tags.map((t) => t.TagId);
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load log entry.';
@@ -51,8 +49,7 @@
 		try {
 			await logEntriesApi.update(logId, {
 				Title: editTitle || undefined,
-				Content: editContent,
-				ContributesToProgress: editContributesToProgress
+				Content: editContent
 			});
 
 			if (editChatUrl !== (entry.ChatURL ?? '')) {
@@ -126,9 +123,6 @@
 				{#each entry.Tags as tag (tag.TagId)}
 					<span class="tag-pill">{tag.Name}</span>
 				{/each}
-				{#if entry.ContributesToProgress}
-					<span class="tag-pill">progress</span>
-				{/if}
 			</div>
 			{#if entry.ChatURL}
 				<p><a href={entry.ChatURL} target="_blank" rel="noopener">Related chat ↗</a></p>
@@ -145,15 +139,6 @@
 			<div class="field">
 				<label for="chat-url">Chat URL</label>
 				<input id="chat-url" type="url" bind:value={editChatUrl} placeholder="https://..." />
-			</div>
-			<div class="field row">
-				<input
-					id="progress"
-					type="checkbox"
-					style="width: auto;"
-					bind:checked={editContributesToProgress}
-				/>
-				<label for="progress" style="margin: 0;">Counts toward progress</label>
 			</div>
 			<div class="row">
 				<button class="primary" onclick={saveEdit} disabled={saving}>

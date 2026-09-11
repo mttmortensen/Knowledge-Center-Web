@@ -23,7 +23,7 @@
 
 <nav>
 	<div class="nav-bar">
-		<a href="/domains" class="brand" onclick={closeMenu}>Knowledge Center</a>
+		<a href="/dashboard" class="brand" onclick={closeMenu}>Knowledge Center</a>
 		<button
 			type="button"
 			class="menu-toggle"

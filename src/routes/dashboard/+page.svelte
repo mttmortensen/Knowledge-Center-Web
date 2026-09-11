@@ -64,7 +64,7 @@
 
 		<div class="dashboard-grid">
 			<div class="card heatmap-card">
-				<h2>Contribution Activity</h2>
+				<h2>Log Activity</h2>
 				<ContributionCalendar data={stats.CtpByDay} />
 			</div>
 
@@ -76,7 +76,7 @@
 				{#if stats.RecentActions.length === 0}
 					<div class="empty-state">No actions yet.</div>
 				{:else}
-					<ActionTable actions={stats.RecentActions} />
+					<ActionTable actions={stats.RecentActions} showNode />
 				{/if}
 			</div>
 		</div>

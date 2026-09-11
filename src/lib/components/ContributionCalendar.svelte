@@ -133,7 +133,7 @@
 		</div>
 	</div>
 	<div class="legend">
-		<span class="muted">{total} contributing {total === 1 ? 'entry' : 'entries'} in the last year</span>
+		<span class="muted">{total} log {total === 1 ? 'entry' : 'entries'} in the last year</span>
 		<div class="legend-scale">
 			<span class="muted">Less</span>
 			<div class="day-cell level-0"></div>

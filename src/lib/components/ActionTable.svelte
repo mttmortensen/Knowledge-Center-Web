@@ -2,7 +2,10 @@
 	import { goto } from '$app/navigation';
 	import type { ActionItem } from '$lib/types/api';
 
-	let { actions }: { actions: ActionItem[] } = $props();
+	let {
+		actions,
+		showNode = false
+	}: { actions: (ActionItem & { KnowledgeNodeTitle?: string })[]; showNode?: boolean } = $props();
 
 	function statusLabel(status: string): string {
 		return status === 'Completed' ? 'Closed' : status;
@@ -13,6 +16,9 @@
 	<thead>
 		<tr>
 			<th class="col-action">Action</th>
+			{#if showNode}
+				<th class="col-node">Knowledge Node</th>
+			{/if}
 			<th class="col-status">Status</th>
 			<th class="col-date">Date</th>
 		</tr>
@@ -23,6 +29,15 @@
 				<td class="col-action">
 					<a href="/actions/{action.Id}">{action.ActionText}</a>
 				</td>
+				{#if showNode}
+					<td class="col-node" data-label="Knowledge Node">
+						<a
+							href="/nodes/{action.KnowledgeNodeId}"
+							onclick={(e) => e.stopPropagation()}
+							class="muted">{action.KnowledgeNodeTitle}</a
+						>
+					</td>
+				{/if}
 				<td class="col-status" data-label="Status">
 					<span
 						class="tag-pill"
@@ -77,6 +92,13 @@
 	}
 	.col-action a:hover {
 		text-decoration: none;
+	}
+	.col-node {
+		width: 1%;
+		white-space: nowrap;
+	}
+	.col-node a {
+		color: var(--text-muted);
 	}
 	.col-status {
 		width: 20%;

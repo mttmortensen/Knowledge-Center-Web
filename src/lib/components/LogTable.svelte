@@ -27,16 +27,9 @@
 						>{log.Title || preview(log.Content) || comicTitle(log.LogId)}</a
 					>
 				</td>
-				<td
-					class="col-tags"
-					class:no-tags={!(log.ContributesToProgress || log.Tags.length > 0)}
-					data-label="Tags"
-				>
-					{#if log.ContributesToProgress || log.Tags.length > 0}
+				<td class="col-tags" class:no-tags={log.Tags.length === 0} data-label="Tags">
+					{#if log.Tags.length > 0}
 						<div class="tag-row">
-							{#if log.ContributesToProgress}
-								<span class="tag-pill">progress</span>
-							{/if}
 							{#each log.Tags as tag (tag.TagId)}
 								<span class="tag-pill">{tag.Name}</span>
 							{/each}

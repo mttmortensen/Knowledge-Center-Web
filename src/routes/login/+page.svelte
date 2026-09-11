@@ -13,7 +13,7 @@
 		submitting = true;
 		try {
 			await login(username, password);
-			goto('/domains');
+			goto('/dashboard');
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
 		} finally {
@@ -26,7 +26,7 @@
 		submitting = true;
 		try {
 			await loginDemo();
-			goto('/domains');
+			goto('/dashboard');
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Something went wrong when entering demo mode.';
 		} finally {

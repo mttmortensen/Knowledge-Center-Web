@@ -61,7 +61,6 @@ export interface LogEntryInline {
 	Title?: string;
 	Content: string;
 	EntryDate: string;
-	ContributesToProgress: boolean;
 	ChatURL?: string | null;
 }
 
@@ -72,7 +71,6 @@ export interface LogEntry {
 	Title?: string;
 	Content: string;
 	Tags: Tag[];
-	ContributesToProgress: boolean;
 	ChatURL?: string | null;
 }
 
@@ -81,14 +79,12 @@ export interface LogEntryCreateInput {
 	Title?: string;
 	Content: string;
 	TagIds: number[];
-	ContributesToProgress: boolean;
 	ChatURL?: string | null;
 }
 
 export interface LogEntryUpdateInput {
 	Title?: string;
 	Content?: string;
-	ContributesToProgress?: boolean;
 }
 
 export interface ActionItem {
@@ -107,6 +103,10 @@ export interface ActionItemCreateInput {
 
 export interface ActionItemUpdateInput {
 	ActionText?: string;
+}
+
+export interface RecentAction extends ActionItem {
+	KnowledgeNodeTitle: string;
 }
 
 export interface Tag {
@@ -145,7 +145,6 @@ export interface EntityCounts {
 
 export interface LogEntryStats {
 	Total: number;
-	ContributingToProgress: number;
 	WithTitle: number;
 	WithoutTitle: number;
 }
@@ -181,5 +180,5 @@ export interface Stats {
 	LogStreak: LogStreak;
 	CtpByDay: CtpDayCount[];
 	TopTags: TagCount[];
-	RecentActions: ActionItem[];
+	RecentActions: RecentAction[];
 }

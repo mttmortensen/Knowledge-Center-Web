@@ -10,7 +10,6 @@
 
 	let title = $state('');
 	let content = $state('');
-	let contributesToProgress = $state(true);
 	let chatUrl = $state('');
 	let tagIds = $state<number[]>([]);
 	let saving = $state(false);
@@ -30,7 +29,6 @@
 				Title: title || undefined,
 				Content: content,
 				TagIds: tagIds,
-				ContributesToProgress: contributesToProgress,
 				ChatURL: chatUrl || undefined
 			});
 			goto(`/nodes/${nodeId}`);
@@ -69,11 +67,6 @@
 		<div class="field">
 			<label for="chat-url">Chat URL (optional)</label>
 			<input id="chat-url" type="url" bind:value={chatUrl} placeholder="https://..." />
-		</div>
-
-		<div class="field row">
-			<input id="progress" type="checkbox" style="width: auto;" bind:checked={contributesToProgress} />
-			<label for="progress" style="margin: 0;">Counts toward progress</label>
 		</div>
 
 		<button type="submit" class="primary" disabled={saving}>
