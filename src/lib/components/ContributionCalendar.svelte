@@ -81,9 +81,20 @@
 	});
 
 	let total = $derived(data.reduce((sum, entry) => sum + entry.Count, 0));
+
+	let scrollEl = $state<HTMLDivElement>();
+
+	$effect(() => {
+		// Re-run whenever the grid changes (new data) and jump to the right edge
+		// so today is visible by default instead of the oldest week.
+		weeks;
+		if (scrollEl) {
+			scrollEl.scrollLeft = scrollEl.scrollWidth;
+		}
+	});
 </script>
 
-<div class="calendar-wrap">
+<div class="calendar-wrap" bind:this={scrollEl}>
 	<div class="month-row" style={`grid-template-columns: repeat(${weeks.length}, 1fr)`}>
 		{#each monthLabels as month (month.index)}
 			<span class="month-label" style={`grid-column: ${month.index + 1}`}>{month.label}</span>
@@ -134,6 +145,21 @@
 		--heat-3: #26a641;
 		--heat-4: #39d353;
 		overflow-x: auto;
+		scrollbar-width: thin;
+		scrollbar-color: var(--border) transparent;
+	}
+	.calendar-wrap::-webkit-scrollbar {
+		height: 6px;
+	}
+	.calendar-wrap::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.calendar-wrap::-webkit-scrollbar-thumb {
+		background: var(--border);
+		border-radius: 999px;
+	}
+	.calendar-wrap::-webkit-scrollbar-thumb:hover {
+		background: var(--text-muted);
 	}
 	.month-row {
 		display: grid;
