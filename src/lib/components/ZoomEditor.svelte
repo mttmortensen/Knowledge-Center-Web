@@ -286,7 +286,11 @@
 			<span class="mode-label">-- {modeLabel} --</span>
 		{/if}
 		<span class="cursor-pos">{flash ?? `${cursorLine + 1},${cursorCol}`}</span>
-		<span class="mode-hints">i insert&nbsp;&nbsp;&nbsp;:w save&nbsp;&nbsp;&nbsp;esc exit</span>
+		<span class="mode-hints">
+			<span class="hint-key">i</span> insert
+			<span class="hint-key">:w</span> save
+			<span class="hint-key">esc</span> exit
+		</span>
 	</div>
 </div>
 
@@ -416,5 +420,16 @@
 		color: var(--cyan-dim);
 		flex-shrink: 0;
 		white-space: nowrap;
+	}
+	.hint-key {
+		display: inline-block;
+		background: var(--white);
+		color: #000000;
+		font-weight: 700;
+		padding: 0 0.35rem;
+		margin-right: 0.35rem;
+	}
+	.hint-key:not(:first-child) {
+		margin-left: 0.9rem;
 	}
 </style>
