@@ -4,8 +4,14 @@
 	let {
 		data,
 		singular = 'log entry',
-		plural = 'log entries'
-	}: { data: CtpDayCount[]; singular?: string; plural?: string } = $props();
+		plural = 'log entries',
+		variant = 'log'
+	}: {
+		data: CtpDayCount[];
+		singular?: string;
+		plural?: string;
+		variant?: 'log' | 'action';
+	} = $props();
 
 	const MAX_WEEKS = 105; // ~2 years, a sane ceiling for an unusually wide card
 	const CELL_SIZE = 11;
@@ -14,6 +20,7 @@
 	const LABEL_COLUMN_WIDTH = 28;
 	const LABEL_GRID_GAP = 6;
 	const MIN_LABEL_GAP_WEEKS = 2; // minimum columns between month labels so text can't overlap
+	const MS_PER_DAY = 86400000;
 
 	interface Day {
 		date: Date;
@@ -22,8 +29,14 @@
 		level: number;
 	}
 
-	function dateKey(year: number, month: number, day: number): string {
-		return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+	// The API's day-count data is bucketed by UTC calendar day (the backend runs
+	// in UTC). Building the grid from the *browser's* local calendar instead can
+	// shift "today" and day boundaries by up to a day for viewers in other
+	// timezones — misaligning the grid from the streak numbers computed
+	// server-side. Doing all day arithmetic here in UTC keeps the two in sync.
+	function dateKeyFromUTC(ms: number): string {
+		const d = new Date(ms);
+		return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 	}
 
 	function levelFor(count: number): number {
@@ -35,7 +48,12 @@
 	}
 
 	function formatDate(date: Date): string {
-		return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+		return date.toLocaleDateString(undefined, {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric',
+			timeZone: 'UTC'
+		});
 	}
 
 	let containerWidth = $state(0);
@@ -58,28 +76,26 @@
 			counts.set(entry.Date.slice(0, 10), entry.Count);
 		}
 
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
+		const now = new Date();
+		const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
 
-		const start = new Date(today);
-		start.setDate(start.getDate() - (weeksToShow * 7 - 1));
-		start.setDate(start.getDate() - start.getDay());
+		let startUTC = todayUTC - (weeksToShow * 7 - 1) * MS_PER_DAY;
+		startUTC -= new Date(startUTC).getUTCDay() * MS_PER_DAY; // back up to the preceding Sunday
 
 		const result: Day[][] = [];
 		let column: Day[] = [];
-		let cursor = new Date(start);
+		let cursorUTC = startUTC;
 
-		while (cursor <= today) {
-			const key = dateKey(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
+		while (cursorUTC <= todayUTC) {
+			const key = dateKeyFromUTC(cursorUTC);
 			const count = counts.get(key) ?? 0;
-			column.push({ date: new Date(cursor), key, count, level: levelFor(count) });
+			column.push({ date: new Date(cursorUTC), key, count, level: levelFor(count) });
 
-			if (cursor.getDay() === 6) {
+			if (new Date(cursorUTC).getUTCDay() === 6) {
 				result.push(column);
 				column = [];
 			}
-			cursor = new Date(cursor);
-			cursor.setDate(cursor.getDate() + 1);
+			cursorUTC += MS_PER_DAY;
 		}
 		if (column.length > 0) result.push(column);
 
@@ -98,7 +114,7 @@
 			const firstDay = week[0];
 			if (!firstDay) return;
 
-			const month = firstDay.date.getMonth();
+			const month = firstDay.date.getUTCMonth();
 			if (month === lastMonth) return;
 			lastMonth = month;
 
@@ -107,7 +123,10 @@
 			// there isn't room to render its text without overlapping.
 			if (index - lastLabelIndex < MIN_LABEL_GAP_WEEKS) return;
 
-			labels.push({ index, label: firstDay.date.toLocaleString(undefined, { month: 'short' }) });
+			labels.push({
+				index,
+				label: firstDay.date.toLocaleString(undefined, { month: 'short', timeZone: 'UTC' })
+			});
 			lastLabelIndex = index;
 		});
 
@@ -117,7 +136,7 @@
 	let total = $derived(data.reduce((sum, entry) => sum + entry.Count, 0));
 </script>
 
-<div class="calendar-wrap" bind:clientWidth={containerWidth}>
+<div class="calendar-wrap variant-{variant}" bind:clientWidth={containerWidth}>
 	<div class="month-row" style={`grid-template-columns: repeat(${weeks.length}, ${CELL_SIZE}px)`}>
 		{#each monthLabels as month (month.index)}
 			<span class="month-label" style={`grid-column: ${month.index + 1}`}>{month.label}</span>
@@ -163,10 +182,6 @@
 <style>
 	.calendar-wrap {
 		--heat-0: var(--bg-hover);
-		--heat-1: #0e4429;
-		--heat-2: #006d32;
-		--heat-3: #26a641;
-		--heat-4: #39d353;
 		/* Without an explicit width, this element's own intrinsic content (the
 		   pixel-width week grid) can pull its ancestor grid/flex tracks wider
 		   than the space actually available, which then gets measured back in
@@ -174,6 +189,18 @@
 		   100% ties this strictly to the parent's box instead. */
 		width: 100%;
 		overflow: hidden;
+	}
+	.calendar-wrap.variant-log {
+		--heat-1: #0e4429;
+		--heat-2: #006d32;
+		--heat-3: #26a641;
+		--heat-4: #39d353;
+	}
+	.calendar-wrap.variant-action {
+		--heat-1: #4c1d95;
+		--heat-2: #6d28d9;
+		--heat-3: #8b5cf6;
+		--heat-4: #a78bfa;
 	}
 	.month-row {
 		display: grid;

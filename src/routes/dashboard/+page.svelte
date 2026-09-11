@@ -87,6 +87,12 @@
 			<div class="heatmaps-col">
 				<div class="card heatmap-card">
 					<h2>Log Activity</h2>
+					<StreakStat
+						currentStreak={stats.LogStreak.CurrentStreak}
+						longestStreak={stats.LogStreak.LongestStreak}
+						lastEntryDate={stats.LogStreak.LastEntryDate}
+						label="log entry"
+					/>
 					<ContributionCalendar data={stats.CtpByDay} />
 				</div>
 
@@ -102,6 +108,7 @@
 						data={stats.ActionsByDay}
 						singular="completed action"
 						plural="completed actions"
+						variant="action"
 					/>
 				</div>
 			</div>
