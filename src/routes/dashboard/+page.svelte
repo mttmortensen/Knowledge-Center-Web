@@ -1,13 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { statsApi } from '$lib/api/stats';
-	import type { Stats } from '$lib/types/api';
+	import { actionsApi } from '$lib/api/actions';
+	import type { Stats, LogStreak, CtpDayCount } from '$lib/types/api';
 	import ContributionCalendar from '$lib/components/ContributionCalendar.svelte';
+	import StreakStat from '$lib/components/StreakStat.svelte';
 	import ActionTable from '$lib/components/ActionTable.svelte';
 
 	let stats = $state<Stats | null>(null);
 	let loading = $state(true);
 	let error = $state('');
+
+	let actionStreak = $state<LogStreak | null>(null);
+	let actionHeatmap = $state<CtpDayCount[]>([]);
+	let actionStatsLoading = $state(true);
+	let actionStatsError = $state('');
 
 	async function load() {
 		loading = true;
@@ -21,7 +28,26 @@
 		}
 	}
 
-	onMount(load);
+	async function loadActionStats() {
+		actionStatsLoading = true;
+		actionStatsError = '';
+		try {
+			[actionStreak, actionHeatmap] = await Promise.all([
+				actionsApi.getStreak(),
+				actionsApi.getHeatmap()
+			]);
+		} catch (err) {
+			actionStatsError =
+				err instanceof Error ? err.message : 'Failed to load completed action stats.';
+		} finally {
+			actionStatsLoading = false;
+		}
+	}
+
+	onMount(() => {
+		load();
+		loadActionStats();
+	});
 
 	let topTag = $derived(stats?.TopTags[0] ?? null);
 </script>
@@ -63,9 +89,32 @@
 		</div>
 
 		<div class="dashboard-grid">
-			<div class="card heatmap-card">
-				<h2>Log Activity</h2>
-				<ContributionCalendar data={stats.CtpByDay} />
+			<div class="heatmaps-col">
+				<div class="card heatmap-card">
+					<h2>Log Activity</h2>
+					<ContributionCalendar data={stats.CtpByDay} />
+				</div>
+
+				<div class="card heatmap-card">
+					<h2>Completed Actions</h2>
+					{#if actionStatsError}
+						<div class="error-banner">{actionStatsError}</div>
+					{:else if actionStatsLoading}
+						<p class="muted">Loading…</p>
+					{:else if actionStreak}
+						<StreakStat
+							currentStreak={actionStreak.CurrentStreak}
+							longestStreak={actionStreak.LongestStreak}
+							lastEntryDate={actionStreak.LastEntryDate}
+							label="completed action"
+						/>
+						<ContributionCalendar
+							data={actionHeatmap}
+							singular="completed action"
+							plural="completed actions"
+						/>
+					{/if}
+				</div>
 			</div>
 
 			<div class="card">
@@ -122,6 +171,12 @@
 		.dashboard-grid {
 			grid-template-columns: 1fr;
 		}
+	}
+	.heatmaps-col {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		min-width: 0;
 	}
 	.heatmap-card {
 		min-width: 0;

@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { CtpDayCount } from '$lib/types/api';
 
-	let { data }: { data: CtpDayCount[] } = $props();
+	let {
+		data,
+		singular = 'log entry',
+		plural = 'log entries'
+	}: { data: CtpDayCount[]; singular?: string; plural?: string } = $props();
 
 	const MAX_WEEKS = 105; // ~2 years, a sane ceiling for an unusually wide card
 	const CELL_SIZE = 11;
@@ -135,7 +139,7 @@
 					{#each week as day (day.key)}
 						<div
 							class="day-cell level-{day.level}"
-							title={`${day.count} ${day.count === 1 ? 'entry' : 'entries'} on ${formatDate(day.date)}`}
+							title={`${day.count} ${day.count === 1 ? singular : plural} on ${formatDate(day.date)}`}
 						></div>
 					{/each}
 				</div>
@@ -143,7 +147,7 @@
 		</div>
 	</div>
 	<div class="legend">
-		<span class="muted">{total} log {total === 1 ? 'entry' : 'entries'} in the last year</span>
+		<span class="muted">{total} {total === 1 ? singular : plural} in the last year</span>
 		<div class="legend-scale">
 			<span class="muted">Less</span>
 			<div class="day-cell level-0"></div>
