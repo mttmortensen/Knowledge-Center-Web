@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { statsApi } from '$lib/api/stats';
 	import { actionsApi } from '$lib/api/actions';
-	import type { Stats, LogStreak, CtpDayCount, RecentAction } from '$lib/types/api';
+	import type { Stats, RecentAction } from '$lib/types/api';
 	import ContributionCalendar from '$lib/components/ContributionCalendar.svelte';
 	import StreakStat from '$lib/components/StreakStat.svelte';
 	import ActionTable from '$lib/components/ActionTable.svelte';
@@ -10,11 +10,6 @@
 	let stats = $state<Stats | null>(null);
 	let loading = $state(true);
 	let error = $state('');
-
-	let actionStreak = $state<LogStreak | null>(null);
-	let actionHeatmap = $state<CtpDayCount[]>([]);
-	let actionStatsLoading = $state(true);
-	let actionStatsError = $state('');
 
 	let recentActions = $state<RecentAction[]>([]);
 	let recentActionsLoading = $state(true);
@@ -32,22 +27,6 @@
 		}
 	}
 
-	async function loadActionStats() {
-		actionStatsLoading = true;
-		actionStatsError = '';
-		try {
-			[actionStreak, actionHeatmap] = await Promise.all([
-				actionsApi.getStreak(),
-				actionsApi.getHeatmap()
-			]);
-		} catch (err) {
-			actionStatsError =
-				err instanceof Error ? err.message : 'Failed to load completed action stats.';
-		} finally {
-			actionStatsLoading = false;
-		}
-	}
-
 	async function loadRecentActions() {
 		recentActionsLoading = true;
 		recentActionsError = '';
@@ -62,7 +41,6 @@
 
 	onMount(() => {
 		load();
-		loadActionStats();
 		loadRecentActions();
 	});
 
@@ -114,23 +92,17 @@
 
 				<div class="card heatmap-card">
 					<h2>Completed Actions</h2>
-					{#if actionStatsError}
-						<div class="error-banner">{actionStatsError}</div>
-					{:else if actionStatsLoading}
-						<p class="muted">Loading…</p>
-					{:else if actionStreak}
-						<StreakStat
-							currentStreak={actionStreak.CurrentStreak}
-							longestStreak={actionStreak.LongestStreak}
-							lastEntryDate={actionStreak.LastEntryDate}
-							label="completed action"
-						/>
-						<ContributionCalendar
-							data={actionHeatmap}
-							singular="completed action"
-							plural="completed actions"
-						/>
-					{/if}
+					<StreakStat
+						currentStreak={stats.ActionStreak.CurrentStreak}
+						longestStreak={stats.ActionStreak.LongestStreak}
+						lastEntryDate={stats.ActionStreak.LastEntryDate}
+						label="completed action"
+					/>
+					<ContributionCalendar
+						data={stats.ActionsByDay}
+						singular="completed action"
+						plural="completed actions"
+					/>
 				</div>
 			</div>
 

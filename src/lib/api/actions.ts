@@ -3,8 +3,6 @@ import type {
 	ActionItem,
 	ActionItemCreateInput,
 	ActionItemUpdateInput,
-	LogStreak,
-	CtpDayCount,
 	RecentAction
 } from '$lib/types/api';
 
@@ -15,8 +13,6 @@ export const actionsApi = {
 	getAllOpen: () => api.get<ActionItem[]>('/actions/open'),
 	getAllCompleted: () => api.get<ActionItem[]>('/actions/completed'),
 	getRecent: (limit = 8) => api.get<RecentAction[]>(`/actions/recent?limit=${limit}`),
-	getStreak: () => api.get<LogStreak>('/actions/streak'),
-	getHeatmap: (days = 371) => api.get<CtpDayCount[]>(`/actions/heatmap?days=${days}`),
 	getById: (id: number) => api.get<ActionItem>(`/actions/${id}`),
 	create: (input: ActionItemCreateInput) => api.post<ActionItem>('/actions', input),
 	update: (id: number, input: ActionItemUpdateInput) => api.put<ActionItem>(`/actions/${id}`, input),
