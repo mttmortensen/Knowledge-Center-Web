@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { statsApi } from '$lib/api/stats';
 	import { actionsApi } from '$lib/api/actions';
-	import type { Stats, LogStreak, CtpDayCount } from '$lib/types/api';
+	import type { Stats, LogStreak, CtpDayCount, RecentAction } from '$lib/types/api';
 	import ContributionCalendar from '$lib/components/ContributionCalendar.svelte';
 	import StreakStat from '$lib/components/StreakStat.svelte';
 	import ActionTable from '$lib/components/ActionTable.svelte';
@@ -15,6 +15,10 @@
 	let actionHeatmap = $state<CtpDayCount[]>([]);
 	let actionStatsLoading = $state(true);
 	let actionStatsError = $state('');
+
+	let recentActions = $state<RecentAction[]>([]);
+	let recentActionsLoading = $state(true);
+	let recentActionsError = $state('');
 
 	async function load() {
 		loading = true;
@@ -44,9 +48,22 @@
 		}
 	}
 
+	async function loadRecentActions() {
+		recentActionsLoading = true;
+		recentActionsError = '';
+		try {
+			recentActions = await actionsApi.getRecent();
+		} catch (err) {
+			recentActionsError = err instanceof Error ? err.message : 'Failed to load recent actions.';
+		} finally {
+			recentActionsLoading = false;
+		}
+	}
+
 	onMount(() => {
 		load();
 		loadActionStats();
+		loadRecentActions();
 	});
 
 	let topTag = $derived(stats?.TopTags[0] ?? null);
@@ -122,10 +139,14 @@
 					<h2>Recent Actions</h2>
 					<a href="/actions">View all</a>
 				</div>
-				{#if stats.RecentActions.length === 0}
+				{#if recentActionsError}
+					<div class="error-banner">{recentActionsError}</div>
+				{:else if recentActionsLoading}
+					<p class="muted">Loading…</p>
+				{:else if recentActions.length === 0}
 					<div class="empty-state">No actions yet.</div>
 				{:else}
-					<ActionTable actions={stats.RecentActions} showNode />
+					<ActionTable actions={recentActions} showNode />
 				{/if}
 			</div>
 		</div>

@@ -180,5 +180,4 @@ export interface Stats {
 	LogStreak: LogStreak;
 	CtpByDay: CtpDayCount[];
 	TopTags: TagCount[];
-	RecentActions: RecentAction[];
 }
