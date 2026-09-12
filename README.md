@@ -21,6 +21,24 @@ npm run build
 npm run preview   # serve the production build locally
 ```
 
+## Deploying
+
+One command from a dev machine — it SSHes to the build host (MRTN-LAPPS) and runs
+`deploy.sh` there:
+
+```sh
+npm run deploy
+```
+
+`deploy.sh` pulls `origin/main`, runs `npm ci` and `npm run build`, restarts the
+`knowledge-center-web` systemd service (`sirv build --single` on port 5067, fronted
+by the nginx CT for kc.mortensens.cc), then health-checks the service before
+reporting the deployed commit. It aborts if the host checkout is on another branch
+or if the restarted service doesn't answer with 200.
+
+It deploys what is on `origin/main`, so push first. Override `KC_APP_DIR`,
+`KC_BRANCH`, `KC_SERVICE` or `KC_PORT` if any of that moves.
+
 ## Auth / demo mode
 
 Session token lives in `sessionStorage` (`kc_token`, `kc_is_demo`). Demo mode is
