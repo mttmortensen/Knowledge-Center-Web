@@ -10,14 +10,40 @@
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
 	import KnowledgeNodeTable from '$lib/components/KnowledgeNodeTable.svelte';
+	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
 
 	const domainId = $derived(Number(page.params.id));
 
 	let domain = $state<DomainWithKNs | null>(null);
 	let logCounts = $state<Map<number, number>>(new Map());
 	let actionCounts = $state<Map<number, number>>(new Map());
+	let logTotal = $state(0);
+	let openActionTotal = $state(0);
+	let completedActionTotal = $state(0);
 	let loading = $state(true);
 	let error = $state('');
+
+	const metaRows: MetaRow[] = $derived.by(() => {
+		if (!domain) return [];
+		const nodes = domain.KnowledgeNodes ?? [];
+		const concepts = nodes.filter((n) => n.NodeType === 'Concept').length;
+		const projects = nodes.filter((n) => n.NodeType === 'Project').length;
+		return [
+			{ label: 'Status', value: domain.DomainStatus, pill: 'default' },
+			{ label: 'Knowledge nodes', value: `${nodes.length}` },
+			{ label: 'Concepts', value: `${concepts} of ${nodes.length}` },
+			{ label: 'Created', value: new Date(domain.CreatedAt).toLocaleString() },
+			{ label: 'Projects', value: `${projects} of ${nodes.length}` },
+			{ label: 'Last used', value: new Date(domain.LastUsed).toLocaleString() },
+			{ label: 'Log entries', value: `${logTotal}` },
+			{ label: 'Last updated', value: new Date(domain.LastUpdated).toLocaleString() },
+			{
+				label: 'Actions',
+				value: `${openActionTotal} open · ${completedActionTotal} closed`
+			},
+			{ label: 'Domain ID', value: `#${domain.DomainId}` }
+		];
+	});
 
 	function countBy<T>(items: T[], keyOf: (item: T) => number): Map<number, number> {
 		const counts = new Map<number, number>();
@@ -59,6 +85,12 @@
 			domain.KnowledgeNodes ??= [];
 			logCounts = countBy(logs, (log) => log.NodeId);
 			actionCounts = countBy([...openActions, ...completedActions], (action) => action.KnowledgeNodeId);
+
+			const nodeIds = new Set(domain.KnowledgeNodes.map((node) => node.Id));
+			logTotal = logs.filter((log) => nodeIds.has(log.NodeId)).length;
+			openActionTotal = openActions.filter((a) => nodeIds.has(a.KnowledgeNodeId)).length;
+			completedActionTotal = completedActions.filter((a) => nodeIds.has(a.KnowledgeNodeId)).length;
+
 			editName = domain.DomainName;
 			editDescription = domain.DomainDescription;
 			editStatus = domain.DomainStatus;
@@ -176,9 +208,13 @@
 					<h1>{domain.DomainName}</h1>
 					<span class="tag-pill">{domain.DomainStatus}</span>
 				</div>
-				{#if domain.DomainDescription}
-					<p class="muted">{domain.DomainDescription}</p>
-				{/if}
+
+				<h2 class="section-heading">Details</h2>
+				<MetaPanel rows={metaRows} columns={2} />
+
+				<h2 class="section-heading">Description</h2>
+				<p class="domain-description">{domain.DomainDescription || 'No description yet.'}</p>
+
 				<div class="row">
 					<button onclick={() => (editing = true)} disabled={auth.isDemo}>Edit</button>
 					<button class="danger" onclick={deleteDomain} disabled={auth.isDemo}>Delete</button>
@@ -244,3 +280,10 @@
 		{/if}
 	{/if}
 </div>
+
+<style>
+	.domain-description {
+		white-space: pre-wrap;
+		margin: 0 0 1.25rem;
+	}
+</style>

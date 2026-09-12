@@ -48,11 +48,11 @@
 				label: 'Log titles',
 				value: `${logs.filter((l) => l.Title).length} of ${logs.length}`
 			},
+			{ label: 'Created', value: new Date(node.CreatedAt).toLocaleString() },
 			{
 				label: 'Comic titles',
 				value: `${logs.filter((l) => !l.Title).length} of ${logs.length}`
 			},
-			{ label: 'Created', value: new Date(node.CreatedAt).toLocaleString() },
 			{ label: 'Last updated', value: new Date(node.LastUpdated).toLocaleString() },
 			{ label: 'Node ID', value: `#${node.Id}` }
 		];
