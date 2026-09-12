@@ -37,7 +37,7 @@
 
 <div class="login-wrap">
 	<form class="card login-card" onsubmit={handleLogin}>
-		<h1>Knowledge Center</h1>
+		<h1>KC</h1>
 		<p class="muted">Sign in to continue.</p>
 
 		{#if error}

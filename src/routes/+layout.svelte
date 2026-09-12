@@ -19,7 +19,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>Knowledge Center</title>
+	<title>KC</title>
 </svelte:head>
 
 {#if !isLoginPage && auth.isAuthenticated}

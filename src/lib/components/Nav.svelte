@@ -22,35 +22,37 @@
 </script>
 
 <nav>
-	<div class="nav-bar">
-		<a href="/dashboard" class="brand" onclick={closeMenu}>Knowledge Center</a>
-		<button
-			type="button"
-			class="menu-toggle"
-			aria-label="Toggle menu"
-			aria-expanded={menuOpen}
-			onclick={() => (menuOpen = !menuOpen)}
-		>
-			<span class="menu-icon"></span>
-		</button>
-	</div>
-
-	<div class="nav-collapse" class:open={menuOpen}>
-		<div class="nav-links">
-			<a href="/dashboard" onclick={closeMenu}>Dashboard</a>
-			<a href="/domains" onclick={closeMenu}>Domains</a>
-			<a href="/nodes" onclick={closeMenu}>Knowledge Nodes</a>
-			<a href="/logs" onclick={closeMenu}>Logs</a>
-			<a href="/actions" onclick={closeMenu}>Actions</a>
-			<a href="/tags" onclick={closeMenu}>Tags</a>
+	<div class="nav-inner">
+		<div class="nav-bar">
+			<a href="/dashboard" class="brand" onclick={closeMenu}>KC</a>
+			<button
+				type="button"
+				class="menu-toggle"
+				aria-label="Toggle menu"
+				aria-expanded={menuOpen}
+				onclick={() => (menuOpen = !menuOpen)}
+			>
+				<span class="menu-icon"></span>
+			</button>
 		</div>
-		<div class="nav-actions">
-			{#if auth.isDemo}
-				<span class="tag-pill">demo mode</span>
-			{/if}
-			<a href="/logs/new" onclick={closeMenu}><button class="primary">Add log</button></a>
-			<a href="/actions/new" onclick={closeMenu}><button class="primary">Add action</button></a>
-			<button onclick={handleLogout}>Log out</button>
+
+		<div class="nav-collapse" class:open={menuOpen}>
+			<div class="nav-links">
+				<a href="/dashboard" onclick={closeMenu}>Dashboard</a>
+				<a href="/domains" onclick={closeMenu}>Domains</a>
+				<a href="/nodes" onclick={closeMenu}>Knowledge Nodes</a>
+				<a href="/logs" onclick={closeMenu}>Logs</a>
+				<a href="/actions" onclick={closeMenu}>Actions</a>
+				<a href="/tags" onclick={closeMenu}>Tags</a>
+			</div>
+			<div class="nav-actions">
+				{#if auth.isDemo}
+					<span class="tag-pill">demo mode</span>
+				{/if}
+				<a href="/logs/new" onclick={closeMenu}><button class="primary">Add log</button></a>
+				<a href="/actions/new" onclick={closeMenu}><button class="primary">Add action</button></a>
+				<button onclick={handleLogout}>Log out</button>
+			</div>
 		</div>
 	</div>
 </nav>
@@ -60,12 +62,17 @@
 		border-bottom: 1px solid var(--border);
 		background: var(--bg-elevated);
 	}
+	.nav-inner {
+		display: flex;
+		align-items: center;
+		padding: 0.85rem 1.5rem;
+		gap: 1.25rem;
+	}
 	.nav-bar {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		padding: 0.85rem 1.5rem;
 		gap: 1rem;
+		flex-shrink: 0;
 	}
 	.brand {
 		font-weight: 700;
@@ -102,7 +109,8 @@
 		align-items: center;
 		justify-content: space-between;
 		flex-wrap: wrap;
-		padding: 0 1.5rem 0.85rem;
+		flex: 1;
+		min-width: 0;
 		gap: 0.75rem 1.25rem;
 	}
 	.nav-links {
@@ -125,8 +133,14 @@
 	}
 
 	@media (max-width: 860px) {
-		.nav-bar {
+		.nav-inner {
+			flex-direction: column;
+			align-items: stretch;
 			padding: 0.75rem 1rem;
+			gap: 0;
+		}
+		.nav-bar {
+			justify-content: space-between;
 		}
 		.menu-toggle {
 			display: flex;
@@ -137,7 +151,7 @@
 			display: none;
 			flex-direction: column;
 			align-items: stretch;
-			padding: 0 1rem 1rem;
+			padding: 0.25rem 0 0.25rem;
 			gap: 1rem;
 		}
 		.nav-collapse.open {
