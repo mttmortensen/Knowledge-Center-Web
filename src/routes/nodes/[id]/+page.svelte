@@ -9,6 +9,7 @@
 	import LogTable from '$lib/components/LogTable.svelte';
 	import ActionTable from '$lib/components/ActionTable.svelte';
 	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
+	import Pagination from '$lib/components/Pagination.svelte';
 	import type { Domain, KnowledgeNodeWithLogs, LogEntry, ActionItem } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
@@ -24,6 +25,17 @@
 
 	let logsExpanded = $state(true);
 	let actionsExpanded = $state(true);
+
+	const PAGE_SIZE = 6;
+	let logsPage = $state(1);
+	let actionsPage = $state(1);
+
+	const logsTotalPages = $derived(Math.max(1, Math.ceil(logs.length / PAGE_SIZE)));
+	const actionsTotalPages = $derived(Math.max(1, Math.ceil(actions.length / PAGE_SIZE)));
+	const pagedLogs = $derived(logs.slice((logsPage - 1) * PAGE_SIZE, logsPage * PAGE_SIZE));
+	const pagedActions = $derived(
+		actions.slice((actionsPage - 1) * PAGE_SIZE, actionsPage * PAGE_SIZE)
+	);
 
 	let editing = $state(false);
 	let editTitle = $state('');
@@ -69,6 +81,8 @@
 				actionsApi.getCompletedForNode(nodeId)
 			]);
 			node = nodeResult;
+			logsPage = 1;
+			actionsPage = 1;
 			domainsApi
 				.getById(nodeResult.DomainId)
 				.then((d) => (domain = d))
@@ -210,53 +224,63 @@
 			{/if}
 		</div>
 
-		<div class="split-columns">
-			<div class="column">
-				<div class="row-between">
-					<button
-						type="button"
-						class="section-toggle"
-						onclick={() => (logsExpanded = !logsExpanded)}
-						aria-expanded={logsExpanded}
-					>
-						<span class="chevron" class:collapsed={!logsExpanded}>▾</span>
-						<h2>Log Entries</h2>
-					</button>
-					<a href="/nodes/{nodeId}/logs/new"><button class="primary">New entry</button></a>
-				</div>
-
-				{#if logsExpanded}
-					{#if logs.length === 0}
-						<div class="empty-state">No log entries yet.</div>
-					{:else}
-						<LogTable {logs} />
-					{/if}
-				{/if}
+		<section class="table-section">
+			<div class="row-between">
+				<button
+					type="button"
+					class="section-toggle"
+					onclick={() => (logsExpanded = !logsExpanded)}
+					aria-expanded={logsExpanded}
+				>
+					<span class="chevron" class:collapsed={!logsExpanded}>▾</span>
+					<h2>Log Entries</h2>
+				</button>
+				<a href="/nodes/{nodeId}/logs/new"><button class="primary">New entry</button></a>
 			</div>
 
-			<div class="column">
-				<div class="row-between">
-					<button
-						type="button"
-						class="section-toggle"
-						onclick={() => (actionsExpanded = !actionsExpanded)}
-						aria-expanded={actionsExpanded}
-					>
-						<span class="chevron" class:collapsed={!actionsExpanded}>▾</span>
-						<h2>Actions</h2>
-					</button>
-					<a href="/nodes/{nodeId}/actions/new"><button class="primary">New action</button></a>
-				</div>
-
-				{#if actionsExpanded}
-					{#if actions.length === 0}
-						<div class="empty-state">No actions yet.</div>
-					{:else}
-						<ActionTable {actions} />
-					{/if}
+			{#if logsExpanded}
+				{#if logs.length === 0}
+					<div class="empty-state">No log entries yet.</div>
+				{:else}
+					<LogTable logs={pagedLogs} />
+					<Pagination
+						bind:page={logsPage}
+						totalPages={logsTotalPages}
+						totalItems={logs.length}
+						itemLabel="entries"
+					/>
 				{/if}
+			{/if}
+		</section>
+
+		<section class="table-section">
+			<div class="row-between">
+				<button
+					type="button"
+					class="section-toggle"
+					onclick={() => (actionsExpanded = !actionsExpanded)}
+					aria-expanded={actionsExpanded}
+				>
+					<span class="chevron" class:collapsed={!actionsExpanded}>▾</span>
+					<h2>Actions</h2>
+				</button>
+				<a href="/nodes/{nodeId}/actions/new"><button class="primary">New action</button></a>
 			</div>
-		</div>
+
+			{#if actionsExpanded}
+				{#if actions.length === 0}
+					<div class="empty-state">No actions yet.</div>
+				{:else}
+					<ActionTable actions={pagedActions} />
+					<Pagination
+						bind:page={actionsPage}
+						totalPages={actionsTotalPages}
+						totalItems={actions.length}
+						itemLabel="actions"
+					/>
+				{/if}
+			{/if}
+		</section>
 	{/if}
 </div>
 
@@ -268,16 +292,11 @@
 	.container.wide {
 		max-width: 1200px;
 	}
-	.split-columns {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 2rem;
-		align-items: start;
+	.table-section {
+		width: 100%;
 	}
-	@media (max-width: 700px) {
-		.split-columns {
-			grid-template-columns: 1fr;
-		}
+	.table-section + .table-section {
+		margin-top: 2rem;
 	}
 	.section-toggle {
 		display: flex;

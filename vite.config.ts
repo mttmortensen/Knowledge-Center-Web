@@ -21,5 +21,19 @@ export default defineConfig({
 				precompress: false
 			})
 		})
-	]
+	],
+
+	// Dev only. The real API doesn't send CORS headers for localhost origins, so the
+	// browser can't call it directly from `vite dev`. Proxying keeps API requests
+	// same-origin during development; production builds hit the API URL directly
+	// (see src/lib/api/config.ts).
+	server: {
+		proxy: {
+			'/kc/api': {
+				target: 'https://api.mortensens.cc',
+				changeOrigin: true,
+				secure: true
+			}
+		}
+	}
 });
