@@ -10,14 +10,14 @@
 </script>
 
 <script lang="ts">
-	let { rows }: { rows: MetaRow[] } = $props();
+	let { rows, columns = 1 }: { rows: MetaRow[]; columns?: 1 | 2 } = $props();
 
 	const visible = $derived(
 		rows.filter((row) => (row.pills?.length ?? 0) > 0 || (row.value != null && row.value !== ''))
 	);
 </script>
 
-<dl class="meta-grid">
+<dl class="meta-grid" class:two-up={columns === 2}>
 	{#each visible as row (row.label)}
 		<dt>{row.label}</dt>
 		<dd>
@@ -58,6 +58,17 @@
 		align-items: baseline;
 		margin: 0;
 	}
+	/* Two label/value pairs per row, so wide cards don't trail off into empty space. */
+	.meta-grid.two-up {
+		grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
+		column-gap: 2.5rem;
+	}
+	@media (max-width: 760px) {
+		.meta-grid.two-up {
+			grid-template-columns: max-content minmax(0, 1fr);
+			column-gap: 1.25rem;
+		}
+	}
 	dt {
 		font-size: 0.75rem;
 		letter-spacing: 0.04em;
@@ -76,7 +87,8 @@
 		gap: 0.35rem;
 	}
 	@media (max-width: 520px) {
-		.meta-grid {
+		.meta-grid,
+		.meta-grid.two-up {
 			grid-template-columns: minmax(0, 1fr);
 			gap: 0.15rem;
 		}

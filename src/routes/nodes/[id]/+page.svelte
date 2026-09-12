@@ -5,15 +5,18 @@
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import { logEntriesApi } from '$lib/api/logEntries';
 	import { actionsApi } from '$lib/api/actions';
+	import { domainsApi } from '$lib/api/domains';
 	import LogTable from '$lib/components/LogTable.svelte';
 	import ActionTable from '$lib/components/ActionTable.svelte';
-	import type { KnowledgeNodeWithLogs, LogEntry, ActionItem } from '$lib/types/api';
+	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
+	import type { Domain, KnowledgeNodeWithLogs, LogEntry, ActionItem } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
 
 	const nodeId = $derived(Number(page.params.id));
 
 	let node = $state<KnowledgeNodeWithLogs | null>(null);
+	let domain = $state<Domain | null>(null);
 	let logs = $state<LogEntry[]>([]);
 	let actions = $state<ActionItem[]>([]);
 	let loading = $state(true);
@@ -30,6 +33,31 @@
 	let editStatus = $state('');
 	let saving = $state(false);
 
+	const metaRows: MetaRow[] = $derived.by(() => {
+		if (!node) return [];
+		return [
+			{
+				label: 'Domain',
+				value: domain?.DomainName ?? `Domain ${node.DomainId}`,
+				href: `/domains/${node.DomainId}`
+			},
+			{ label: 'Type', value: node.NodeType },
+			{ label: 'Status', value: node.Status, pill: 'default' },
+			{ label: 'Confidence', value: `${node.ConfidenceLevel} / 5` },
+			{
+				label: 'Log titles',
+				value: `${logs.filter((l) => l.Title).length} of ${logs.length}`
+			},
+			{
+				label: 'Comic titles',
+				value: `${logs.filter((l) => !l.Title).length} of ${logs.length}`
+			},
+			{ label: 'Created', value: new Date(node.CreatedAt).toLocaleString() },
+			{ label: 'Last updated', value: new Date(node.LastUpdated).toLocaleString() },
+			{ label: 'Node ID', value: `#${node.Id}` }
+		];
+	});
+
 	async function load() {
 		loading = true;
 		error = '';
@@ -41,6 +69,10 @@
 				actionsApi.getCompletedForNode(nodeId)
 			]);
 			node = nodeResult;
+			domainsApi
+				.getById(nodeResult.DomainId)
+				.then((d) => (domain = d))
+				.catch(() => (domain = null));
 			logs = [...logsResult].sort(
 				(a, b) => new Date(b.EntryDate).getTime() - new Date(a.EntryDate).getTime()
 			);
@@ -109,7 +141,7 @@
 <div class="container wide">
 	<div class="breadcrumb">
 		<a href="/domains">Domains</a> /
-		<a href="/domains/{node?.DomainId}">Domain</a> / {node?.Title ?? '…'}
+		<a href="/domains/{node?.DomainId}">{domain?.DomainName ?? 'Domain'}</a> / {node?.Title ?? '…'}
 	</div>
 
 	{#if error}
@@ -161,10 +193,13 @@
 					<h1>{node.Title}</h1>
 					<span class="tag-pill">{node.Status}</span>
 				</div>
-				<p class="muted">{node.NodeType} · confidence {node.ConfidenceLevel}/5</p>
-				{#if node.Description}
-					<p>{node.Description}</p>
-				{/if}
+
+				<h2 class="section-heading">Details</h2>
+				<MetaPanel rows={metaRows} columns={2} />
+
+				<h2 class="section-heading">Description</h2>
+				<p class="node-description">{node.Description || 'No description yet.'}</p>
+
 				<div class="row">
 					<button onclick={() => (editing = true)} disabled={auth.isDemo}>Edit</button>
 					<button class="danger" onclick={deleteNode} disabled={auth.isDemo}>Delete</button>
@@ -226,6 +261,10 @@
 </div>
 
 <style>
+	.node-description {
+		white-space: pre-wrap;
+		margin: 0 0 1.25rem;
+	}
 	.container.wide {
 		max-width: 1200px;
 	}
