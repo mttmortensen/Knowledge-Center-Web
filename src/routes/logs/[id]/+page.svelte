@@ -4,7 +4,9 @@
 	import { onMount } from 'svelte';
 	import TiptapEditor from '$lib/components/TiptapEditor.svelte';
 	import TagPicker from '$lib/components/TagPicker.svelte';
+	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
 	import { logEntriesApi } from '$lib/api/logEntries';
+	import { loadParentContext, type ParentContext } from '$lib/api/parents';
 	import { uploadImage } from '$lib/api/images';
 	import type { LogEntry } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -14,6 +16,7 @@
 	const logId = $derived(Number(page.params.id));
 
 	let entry = $state<LogEntry | null>(null);
+	let parent = $state<ParentContext>({ node: null, domain: null });
 	let loading = $state(true);
 	let error = $state('');
 
@@ -24,6 +27,41 @@
 	let editTagIds = $state<number[]>([]);
 	let saving = $state(false);
 
+	const metaRows: MetaRow[] = $derived.by(() => {
+		if (!entry) return [];
+		const node = parent.node;
+		const domain = parent.domain;
+		return [
+			{
+				label: 'Domain',
+				value: domain?.DomainName ?? (node ? `Domain ${node.DomainId}` : null),
+				href: node ? `/domains/${node.DomainId}` : undefined
+			},
+			{
+				label: 'Knowledge node',
+				value: node?.Title ?? `Node ${entry.NodeId}`,
+				href: `/nodes/${entry.NodeId}`
+			},
+			{
+				label: 'Node type',
+				value: node ? `${node.NodeType} · ${node.Status}` : null
+			},
+			{ label: 'Entry date', value: new Date(entry.EntryDate).toLocaleString() },
+			{
+				label: 'Title',
+				value: entry.Title ? null : 'Untitled — display name is generated'
+			},
+			{ label: 'Tags', pills: entry.Tags.map((t) => t.Name) },
+			{
+				label: 'Related chat',
+				value: entry.ChatURL ? 'Open conversation' : null,
+				href: entry.ChatURL ?? undefined,
+				external: true
+			},
+			{ label: 'Log ID', value: `#${entry.LogId}` }
+		];
+	});
+
 	async function load() {
 		loading = true;
 		error = '';
@@ -33,6 +71,7 @@
 			editContent = entry.Content;
 			editChatUrl = entry.ChatURL ?? '';
 			editTagIds = entry.Tags.map((t) => t.TagId);
+			parent = await loadParentContext(entry.NodeId);
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load log entry.';
 		} finally {
@@ -95,7 +134,13 @@
 
 <div class="container">
 	{#if entry}
-		<div class="breadcrumb"><a href="/nodes/{entry.NodeId}">Back to node</a></div>
+		<div class="breadcrumb">
+			<a href="/domains">Domains</a> /
+			{#if parent.node}
+				<a href="/domains/{parent.node.DomainId}">{parent.domain?.DomainName ?? 'Domain'}</a> /
+			{/if}
+			<a href="/nodes/{entry.NodeId}">{parent.node?.Title ?? 'Node'}</a> / Log
+		</div>
 	{/if}
 
 	{#if error}
@@ -107,28 +152,27 @@
 	{:else if entry}
 		<div class="row-between">
 			{#if editing}
-				<input type="text" placeholder="Title (optional)" bind:value={editTitle} style="font-size: 1.4rem; font-weight: 600;" />
+				<input
+					type="text"
+					placeholder="Title (optional)"
+					bind:value={editTitle}
+					style="font-size: 1.4rem; font-weight: 600;"
+				/>
 			{:else}
 				<h1>{entry.Title || comicTitle(entry.LogId)}</h1>
 			{/if}
-			<span class="muted">{new Date(entry.EntryDate).toLocaleString()}</span>
 		</div>
 
 		{#if !editing && !entry.Title}
 			<p class="muted entry-byline">{comicByline(entry.LogId)}</p>
 		{/if}
 
-		{#if !editing}
-			<div class="row" style="margin-bottom: 1rem; flex-wrap: wrap;">
-				{#each entry.Tags as tag (tag.TagId)}
-					<span class="tag-pill">{tag.Name}</span>
-				{/each}
-			</div>
-			{#if entry.ChatURL}
-				<p><a href={entry.ChatURL} target="_blank" rel="noopener">Related chat ↗</a></p>
-			{/if}
-		{/if}
+		<h2 class="section-heading">Details</h2>
+		<div class="card meta-card">
+			<MetaPanel rows={metaRows} />
+		</div>
 
+		<h2 class="section-heading">Entry content</h2>
 		<TiptapEditor bind:value={editContent} editable={editing} onImageUpload={uploadImage} />
 
 		{#if editing}
@@ -144,7 +188,12 @@
 				<button class="primary" onclick={saveEdit} disabled={saving}>
 					{saving ? 'Saving…' : 'Save'}
 				</button>
-				<button onclick={() => { editing = false; editContent = entry!.Content; }}>Cancel</button>
+				<button
+					onclick={() => {
+						editing = false;
+						editContent = entry!.Content;
+					}}>Cancel</button
+				>
 			</div>
 		{:else}
 			<div class="row" style="margin-top: 1rem;">

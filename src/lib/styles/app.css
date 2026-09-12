@@ -220,3 +220,18 @@ h3 {
 .breadcrumb a:hover {
 	color: var(--accent);
 }
+
+.section-heading {
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin: 1.5rem 0 0.6rem;
+	padding-bottom: 0.35rem;
+	border-bottom: 1px solid var(--border);
+}
+
+.meta-card {
+	padding: 1rem 1.25rem;
+}

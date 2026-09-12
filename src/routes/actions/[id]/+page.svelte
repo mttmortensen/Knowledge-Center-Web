@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { actionsApi } from '$lib/api/actions';
+	import { loadParentContext, type ParentContext } from '$lib/api/parents';
+	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
 	import type { ActionItem } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
@@ -10,6 +12,7 @@
 	const actionId = $derived(Number(page.params.id));
 
 	let action = $state<ActionItem | null>(null);
+	let parent = $state<ParentContext>({ node: null, domain: null });
 	let loading = $state(true);
 	let error = $state('');
 
@@ -21,12 +24,46 @@
 		return status === 'Completed' ? 'Closed' : status;
 	}
 
+	const metaRows: MetaRow[] = $derived.by(() => {
+		if (!action) return [];
+		const node = parent.node;
+		const domain = parent.domain;
+		return [
+			{
+				label: 'Domain',
+				value: domain?.DomainName ?? (node ? `Domain ${node.DomainId}` : null),
+				href: node ? `/domains/${node.DomainId}` : undefined
+			},
+			{
+				label: 'Knowledge node',
+				value: node?.Title ?? `Node ${action.KnowledgeNodeId}`,
+				href: `/nodes/${action.KnowledgeNodeId}`
+			},
+			{
+				label: 'Node type',
+				value: node ? `${node.NodeType} · ${node.Status}` : null
+			},
+			{
+				label: 'Status',
+				value: statusLabel(action.Status),
+				pill: action.Status === 'Open' ? 'open' : 'completed'
+			},
+			{ label: 'Created', value: new Date(action.CreatedAt).toLocaleString() },
+			{
+				label: 'Completed',
+				value: action.CompletedAt ? new Date(action.CompletedAt).toLocaleString() : null
+			},
+			{ label: 'Action ID', value: `#${action.Id}` }
+		];
+	});
+
 	async function load() {
 		loading = true;
 		error = '';
 		try {
 			action = await actionsApi.getById(actionId);
 			editText = action.ActionText;
+			parent = await loadParentContext(action.KnowledgeNodeId);
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load action.';
 		} finally {
@@ -93,7 +130,13 @@
 
 <div class="container">
 	{#if action}
-		<div class="breadcrumb"><a href="/nodes/{action.KnowledgeNodeId}">Back to node</a></div>
+		<div class="breadcrumb">
+			<a href="/domains">Domains</a> /
+			{#if parent.node}
+				<a href="/domains/{parent.node.DomainId}">{parent.domain?.DomainName ?? 'Domain'}</a> /
+			{/if}
+			<a href="/nodes/{action.KnowledgeNodeId}">{parent.node?.Title ?? 'Node'}</a> / Action
+		</div>
 	{/if}
 
 	{#if error}
@@ -114,6 +157,12 @@
 			</span>
 		</div>
 
+		<h2 class="section-heading">Details</h2>
+		<div class="card meta-card">
+			<MetaPanel rows={metaRows} />
+		</div>
+
+		<h2 class="section-heading">Action text</h2>
 		{#if editing}
 			<div class="field">
 				<label for="edit-text">Action</label>
@@ -131,13 +180,9 @@
 				>
 			</div>
 		{:else}
-			<p>{action.ActionText}</p>
-			<p class="muted">
-				Created {new Date(action.CreatedAt).toLocaleString()}
-				{#if action.CompletedAt}
-					· Completed {new Date(action.CompletedAt).toLocaleString()}
-				{/if}
-			</p>
+			<div class="card">
+				<p class="action-text">{action.ActionText}</p>
+			</div>
 			<div class="row" style="margin-top: 1rem;">
 				<button onclick={() => (editing = true)} disabled={auth.isDemo}>Edit</button>
 				<button onclick={toggleStatus} disabled={auth.isDemo}>
@@ -151,3 +196,10 @@
 		{/if}
 	{/if}
 </div>
+
+<style>
+	.action-text {
+		margin: 0;
+		white-space: pre-wrap;
+	}
+</style>
