@@ -3,7 +3,6 @@
 		label: string;
 		value?: string | null;
 		href?: string;
-		external?: boolean;
 		pill?: 'default' | 'open' | 'completed';
 		pills?: string[];
 	}
@@ -28,13 +27,7 @@
 					{/each}
 				</span>
 			{:else if row.href}
-				<a
-					href={row.href}
-					target={row.external ? '_blank' : undefined}
-					rel={row.external ? 'noopener' : undefined}
-				>
-					{row.value}{row.external ? ' ↗' : ''}
-				</a>
+				<a href={row.href}>{row.value}</a>
 			{:else if row.pill}
 				<span
 					class="tag-pill"

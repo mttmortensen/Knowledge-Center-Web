@@ -23,7 +23,6 @@
 	let editing = $state(false);
 	let editTitle = $state('');
 	let editContent = $state('');
-	let editChatUrl = $state('');
 	let editTagIds = $state<number[]>([]);
 	let saving = $state(false);
 
@@ -52,12 +51,6 @@
 				value: entry.Title ? null : 'Untitled — display name is generated'
 			},
 			{ label: 'Tags', pills: entry.Tags.map((t) => t.Name) },
-			{
-				label: 'Related chat',
-				value: entry.ChatURL ? 'Open conversation' : null,
-				href: entry.ChatURL ?? undefined,
-				external: true
-			},
 			{ label: 'Log ID', value: `#${entry.LogId}` }
 		];
 	});
@@ -69,7 +62,6 @@
 			entry = await logEntriesApi.getById(logId);
 			editTitle = entry.Title ?? '';
 			editContent = entry.Content;
-			editChatUrl = entry.ChatURL ?? '';
 			editTagIds = entry.Tags.map((t) => t.TagId);
 			parent = await loadParentContext(entry.NodeId);
 		} catch (err) {
@@ -90,10 +82,6 @@
 				Title: editTitle || undefined,
 				Content: editContent
 			});
-
-			if (editChatUrl !== (entry.ChatURL ?? '')) {
-				await logEntriesApi.updateChatUrl(logId, editChatUrl);
-			}
 
 			const currentTagIds = entry.Tags.map((t) => t.TagId);
 			const toAdd = editTagIds.filter((id) => !currentTagIds.includes(id));
@@ -179,10 +167,6 @@
 			<div class="field" style="margin-top: 1rem;">
 				<label for="tags">Tags</label>
 				<TagPicker bind:selectedIds={editTagIds} />
-			</div>
-			<div class="field">
-				<label for="chat-url">Chat URL</label>
-				<input id="chat-url" type="url" bind:value={editChatUrl} placeholder="https://..." />
 			</div>
 			<div class="row">
 				<button class="primary" onclick={saveEdit} disabled={saving}>

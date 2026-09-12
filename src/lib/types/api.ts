@@ -61,7 +61,6 @@ export interface LogEntryInline {
 	Title?: string;
 	Content: string;
 	EntryDate: string;
-	ChatURL?: string | null;
 }
 
 export interface LogEntry {
@@ -71,7 +70,6 @@ export interface LogEntry {
 	Title?: string;
 	Content: string;
 	Tags: Tag[];
-	ChatURL?: string | null;
 }
 
 export interface LogEntryCreateInput {
@@ -79,7 +77,6 @@ export interface LogEntryCreateInput {
 	Title?: string;
 	Content: string;
 	TagIds: number[];
-	ChatURL?: string | null;
 }
 
 export interface LogEntryUpdateInput {

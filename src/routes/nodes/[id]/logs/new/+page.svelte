@@ -36,7 +36,6 @@
 
 	let title = $state('');
 	let content = $state('');
-	let chatUrl = $state('');
 	let tagIds = $state<number[]>([]);
 	let saving = $state(false);
 	let error = $state('');
@@ -54,8 +53,7 @@
 				NodeId: nodeId,
 				Title: title || undefined,
 				Content: content,
-				TagIds: tagIds,
-				ChatURL: chatUrl || undefined
+				TagIds: tagIds
 			});
 			goto(`/nodes/${nodeId}`);
 		} catch (err) {
@@ -101,11 +99,6 @@
 		<div class="field">
 			<label for="tags">Tags</label>
 			<TagPicker bind:selectedIds={tagIds} />
-		</div>
-
-		<div class="field">
-			<label for="chat-url">Chat URL (optional)</label>
-			<input id="chat-url" type="url" bind:value={chatUrl} placeholder="https://..." />
 		</div>
 
 		<button type="submit" class="primary" disabled={saving}>
