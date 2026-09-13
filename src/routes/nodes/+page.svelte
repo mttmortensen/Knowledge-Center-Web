@@ -86,13 +86,13 @@
 		}
 	}
 
+	// Row order within a group is the table's job — each KnowledgeNodeTable keeps
+	// its own sort, so groups sort independently.
 	let groups = $derived(
 		domains
 			.map((domain) => ({
 				domain,
-				nodes: nodes
-					.filter((node) => node.DomainId === domain.DomainId)
-					.sort((a, b) => a.Title.localeCompare(b.Title))
+				nodes: nodes.filter((node) => node.DomainId === domain.DomainId)
 			}))
 			.filter((group) => group.nodes.length > 0)
 			.sort((a, b) => a.domain.DomainName.localeCompare(b.domain.DomainName))

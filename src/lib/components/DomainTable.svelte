@@ -1,42 +1,106 @@
-<script lang="ts">
-	import { goto } from '$app/navigation';
+<script lang="ts" module>
 	import type { Domain } from '$lib/types/api';
+	import { sortRows, type SortColumn, type SortState, type SortValue } from '$lib/utils/tableSort';
 
-	let { domains, nodeCounts }: { domains: Domain[]; nodeCounts: Map<number, number> } = $props();
+	export const domainSortColumns: SortColumn[] = [
+		{ key: 'name', label: 'Name' },
+		{ key: 'description', label: 'Description' },
+		{ key: 'nodes', label: 'Nodes', dir: 'desc' },
+		{ key: 'status', label: 'Status' },
+		{ key: 'updated', label: 'Updated', dir: 'desc' }
+	];
+
+	export const defaultDomainSort: SortState = { key: 'name', dir: 'asc' };
+
+	function domainSortValue(
+		domain: Domain,
+		key: string,
+		nodeCounts: Map<number, number>
+	): SortValue {
+		switch (key) {
+			case 'name':
+				return domain.DomainName;
+			case 'description':
+				return domain.DomainDescription;
+			case 'nodes':
+				return nodeCounts.get(domain.DomainId) ?? 0;
+			case 'status':
+				return domain.DomainStatus;
+			default:
+				return new Date(domain.LastUpdated).getTime();
+		}
+	}
 </script>
 
-<table class="domain-table">
-	<thead>
-		<tr>
-			<th class="col-name">Name</th>
-			<th class="col-description">Description</th>
-			<th class="col-count">Nodes</th>
-			<th class="col-status">Status</th>
-			<th class="col-date">Updated</th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each domains as domain (domain.DomainId)}
-			<tr onclick={() => goto(`/domains/${domain.DomainId}`)}>
-				<td class="col-name">
-					<a href="/domains/{domain.DomainId}">{domain.DomainName}</a>
-				</td>
-				<td class="col-description muted" data-label="Description">{domain.DomainDescription}</td>
-				<td class="col-count muted" data-label="Knowledge Nodes"
-					>{nodeCounts.get(domain.DomainId) ?? 0}</td
-				>
-				<td class="col-status" data-label="Status"
-					><span class="tag-pill">{domain.DomainStatus}</span></td
-				>
-				<td class="col-date muted" data-label="Updated"
-					>{new Date(domain.LastUpdated).toLocaleDateString()}</td
-				>
+<script lang="ts">
+	import { goto } from '$app/navigation';
+	import SortHeader from './SortHeader.svelte';
+	import TableSortBar from './TableSortBar.svelte';
+	import { ariaSort } from '$lib/utils/tableSort';
+
+	let {
+		domains,
+		nodeCounts,
+		sort = $bindable(defaultDomainSort)
+	}: { domains: Domain[]; nodeCounts: Map<number, number>; sort?: SortState } = $props();
+
+	const rows = $derived(
+		sortRows(domains, sort, (domain, key) => domainSortValue(domain, key, nodeCounts))
+	);
+</script>
+
+<!-- container-type here so the tables below switch to their card layout
+     on the width of their container, not the viewport — ActionTable also lives
+     in the dashboard's narrow sidebar card. -->
+<div class="table-wrap">
+	<TableSortBar columns={domainSortColumns} bind:sort />
+
+	<table class="domain-table">
+		<thead>
+			<tr>
+				<th class="col-name" aria-sort={ariaSort(sort, 'name')}>
+					<SortHeader label="Name" sortKey="name" bind:sort />
+				</th>
+				<th class="col-description" aria-sort={ariaSort(sort, 'description')}>
+					<SortHeader label="Description" sortKey="description" bind:sort />
+				</th>
+				<th class="col-count" aria-sort={ariaSort(sort, 'nodes')}>
+					<SortHeader label="Nodes" sortKey="nodes" dir="desc" align="right" bind:sort />
+				</th>
+				<th class="col-status" aria-sort={ariaSort(sort, 'status')}>
+					<SortHeader label="Status" sortKey="status" bind:sort />
+				</th>
+				<th class="col-date" aria-sort={ariaSort(sort, 'updated')}>
+					<SortHeader label="Updated" sortKey="updated" dir="desc" align="right" bind:sort />
+				</th>
 			</tr>
-		{/each}
-	</tbody>
-</table>
+		</thead>
+		<tbody>
+			{#each rows as domain (domain.DomainId)}
+				<tr onclick={() => goto(`/domains/${domain.DomainId}`)}>
+					<td class="col-name">
+						<a href="/domains/{domain.DomainId}">{domain.DomainName}</a>
+					</td>
+					<td class="col-description muted" data-label="Description">{domain.DomainDescription}</td>
+					<td class="col-count muted" data-label="Knowledge Nodes"
+						>{nodeCounts.get(domain.DomainId) ?? 0}</td
+					>
+					<td class="col-status" data-label="Status"
+						><span class="tag-pill">{domain.DomainStatus}</span></td
+					>
+					<td class="col-date muted" data-label="Updated"
+						>{new Date(domain.LastUpdated).toLocaleDateString()}</td
+					>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</div>
 
 <style>
+	.table-wrap {
+		container: kc-table / inline-size;
+	}
 	.domain-table {
 		width: 100%;
 		border-collapse: collapse;
@@ -46,7 +110,8 @@
 		font-size: 0.8rem;
 		color: var(--text-muted);
 		font-weight: 600;
-		padding: 0.4rem 0.75rem;
+		/* No padding: the SortHeader button inside fills the cell and carries it. */
+		padding: 0;
 		border-bottom: 1px solid var(--border);
 	}
 	.domain-table td {
@@ -96,7 +161,7 @@
 		text-align: right;
 	}
 
-	@media (max-width: 640px) {
+	@container kc-table (max-width: 640px) {
 		.domain-table thead {
 			display: none;
 		}

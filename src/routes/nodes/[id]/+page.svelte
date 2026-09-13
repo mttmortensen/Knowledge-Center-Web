@@ -6,8 +6,8 @@
 	import { logEntriesApi } from '$lib/api/logEntries';
 	import { actionsApi } from '$lib/api/actions';
 	import { domainsApi } from '$lib/api/domains';
-	import LogTable from '$lib/components/LogTable.svelte';
-	import ActionTable from '$lib/components/ActionTable.svelte';
+	import LogTable, { defaultLogSort, sortLogs } from '$lib/components/LogTable.svelte';
+	import ActionTable, { openFirstActionSort, sortActions } from '$lib/components/ActionTable.svelte';
 	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import type { Domain, KnowledgeNodeWithLogs, LogEntry, ActionItem } from '$lib/types/api';
@@ -30,12 +30,31 @@
 	let logsPage = $state(1);
 	let actionsPage = $state(1);
 
+	// Sorting happens here rather than inside the tables so that it covers every
+	// row, not just the page currently on screen. The tables re-sort the slice
+	// they're handed with the same comparator, which leaves it untouched.
+	let logSort = $state({ ...defaultLogSort });
+	let actionSort = $state({ ...openFirstActionSort });
+
+	const sortedLogs = $derived(sortLogs(logs, logSort));
+	const sortedActions = $derived(sortActions(actions, actionSort));
+
 	const logsTotalPages = $derived(Math.max(1, Math.ceil(logs.length / PAGE_SIZE)));
 	const actionsTotalPages = $derived(Math.max(1, Math.ceil(actions.length / PAGE_SIZE)));
-	const pagedLogs = $derived(logs.slice((logsPage - 1) * PAGE_SIZE, logsPage * PAGE_SIZE));
+	const pagedLogs = $derived(sortedLogs.slice((logsPage - 1) * PAGE_SIZE, logsPage * PAGE_SIZE));
 	const pagedActions = $derived(
-		actions.slice((actionsPage - 1) * PAGE_SIZE, actionsPage * PAGE_SIZE)
+		sortedActions.slice((actionsPage - 1) * PAGE_SIZE, actionsPage * PAGE_SIZE)
 	);
+
+	// Re-sorting reshuffles which rows land on which page, so start over at the top.
+	$effect(() => {
+		logSort;
+		logsPage = 1;
+	});
+	$effect(() => {
+		actionSort;
+		actionsPage = 1;
+	});
 
 	let editing = $state(false);
 	let editTitle = $state('');
@@ -242,7 +261,7 @@
 				{#if logs.length === 0}
 					<div class="empty-state">No log entries yet.</div>
 				{:else}
-					<LogTable logs={pagedLogs} />
+					<LogTable logs={pagedLogs} bind:sort={logSort} />
 					<Pagination
 						bind:page={logsPage}
 						totalPages={logsTotalPages}
@@ -271,7 +290,7 @@
 				{#if actions.length === 0}
 					<div class="empty-state">No actions yet.</div>
 				{:else}
-					<ActionTable actions={pagedActions} />
+					<ActionTable actions={pagedActions} bind:sort={actionSort} />
 					<Pagination
 						bind:page={actionsPage}
 						totalPages={actionsTotalPages}
@@ -288,9 +307,6 @@
 	.node-description {
 		white-space: pre-wrap;
 		margin: 0 0 1.25rem;
-	}
-	.container.wide {
-		max-width: 1200px;
 	}
 	.table-section {
 		width: 100%;

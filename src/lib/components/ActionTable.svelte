@@ -1,61 +1,123 @@
+<script lang="ts" module>
+	import type { ActionItem } from '$lib/types/api';
+	import { sortRows, type SortColumn, type SortState, type SortValue } from '$lib/utils/tableSort';
+
+	export type ActionRow = ActionItem & { KnowledgeNodeTitle?: string };
+
+	export const defaultActionSort: SortState = { key: 'date', dir: 'desc' };
+
+	/** Sorting by status descending puts Open above Closed. */
+	export const openFirstActionSort: SortState = { key: 'status', dir: 'desc' };
+
+	export function actionSortColumns(showNode: boolean): SortColumn[] {
+		return [
+			{ key: 'action', label: 'Action' },
+			...(showNode ? [{ key: 'node', label: 'Knowledge Node' }] : []),
+			{ key: 'status', label: 'Status' },
+			{ key: 'date', label: 'Date', dir: 'desc' as const }
+		];
+	}
+
+	function actionSortValue(action: ActionRow, key: string): SortValue {
+		switch (key) {
+			case 'action':
+				return action.ActionText;
+			case 'node':
+				return action.KnowledgeNodeTitle ?? '';
+			case 'status':
+				return action.Status;
+			default:
+				return new Date(action.CompletedAt ?? action.CreatedAt).getTime();
+		}
+	}
+
+	/** Exported so a paginated page can sort the full list before slicing it. */
+	export function sortActions(actions: ActionRow[], sort: SortState): ActionRow[] {
+		return sortRows(actions, sort, actionSortValue);
+	}
+</script>
+
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { ActionItem } from '$lib/types/api';
+	import SortHeader from './SortHeader.svelte';
+	import TableSortBar from './TableSortBar.svelte';
+	import { ariaSort } from '$lib/utils/tableSort';
 
 	let {
 		actions,
-		showNode = false
-	}: { actions: (ActionItem & { KnowledgeNodeTitle?: string })[]; showNode?: boolean } = $props();
+		showNode = false,
+		sort = $bindable(defaultActionSort)
+	}: { actions: ActionRow[]; showNode?: boolean; sort?: SortState } = $props();
+
+	const rows = $derived(sortActions(actions, sort));
 
 	function statusLabel(status: string): string {
 		return status === 'Completed' ? 'Closed' : status;
 	}
 </script>
 
-<table class="action-table">
-	<thead>
-		<tr>
-			<th class="col-action">Action</th>
-			{#if showNode}
-				<th class="col-node">Knowledge Node</th>
-			{/if}
-			<th class="col-status">Status</th>
-			<th class="col-date">Date</th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each actions as action (action.Id)}
-			<tr onclick={() => goto(`/actions/${action.Id}`)}>
-				<td class="col-action">
-					<a href="/actions/{action.Id}">{action.ActionText}</a>
-				</td>
+<!-- container-type here so the tables below switch to their card layout
+     on the width of their container, not the viewport — ActionTable also lives
+     in the dashboard's narrow sidebar card. -->
+<div class="table-wrap">
+	<TableSortBar columns={actionSortColumns(showNode)} bind:sort />
+
+	<table class="action-table">
+		<thead>
+			<tr>
+				<th class="col-action" aria-sort={ariaSort(sort, 'action')}>
+					<SortHeader label="Action" sortKey="action" bind:sort />
+				</th>
 				{#if showNode}
-					<td class="col-node" data-label="Knowledge Node">
-						<a
-							href="/nodes/{action.KnowledgeNodeId}"
-							onclick={(e) => e.stopPropagation()}
-							class="muted">{action.KnowledgeNodeTitle}</a
-						>
-					</td>
+					<th class="col-node" aria-sort={ariaSort(sort, 'node')}>
+						<SortHeader label="Knowledge Node" sortKey="node" bind:sort />
+					</th>
 				{/if}
-				<td class="col-status" data-label="Status">
-					<span
-						class="tag-pill"
-						class:open={action.Status === 'Open'}
-						class:completed={action.Status === 'Completed'}
-					>
-						{statusLabel(action.Status)}
-					</span>
-				</td>
-				<td class="col-date muted" data-label="Date">
-					{new Date(action.CompletedAt ?? action.CreatedAt).toLocaleDateString()}
-				</td>
+				<th class="col-status" aria-sort={ariaSort(sort, 'status')}>
+					<SortHeader label="Status" sortKey="status" bind:sort />
+				</th>
+				<th class="col-date" aria-sort={ariaSort(sort, 'date')}>
+					<SortHeader label="Date" sortKey="date" dir="desc" align="right" bind:sort />
+				</th>
 			</tr>
-		{/each}
-	</tbody>
-</table>
+		</thead>
+		<tbody>
+			{#each rows as action (action.Id)}
+				<tr onclick={() => goto(`/actions/${action.Id}`)}>
+					<td class="col-action">
+						<a href="/actions/{action.Id}">{action.ActionText}</a>
+					</td>
+					{#if showNode}
+						<td class="col-node" data-label="Knowledge Node">
+							<a
+								href="/nodes/{action.KnowledgeNodeId}"
+								onclick={(e) => e.stopPropagation()}
+								class="muted">{action.KnowledgeNodeTitle}</a
+							>
+						</td>
+					{/if}
+					<td class="col-status" data-label="Status">
+						<span
+							class="tag-pill"
+							class:open={action.Status === 'Open'}
+							class:completed={action.Status === 'Completed'}
+						>
+							{statusLabel(action.Status)}
+						</span>
+					</td>
+					<td class="col-date muted" data-label="Date">
+						{new Date(action.CompletedAt ?? action.CreatedAt).toLocaleDateString()}
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</div>
 
 <style>
+	.table-wrap {
+		container: kc-table / inline-size;
+	}
 	.action-table {
 		width: 100%;
 		border-collapse: collapse;
@@ -66,7 +128,8 @@
 		font-size: 0.8rem;
 		color: var(--text-muted);
 		font-weight: 600;
-		padding: 0.4rem 0.75rem;
+		/* No padding: the SortHeader button inside fills the cell and carries it. */
+		padding: 0;
 		border-bottom: 1px solid var(--border);
 	}
 	.action-table td {
@@ -93,7 +156,7 @@
 		text-decoration: none;
 	}
 	.col-node {
-		width: 160px;
+		width: 220px;
 	}
 	.col-node a {
 		display: block;
@@ -110,7 +173,7 @@
 		text-align: right;
 	}
 
-	@media (max-width: 640px) {
+	@container kc-table (max-width: 640px) {
 		.action-table thead {
 			display: none;
 		}

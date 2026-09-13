@@ -27,13 +27,10 @@
 				if (!logsByNode.has(log.NodeId)) logsByNode.set(log.NodeId, []);
 				logsByNode.get(log.NodeId)!.push(log);
 			}
+			// Row order within a group is the table's job — each LogTable keeps its
+			// own sort, so groups sort independently.
 			groups = [...logsByNode.entries()]
-				.map(([nodeId, nodeLogs]) => ({
-					node: nodesById.get(nodeId)!,
-					logs: [...nodeLogs].sort(
-						(a, b) => new Date(b.EntryDate).getTime() - new Date(a.EntryDate).getTime()
-					)
-				}))
+				.map(([nodeId, nodeLogs]) => ({ node: nodesById.get(nodeId)!, logs: nodeLogs }))
 				.sort((a, b) => a.node.Title.localeCompare(b.node.Title));
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load logs.';
