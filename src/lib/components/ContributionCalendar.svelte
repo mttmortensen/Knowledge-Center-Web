@@ -29,11 +29,19 @@
 		level: number;
 	}
 
-	// The API's day-count data is bucketed by UTC calendar day (the backend runs
-	// in UTC). Building the grid from the *browser's* local calendar instead can
-	// shift "today" and day boundaries by up to a day for viewers in other
-	// timezones — misaligning the grid from the streak numbers computed
-	// server-side. Doing all day arithmetic here in UTC keeps the two in sync.
+	// The API's day counts arrive as bare calendar dates ("2026-09-12T00:00:00",
+	// no offset) bucketed in the API's own zone, which is the zone the entries
+	// were written in — no longer UTC, as it was before the backend pinned
+	// itself to Mountain.
+	//
+	// So the grid is built from *calendar dates*, each anchored at UTC midnight.
+	// That's a storage convention, not a timezone: anchoring every date to the
+	// same instant-of-day keeps the day-to-day arithmetic below immune to DST,
+	// where local-midnight anchors would drift an hour twice a year. The
+	// getUTC*/timeZone:'UTC' calls throughout read those anchors back unshifted.
+	//
+	// Only "today" is read from the browser's local calendar, since that's the
+	// day the viewer is actually living in.
 	function dateKeyFromUTC(ms: number): string {
 		const d = new Date(ms);
 		return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
@@ -77,7 +85,7 @@
 		}
 
 		const now = new Date();
-		const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+		const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
 
 		let startUTC = todayUTC - (weeksToShow * 7 - 1) * MS_PER_DAY;
 		startUTC -= new Date(startUTC).getUTCDay() * MS_PER_DAY; // back up to the preceding Sunday
