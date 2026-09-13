@@ -4,6 +4,14 @@
 	import type { Domain } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import DomainTable from '$lib/components/DomainTable.svelte';
+	import FilterBar from '$lib/components/FilterBar.svelte';
+	import {
+		ANY,
+		matchesQuery,
+		matchesSelect,
+		optionsFrom,
+		type FilterSelect
+	} from '$lib/utils/tableFilter';
 	import { onMount } from 'svelte';
 
 	let domains = $state<Domain[]>([]);
@@ -16,6 +24,26 @@
 	let description = $state('');
 	let status = $state('Active');
 	let creating = $state(false);
+
+	let search = $state('');
+	let filters = $state<Record<string, string>>({ status: ANY });
+
+	const filterSelects = $derived<FilterSelect[]>([
+		{
+			key: 'status',
+			label: 'Status',
+			allLabel: 'All statuses',
+			options: optionsFrom(domains, (domain) => domain.DomainStatus)
+		}
+	]);
+
+	const visibleDomains = $derived(
+		domains.filter(
+			(domain) =>
+				matchesQuery(search, domain.DomainName, domain.DomainDescription) &&
+				matchesSelect(filters.status, domain.DomainStatus)
+		)
+	);
 
 	async function load() {
 		loading = true;
@@ -103,6 +131,20 @@
 	{:else if domains.length === 0}
 		<div class="empty-state">No domains yet. Create one to get started.</div>
 	{:else}
-		<DomainTable {domains} {nodeCounts} />
+		<FilterBar
+			bind:search
+			bind:values={filters}
+			selects={filterSelects}
+			placeholder="Search name or description…"
+			searchLabel="Search domains"
+			shown={visibleDomains.length}
+			total={domains.length}
+			itemLabel="domains"
+		/>
+		{#if visibleDomains.length === 0}
+			<div class="empty-state">No domains match these filters.</div>
+		{:else}
+			<DomainTable domains={visibleDomains} {nodeCounts} />
+		{/if}
 	{/if}
 </div>

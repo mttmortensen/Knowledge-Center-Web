@@ -5,6 +5,14 @@
 	import { actionsApi } from '$lib/api/actions';
 	import type { Domain, KnowledgeNode } from '$lib/types/api';
 	import KnowledgeNodeTable from '$lib/components/KnowledgeNodeTable.svelte';
+	import FilterBar from '$lib/components/FilterBar.svelte';
+	import {
+		ANY,
+		matchesQuery,
+		matchesSelect,
+		optionsFrom,
+		type FilterSelect
+	} from '$lib/utils/tableFilter';
 	import { onMount } from 'svelte';
 
 	let domains = $state<Domain[]>([]);
@@ -31,6 +39,42 @@
 	let nodeConfidence = $state(3);
 	let nodeStatus = $state('Exploring');
 	let creatingNode = $state(false);
+
+	let search = $state('');
+	let filters = $state<Record<string, string>>({ domain: ANY, type: ANY, status: ANY });
+
+	const filterSelects = $derived<FilterSelect[]>([
+		{
+			key: 'domain',
+			label: 'Domain',
+			allLabel: 'All domains',
+			options: [...domains]
+				.sort((a, b) => a.DomainName.localeCompare(b.DomainName))
+				.map((domain) => ({ value: String(domain.DomainId), label: domain.DomainName }))
+		},
+		{
+			key: 'type',
+			label: 'Type',
+			allLabel: 'All types',
+			options: optionsFrom(nodes, (node) => node.NodeType)
+		},
+		{
+			key: 'status',
+			label: 'Status',
+			allLabel: 'All statuses',
+			options: optionsFrom(nodes, (node) => node.Status)
+		}
+	]);
+
+	const visibleNodes = $derived(
+		nodes.filter(
+			(node) =>
+				matchesQuery(search, node.Title, node.Description) &&
+				matchesSelect(filters.domain, node.DomainId) &&
+				matchesSelect(filters.type, node.NodeType) &&
+				matchesSelect(filters.status, node.Status)
+		)
+	);
 
 	async function load() {
 		loading = true;
@@ -92,7 +136,7 @@
 		domains
 			.map((domain) => ({
 				domain,
-				nodes: nodes.filter((node) => node.DomainId === domain.DomainId)
+				nodes: visibleNodes.filter((node) => node.DomainId === domain.DomainId)
 			}))
 			.filter((group) => group.nodes.length > 0)
 			.sort((a, b) => a.domain.DomainName.localeCompare(b.domain.DomainName))
@@ -171,28 +215,42 @@
 	{:else if nodes.length === 0}
 		<div class="empty-state">No knowledge nodes yet.</div>
 	{:else}
-		{#each groups as group (group.domain.DomainId)}
-			<section class="group">
-				<div class="group-header-row">
-					<button
-						type="button"
-						class="chevron-btn"
-						onclick={() => toggleGroup(group.domain.DomainId)}
-						aria-expanded={!collapsed[group.domain.DomainId]}
-						aria-label={collapsed[group.domain.DomainId] ? 'Expand section' : 'Collapse section'}
-					>
-						<span class="chevron" class:collapsed={collapsed[group.domain.DomainId]}>▾</span>
-					</button>
-					<h2 class="group-header">
-						<a href="/domains/{group.domain.DomainId}">{group.domain.DomainName}</a>
-					</h2>
-					<span class="group-count muted">{group.nodes.length}</span>
-				</div>
-				{#if !collapsed[group.domain.DomainId]}
-					<KnowledgeNodeTable nodes={group.nodes} {logCounts} {actionCounts} />
-				{/if}
-			</section>
-		{/each}
+		<FilterBar
+			bind:search
+			bind:values={filters}
+			selects={filterSelects}
+			placeholder="Search title or description…"
+			searchLabel="Search knowledge nodes"
+			shown={visibleNodes.length}
+			total={nodes.length}
+			itemLabel="nodes"
+		/>
+		{#if groups.length === 0}
+			<div class="empty-state">No knowledge nodes match these filters.</div>
+		{:else}
+			{#each groups as group (group.domain.DomainId)}
+				<section class="group">
+					<div class="group-header-row">
+						<button
+							type="button"
+							class="chevron-btn"
+							onclick={() => toggleGroup(group.domain.DomainId)}
+							aria-expanded={!collapsed[group.domain.DomainId]}
+							aria-label={collapsed[group.domain.DomainId] ? 'Expand section' : 'Collapse section'}
+						>
+							<span class="chevron" class:collapsed={collapsed[group.domain.DomainId]}>▾</span>
+						</button>
+						<h2 class="group-header">
+							<a href="/domains/{group.domain.DomainId}">{group.domain.DomainName}</a>
+						</h2>
+						<span class="group-count muted">{group.nodes.length}</span>
+					</div>
+					{#if !collapsed[group.domain.DomainId]}
+						<KnowledgeNodeTable nodes={group.nodes} {logCounts} {actionCounts} />
+					{/if}
+				</section>
+			{/each}
+		{/if}
 	{/if}
 </div>
 
