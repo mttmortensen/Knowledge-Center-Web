@@ -156,7 +156,7 @@
 		text-decoration: none;
 	}
 	.col-node {
-		width: 220px;
+		width: 160px;
 	}
 	.col-node a {
 		display: block;

@@ -122,11 +122,6 @@ label {
 	}
 }
 
-/* For pages whose table needs more room than the 900px reading width. */
-.container.wide {
-	max-width: 1200px;
-}
-
 .card {
 	background: var(--bg-elevated);
 	border: 1px solid var(--border);

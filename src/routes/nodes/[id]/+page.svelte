@@ -308,6 +308,9 @@
 		white-space: pre-wrap;
 		margin: 0 0 1.25rem;
 	}
+	.container.wide {
+		max-width: 1200px;
+	}
 	.table-section {
 		width: 100%;
 	}
