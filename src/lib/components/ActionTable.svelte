@@ -46,8 +46,16 @@
 	let {
 		actions,
 		showNode = false,
+		compact = false,
 		sort = $bindable(defaultActionSort)
-	}: { actions: ActionRow[]; showNode?: boolean; sort?: SortState } = $props();
+	}: {
+		actions: ActionRow[];
+		showNode?: boolean;
+		/** Two columns for a narrow container: the node title moves under the
+		 *  action text, the status pill under the date. */
+		compact?: boolean;
+		sort?: SortState;
+	} = $props();
 
 	const rows = $derived(sortActions(actions, sort));
 
@@ -59,23 +67,27 @@
 <!-- container-type here so the tables below switch to their card layout
      on the width of their container, not the viewport — ActionTable also lives
      in the dashboard's narrow sidebar card. -->
-<div class="table-wrap">
-	<TableSortBar columns={actionSortColumns(showNode)} bind:sort />
+<div class="table-wrap" class:compact>
+	{#if !compact}
+		<TableSortBar columns={actionSortColumns(showNode)} bind:sort />
+	{/if}
 
-	<table class="action-table">
+	<table class="action-table" class:compact>
 		<thead>
 			<tr>
 				<th class="col-action" aria-sort={ariaSort(sort, 'action')}>
 					<SortHeader label="Action" sortKey="action" bind:sort />
 				</th>
-				{#if showNode}
+				{#if showNode && !compact}
 					<th class="col-node" aria-sort={ariaSort(sort, 'node')}>
 						<SortHeader label="Knowledge Node" sortKey="node" bind:sort />
 					</th>
 				{/if}
-				<th class="col-status" aria-sort={ariaSort(sort, 'status')}>
-					<SortHeader label="Status" sortKey="status" bind:sort />
-				</th>
+				{#if !compact}
+					<th class="col-status" aria-sort={ariaSort(sort, 'status')}>
+						<SortHeader label="Status" sortKey="status" bind:sort />
+					</th>
+				{/if}
 				<th class="col-date" aria-sort={ariaSort(sort, 'date')}>
 					<SortHeader label="Date" sortKey="date" dir="desc" align="right" bind:sort />
 				</th>
@@ -84,30 +96,55 @@
 		<tbody>
 			{#each rows as action (action.Id)}
 				<tr onclick={() => goto(`/actions/${action.Id}`)}>
-					<td class="col-action">
-						<a href="/actions/{action.Id}">{action.ActionText}</a>
-					</td>
-					{#if showNode}
-						<td class="col-node" data-label="Knowledge Node">
-							<a
-								href="/nodes/{action.KnowledgeNodeId}"
-								onclick={(e) => e.stopPropagation()}
-								class="muted">{action.KnowledgeNodeTitle}</a
+					{#if compact}
+						<td class="col-action">
+							<a href="/actions/{action.Id}">{action.ActionText}</a>
+							{#if showNode}
+								<a
+									href="/nodes/{action.KnowledgeNodeId}"
+									onclick={(e) => e.stopPropagation()}
+									class="node-line">{action.KnowledgeNodeTitle}</a
+								>
+							{/if}
+						</td>
+						<td class="col-date">
+							<span class="muted"
+								>{new Date(action.CompletedAt ?? action.CreatedAt).toLocaleDateString()}</span
 							>
+							<span
+								class="tag-pill"
+								class:open={action.Status === 'Open'}
+								class:completed={action.Status === 'Completed'}
+							>
+								{statusLabel(action.Status)}
+							</span>
+						</td>
+					{:else}
+						<td class="col-action">
+							<a href="/actions/{action.Id}">{action.ActionText}</a>
+						</td>
+						{#if showNode}
+							<td class="col-node" data-label="Knowledge Node">
+								<a
+									href="/nodes/{action.KnowledgeNodeId}"
+									onclick={(e) => e.stopPropagation()}
+									class="muted">{action.KnowledgeNodeTitle}</a
+								>
+							</td>
+						{/if}
+						<td class="col-status" data-label="Status">
+							<span
+								class="tag-pill"
+								class:open={action.Status === 'Open'}
+								class:completed={action.Status === 'Completed'}
+							>
+								{statusLabel(action.Status)}
+							</span>
+						</td>
+						<td class="col-date muted" data-label="Date">
+							{new Date(action.CompletedAt ?? action.CreatedAt).toLocaleDateString()}
 						</td>
 					{/if}
-					<td class="col-status" data-label="Status">
-						<span
-							class="tag-pill"
-							class:open={action.Status === 'Open'}
-							class:completed={action.Status === 'Completed'}
-						>
-							{statusLabel(action.Status)}
-						</span>
-					</td>
-					<td class="col-date muted" data-label="Date">
-						{new Date(action.CompletedAt ?? action.CreatedAt).toLocaleDateString()}
-					</td>
 				</tr>
 			{/each}
 		</tbody>
@@ -117,6 +154,12 @@
 <style>
 	.table-wrap {
 		container: kc-table / inline-size;
+	}
+	/* The compact layout is built for a narrow container, so it opts out of the
+	   card fallback below by not being a query container at all — the
+	   `@container kc-table` rules then have nothing to match against. */
+	.table-wrap.compact {
+		container-type: normal;
 	}
 	.action-table {
 		width: 100%;
@@ -171,6 +214,38 @@
 		width: 90px;
 		white-space: nowrap;
 		text-align: right;
+	}
+
+	/* Compact: two columns, each stacking a second muted line, so the whole
+	   table fits a sidebar card that can't seat four columns. */
+	.action-table.compact {
+		table-layout: auto;
+	}
+	.action-table.compact .col-action {
+		max-width: 0;
+	}
+	.action-table.compact .col-action a {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.action-table.compact .node-line {
+		color: var(--text-muted);
+		font-size: 0.8rem;
+		margin-top: 0.15rem;
+	}
+	.action-table.compact .col-date {
+		width: 1%;
+		padding-left: 1rem;
+		text-align: right;
+		vertical-align: top;
+	}
+	.action-table.compact .col-date .muted {
+		display: block;
+	}
+	.action-table.compact .col-date .tag-pill {
+		margin-top: 0.25rem;
 	}
 
 	@container kc-table (max-width: 640px) {

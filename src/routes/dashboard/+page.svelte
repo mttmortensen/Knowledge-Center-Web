@@ -125,7 +125,7 @@
 				{:else if recentActions.length === 0}
 					<div class="empty-state">No actions yet.</div>
 				{:else}
-					<ActionTable actions={recentActions} showNode />
+					<ActionTable actions={recentActions} showNode compact />
 				{/if}
 			</div>
 		</div>
