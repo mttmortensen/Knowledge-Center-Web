@@ -56,7 +56,7 @@
 			</button>
 		{/each}
 	</div>
-	<div class="row">
+	<div class="row new-tag">
 		<input
 			type="text"
 			placeholder="New tag name"
@@ -72,5 +72,15 @@
 		background: var(--accent);
 		border-color: var(--accent);
 		color: #0b0d12;
+	}
+
+	.new-tag input {
+		flex: 0 1 16rem;
+		min-width: 0;
+	}
+
+	.new-tag button {
+		white-space: nowrap;
+		flex-shrink: 0;
 	}
 </style>
