@@ -121,7 +121,7 @@
 		background: var(--bg-hover);
 	}
 	.col-entry {
-		width: 60%;
+		width: 45%;
 		max-width: 0;
 	}
 	.col-entry a {
@@ -135,7 +135,7 @@
 		text-decoration: none;
 	}
 	.col-tags {
-		width: 30%;
+		width: 45%;
 	}
 	.tag-row {
 		display: flex;
