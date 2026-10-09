@@ -3,26 +3,23 @@
 // (Services/Core/LearnSourceParser.cs); keep the two in step.
 //
 //   @answers(12) ...   follow-up to entry 12
-//   @log(34)           reference to log 34 (the reference is the whole entry)
-//   @log <markdown>    draft of a new log; becomes @log(<id>) once saved
 //   ?? ...             question
 //   ```...             code block
 //   ![caption](url)    image (when that is the whole entry)
 //   anything else      note
+//
+// Learn is deliberately separate from Logs: nothing here reads or writes them.
 
 import type { LearnEntryType } from '$lib/types/api';
 
 export interface ParsedSource {
 	type: LearnEntryType;
 	answersEntryId: number | null;
-	logId: number | null;
-	/** The markdown to render, with any leading ??, @answers(n) marker removed. */
+	/** The markdown to render, with any leading ?? or @answers(n) marker removed. */
 	body: string;
 }
 
 const ANSWERS = /^\s*@answers\((\d+)\)[ \t]*/;
-const LOG_REF = /^\s*@log\((\d+)\)\s*$/;
-const NEW_LOG = /^\s*@log\s+(\S[\s\S]*)$/;
 const IMAGE = /^\s*!\[[^\]]*\]\([^)\s]+\)\s*$/;
 
 export function parseSource(source: string): ParsedSource {
@@ -31,35 +28,18 @@ export function parseSource(source: string): ParsedSource {
 		return {
 			type: 'followup',
 			answersEntryId: Number(answers[1]),
-			logId: null,
 			body: source.slice(answers[0].length)
 		};
 	}
 
-	const log = LOG_REF.exec(source);
-	if (log) return { type: 'log', answersEntryId: null, logId: Number(log[1]), body: '' };
-
 	const trimmed = source.trimStart();
 	if (trimmed.startsWith('??')) {
-		return { type: 'question', answersEntryId: null, logId: null, body: trimmed.slice(2).trimStart() };
+		return { type: 'question', answersEntryId: null, body: trimmed.slice(2).trimStart() };
 	}
-	if (trimmed.startsWith('```')) return { type: 'code', answersEntryId: null, logId: null, body: source };
-	if (IMAGE.test(source)) return { type: 'image', answersEntryId: null, logId: null, body: source };
+	if (trimmed.startsWith('```')) return { type: 'code', answersEntryId: null, body: source };
+	if (IMAGE.test(source)) return { type: 'image', answersEntryId: null, body: source };
 
-	return { type: 'note', answersEntryId: null, logId: null, body: source };
-}
-
-/**
- * "@log <markdown>" written in the sheet: the text for a new log entry. An optional
- * leading "# Heading" line becomes the log's title.
- */
-export function parseNewLog(source: string): { title?: string; content: string } | null {
-	const match = NEW_LOG.exec(source);
-	if (!match) return null;
-
-	const text = match[1].trim();
-	const heading = /^#\s+(.+)\n+([\s\S]+)$/.exec(text);
-	return heading ? { title: heading[1].trim(), content: heading[2].trim() } : { content: text };
+	return { type: 'note', answersEntryId: null, body: source };
 }
 
 export interface EntryLinks {

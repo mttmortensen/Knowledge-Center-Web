@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { linkEntries, parseNewLog, parseSource } from './parse';
+import { linkEntries, parseSource } from './parse';
 import { renderMarkdown } from './render';
 
 describe('parseSource', () => {
@@ -14,9 +14,7 @@ describe('parseSource', () => {
 		['![diagram](https://x/uploads/a.png)\nwith text', 'note'],
 		['@answers(12) because', 'followup'],
 		['@answers(abc) nope', 'note'],
-		['@log(34)', 'log'],
-		['@log(34) trailing text', 'note'],
-		['@log a new log draft', 'note']
+		['@log(34)', 'note']
 	])('%j is a %s', (source, type) => {
 		expect(parseSource(source).type).toBe(type);
 	});
@@ -29,10 +27,6 @@ describe('parseSource', () => {
 		const parsed = parseSource('@answers(42) Multi-version concurrency control.');
 		expect(parsed.answersEntryId).toBe(42);
 		expect(parsed.body).toBe('Multi-version concurrency control.');
-	});
-
-	it('reads the log id from a log reference', () => {
-		expect(parseSource('  @log(7)  ').logId).toBe(7);
 	});
 });
 
@@ -74,24 +68,6 @@ describe('linkEntries', () => {
 			{ EntryId: 3, Source: 'note' }
 		]);
 		expect(relinked.get(1)!.questionStatus).toBe('open');
-	});
-});
-
-describe('parseNewLog', () => {
-	it('uses a leading heading as the title', () => {
-		expect(parseNewLog('@log # Read the docs\n\nLearned about GIN.')).toEqual({
-			title: 'Read the docs',
-			content: 'Learned about GIN.'
-		});
-	});
-
-	it('takes everything else as content', () => {
-		expect(parseNewLog('@log just a quick log')).toEqual({ content: 'just a quick log' });
-	});
-
-	it('ignores existing references and bare markers', () => {
-		expect(parseNewLog('@log(12)')).toBeNull();
-		expect(parseNewLog('@log')).toBeNull();
 	});
 });
 

@@ -182,10 +182,10 @@ export interface Stats {
 }
 
 // === Learn ===
-// EntryType / QuestionStatus / AnswersEntryId / LogId are derived by the API from
+// EntryType / QuestionStatus / AnswersEntryId are derived by the API from
 // Source on every read; the client re-derives them live with src/lib/learn/parse.ts.
 
-export type LearnEntryType = 'note' | 'image' | 'code' | 'question' | 'followup' | 'log';
+export type LearnEntryType = 'note' | 'image' | 'code' | 'question' | 'followup';
 
 export interface LearnSession {
 	SessionId: number;
@@ -209,7 +209,6 @@ export interface LearnEntry {
 	EntryType: LearnEntryType;
 	QuestionStatus: 'open' | 'answered' | null;
 	AnswersEntryId: number | null;
-	LogId: number | null;
 }
 
 export interface LearnSessionDetails extends LearnSession {

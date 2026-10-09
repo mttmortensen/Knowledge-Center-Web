@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { learnApi } from '$lib/api/learn';
-	import { logEntriesApi } from '$lib/api/logEntries';
 	import { uploadImage } from '$lib/api/images';
 	import { ApiError } from '$lib/api/client';
-	import { linkEntries, parseNewLog, parseSource } from '$lib/learn/parse';
+	import { linkEntries, parseSource } from '$lib/learn/parse';
 	import { renderMarkdown } from '$lib/learn/render';
-	import type { LearnEntry, LogEntry } from '$lib/types/api';
+	import type { LearnEntry } from '$lib/types/api';
 
 	// One continuous sheet: entries render as formatted markdown, clicking one
 	// swaps it for a raw-markdown textarea, clicking the gap between entries (or
@@ -15,14 +14,11 @@
 
 	let {
 		sessionId,
-		nodeId,
 		entries = $bindable([]),
 		openOnly = $bindable(false),
 		readonly = false
 	}: {
 		sessionId: number;
-		/** The session's Knowledge Node; required for writing new logs with "@log ...". */
-		nodeId: number | null;
 		entries: LearnEntry[];
 		openOnly?: boolean;
 		readonly?: boolean;
@@ -40,9 +36,6 @@
 	let highlightTimer: ReturnType<typeof setTimeout> | undefined;
 	let tempId = 0;
 
-	/** Referenced logs: undefined while loading, null once known to be deleted. */
-	let logs = $state<Record<number, LogEntry | null | undefined>>({});
-
 	const links = $derived(linkEntries(entries));
 	const indexById = $derived(new Map(entries.map((e, i) => [e.EntryId, i])));
 	const visible = $derived(
@@ -53,40 +46,6 @@
 	function keyOf(e: Editing | null): string | null {
 		if (!e) return null;
 		return e.kind === 'entry' ? `entry-${e.id}` : `new-${e.beforeId ?? 'end'}`;
-	}
-
-	/* ===================== LOG REFERENCES ===================== */
-
-	$effect(() => {
-		for (const entry of entries) {
-			const logId = links.get(entry.EntryId)?.parsed.logId;
-			if (logId != null && !(logId in logs)) loadLog(logId);
-		}
-	});
-
-	async function loadLog(logId: number) {
-		logs[logId] = undefined;
-		try {
-			logs[logId] = await logEntriesApi.getById(logId);
-		} catch {
-			logs[logId] = null;
-		}
-	}
-
-	/** "@log <markdown>" becomes a real log under the session's node, referenced by id. */
-	async function materializeLog(text: string): Promise<string> {
-		const draftLog = parseNewLog(text);
-		if (!draftLog) return text;
-		if (!nodeId) throw new Error('Link this session to a Knowledge Node to write logs here.');
-
-		const log = await logEntriesApi.create({
-			NodeId: nodeId,
-			Title: draftLog.title,
-			Content: draftLog.content,
-			TagIds: []
-		});
-		logs[log.LogId] = log;
-		return `@log(${log.LogId})`;
 	}
 
 	/* ===================== EDITING ===================== */
@@ -108,10 +67,7 @@
 
 	function startEdit(entry: LearnEntry) {
 		if (readonly || entry.EntryId < 0 || blocked()) return;
-		const logId = links.get(entry.EntryId)?.parsed.logId;
-		const log = logId != null ? logs[logId] : null;
-		// A log reference edits the log's own content; everything else edits Source.
-		draft = log ? log.Content : entry.Source;
+		draft = entry.Source;
 		error = null;
 		editing = { kind: 'entry', id: entry.EntryId };
 	}
@@ -129,7 +85,6 @@
 	 */
 	function localProblem(target: Editing, text: string): string | null {
 		if (!text.trim()) return null;
-		if (target.kind === 'entry' && editsLog(target.id)) return null;
 
 		const parsed = parseSource(text);
 		const answersId = parsed.answersEntryId;
@@ -138,15 +93,7 @@
 			if (target.kind === 'entry' && answersId === target.id) return 'An entry cannot answer itself.';
 			if (!indexById.has(answersId)) return `@answers(${answersId}): there's no entry #${answersId} in this session.`;
 		}
-
-		if (parseNewLog(text) && !nodeId) return 'Link this session to a Knowledge Node to write logs here.';
 		return null;
-	}
-
-	/** True when the entry is a log reference whose log loaded, so editing edits the log. */
-	function editsLog(entryId: number) {
-		const logId = links.get(entryId)?.parsed.logId;
-		return logId != null && !!logs[logId];
 	}
 
 	async function commit() {
@@ -173,36 +120,21 @@
 		const entry = entries.find((e) => e.EntryId === id);
 		if (!entry) return;
 
-		const logId = links.get(id)?.parsed.logId;
-		const log = logId != null ? logs[logId] : null;
-
 		try {
 			const text = await resolveUploads(rawText);
 
-			// Clearing an entry deletes it. For a log reference that removes the
-			// reference only; the log itself stays in Logs.
+			// Clearing an entry deletes it.
 			if (!text.trim()) return await removeEntry(entry);
-
-			if (log) {
-				if (text !== log.Content) {
-					logs[log.LogId] = { ...log, Content: text };
-					await logEntriesApi.update(log.LogId, { Content: text });
-				}
-				return;
-			}
-
 			if (text === entry.Source) return;
 
-			const source = await materializeLog(text);
-			replaceLocal(id, { ...entry, Source: source });
+			replaceLocal(id, { ...entry, Source: text });
 			try {
-				replaceLocal(id, await learnApi.updateEntry(id, source));
+				replaceLocal(id, await learnApi.updateEntry(id, text));
 			} catch (err) {
 				replaceLocal(id, entry);
 				throw err;
 			}
 		} catch (err) {
-			if (log) logs[log.LogId] = log;
 			await reopen({ kind: 'entry', id }, rawText, err);
 		}
 	}
@@ -213,11 +145,10 @@
 			const text = await resolveUploads(rawText);
 			if (!text.trim()) return;
 
-			const source = await materializeLog(text);
-			insertLocal(placeholderEntry(placeholderId, source), beforeId);
+			insertLocal(placeholderEntry(placeholderId, text), beforeId);
 
 			const created = await learnApi.createEntry(sessionId, {
-				Source: source,
+				Source: text,
 				BeforeEntryId: beforeId ?? undefined
 			});
 			replaceLocal(placeholderId, created);
@@ -281,8 +212,7 @@
 			UpdatedAt: now,
 			EntryType: parsed.type,
 			QuestionStatus: null,
-			AnswersEntryId: parsed.answersEntryId,
-			LogId: parsed.logId
+			AnswersEntryId: parsed.answersEntryId
 		};
 	}
 
@@ -365,7 +295,7 @@
 
 	/* ===================== IMAGES ===================== */
 
-	// Pasted/dropped images upload through the same /images endpoint logs use and
+	// Pasted/dropped images upload through the app's existing /images endpoint and
 	// land as ![](url); the caption goes between the brackets. Until the upload
 	// finishes a placeholder holds the spot, and a commit waits for it.
 	const uploads = new Map<string, Promise<string>>();
@@ -470,7 +400,7 @@
 			ondrop={onDrop}
 			spellcheck="true"
 			rows="1"
-			placeholder="Markdown. ?? asks a question, @answers(id) follows up, @log writes a log."
+			placeholder="Markdown. ?? asks a question, @answers(id) follows up."
 		></textarea>
 		{#if suggestions.length}
 			<ul class="suggestions">
@@ -570,10 +500,6 @@
 					{/if}
 				{/if}
 
-				{#if parsed.type === 'log' && parsed.logId != null}
-					<a class="tag" href="/logs/{parsed.logId}">log ↗</a>
-				{/if}
-
 				{#if entry.EntryId > 0}
 					<span class="ref">#{entry.EntryId}</span>
 				{/if}
@@ -582,21 +508,6 @@
 			<div class="body">
 				{#if editKey === key}
 					{@render editor(key)}
-				{:else if parsed.type === 'log' && parsed.logId != null}
-					{@const log = logs[parsed.logId]}
-					{#if log === undefined}
-						<p class="faint-text">Loading log #{parsed.logId}…</p>
-					{:else if log === null}
-						<p class="faint-text"><em>Log #{parsed.logId} was deleted or can't be loaded.</em></p>
-					{:else}
-						<div class="log">
-							<div class="log-title">
-								{log.Title || 'Untitled log'}
-								<span class="faint-text">· {new Date(log.EntryDate).toLocaleDateString()}</span>
-							</div>
-							<div class="md">{@html renderMarkdown(log.Content)}</div>
-						</div>
-					{/if}
 				{:else}
 					<div class="md" class:question={parsed.type === 'question'}>
 						{@html renderMarkdown(parsed.body)}
@@ -873,16 +784,6 @@
 	}
 	.md.question {
 		font-style: italic;
-	}
-
-	.log {
-		border-left: 2px solid var(--accent);
-		padding-left: 0.75rem;
-	}
-	.log-title {
-		font-weight: 600;
-		font-size: 0.9rem;
-		margin-bottom: 0.25rem;
 	}
 
 	/* === editor === */

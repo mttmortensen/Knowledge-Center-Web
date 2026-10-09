@@ -25,14 +25,13 @@ instead of production, set `KC_API_PROXY_TARGET=http://localhost:5131` before
 ## Learn
 
 `/learn` holds progressive-learning notebooks: one timeline per session, edited in
-place. Click an entry to edit its raw markdown (blur or Esc saves; clearing it
-deletes it), click the gap between entries to insert one, or the space below to
-append. Entry syntax:
+place. Learn is separate from Logs; the `.md` export is how a session travels.
+Click an entry to edit its raw markdown (blur or Esc saves; clearing it deletes
+it), click the gap between entries to insert one, or the space below to append.
+Entry syntax:
 
 - `?? question` — tagged **open** in the margin until a follow-up answers it
 - `@answers(12) ...` — follow-up to entry 12 (ids show in the margin on hover)
-- `@log(34)` — embeds log 34; `@log <markdown>` writes a new log under the
-  session's Knowledge Node
 - paste or drop an image to upload it; the caption goes in `![caption](url)`
 
 ## Building

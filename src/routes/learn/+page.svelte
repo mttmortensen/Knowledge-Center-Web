@@ -107,7 +107,7 @@
 					<input id="learn-topic" type="text" bind:value={newTopic} maxlength="200" />
 				</div>
 				<div class="field">
-					<label for="learn-node">Knowledge node <span class="muted">(where its logs are filed)</span></label>
+					<label for="learn-node">Knowledge node <span class="muted">(optional label)</span></label>
 					<select id="learn-node" bind:value={newNodeId}>
 						<option value="">None</option>
 						{#each [...nodes].sort((a, b) => a.Title.localeCompare(b.Title)) as node (node.Id)}

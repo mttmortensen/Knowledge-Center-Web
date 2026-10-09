@@ -122,7 +122,7 @@
 
 	async function deleteSession() {
 		if (!session) return;
-		if (!confirm(`Delete "${session.Title}" and all of its entries? Logs it references are kept.`)) return;
+		if (!confirm(`Delete "${session.Title}" and all of its entries?`)) return;
 		try {
 			await learnApi.deleteSession(session.SessionId);
 			goto('/learn');
@@ -224,7 +224,6 @@
 			bind:entries
 			bind:openOnly
 			sessionId={session.SessionId}
-			nodeId={session.NodeId}
 			readonly={auth.isDemo}
 		/>
 	{/if}
