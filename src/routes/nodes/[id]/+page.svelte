@@ -5,12 +5,19 @@
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import { logEntriesApi } from '$lib/api/logEntries';
 	import { actionsApi } from '$lib/api/actions';
+	import { learnApi } from '$lib/api/learn';
 	import { domainsApi } from '$lib/api/domains';
 	import LogTable, { defaultLogSort, sortLogs } from '$lib/components/LogTable.svelte';
 	import ActionTable, { openFirstActionSort, sortActions } from '$lib/components/ActionTable.svelte';
 	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
-	import type { Domain, KnowledgeNodeWithLogs, LogEntry, ActionItem } from '$lib/types/api';
+	import type {
+		Domain,
+		KnowledgeNodeWithLogs,
+		LogEntry,
+		ActionItem,
+		LearnSession
+	} from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
 
@@ -20,11 +27,13 @@
 	let domain = $state<Domain | null>(null);
 	let logs = $state<LogEntry[]>([]);
 	let actions = $state<ActionItem[]>([]);
+	let learnSessions = $state<LearnSession[]>([]);
 	let loading = $state(true);
 	let error = $state('');
 
 	let logsExpanded = $state(true);
 	let actionsExpanded = $state(true);
+	let learnExpanded = $state(true);
 
 	const PAGE_SIZE = 6;
 	let logsPage = $state(1);
@@ -106,6 +115,12 @@
 				.getById(nodeResult.DomainId)
 				.then((d) => (domain = d))
 				.catch(() => (domain = null));
+			// The API has no per-node filter for sessions, so pick this node's out of
+			// the full list. Loaded on the side so a Learn failure doesn't blank the page.
+			learnApi
+				.getSessions()
+				.then((all) => (learnSessions = all.filter((s) => s.NodeId === nodeId)))
+				.catch(() => (learnSessions = []));
 			logs = [...logsResult].sort(
 				(a, b) => new Date(b.EntryDate).getTime() - new Date(a.EntryDate).getTime()
 			);
@@ -300,6 +315,43 @@
 				{/if}
 			{/if}
 		</section>
+
+		<section class="table-section">
+			<div class="row-between">
+				<button
+					type="button"
+					class="section-toggle"
+					onclick={() => (learnExpanded = !learnExpanded)}
+					aria-expanded={learnExpanded}
+				>
+					<span class="chevron" class:collapsed={!learnExpanded}>▾</span>
+					<h2>Learn</h2>
+				</button>
+				<a href="/learn?new=1&node={nodeId}"><button class="primary">New session</button></a>
+			</div>
+
+			{#if learnExpanded}
+				{#if learnSessions.length === 0}
+					<div class="empty-state">No Learn sessions yet.</div>
+				{:else}
+					{#each learnSessions as session (session.SessionId)}
+						<a class="card card-link learn-session" href="/learn/{session.SessionId}">
+							<div class="row-between">
+								<strong>{session.Title}</strong>
+								{#if session.OpenQuestionCount}
+									<span class="tag-pill warn">{session.OpenQuestionCount} open</span>
+								{/if}
+							</div>
+							<div class="muted">
+								{session.Topic || 'No topic'}
+								· {session.EntryCount} {session.EntryCount === 1 ? 'entry' : 'entries'}
+								· updated {new Date(session.UpdatedAt).toLocaleDateString()}
+							</div>
+						</a>
+					{/each}
+				{/if}
+			{/if}
+		</section>
 	{/if}
 </div>
 
@@ -336,5 +388,12 @@
 	}
 	.chevron.collapsed {
 		transform: rotate(-90deg);
+	}
+	.learn-session .muted {
+		margin-top: 0.3rem;
+	}
+	.tag-pill.warn {
+		color: var(--warning);
+		border-color: var(--warning);
 	}
 </style>

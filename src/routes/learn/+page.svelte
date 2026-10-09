@@ -50,7 +50,15 @@
 		}
 	}
 
-	onMount(load);
+	onMount(() => {
+		// ?new=1&node=<id> (from a Knowledge Node page) opens the form with that node picked.
+		const params = page.url.searchParams;
+		if (params.get('new') === '1' && !auth.isDemo) {
+			creating = true;
+			newNodeId = params.get('node') ?? '';
+		}
+		load();
+	});
 
 	async function createSession(event: SubmitEvent) {
 		event.preventDefault();
