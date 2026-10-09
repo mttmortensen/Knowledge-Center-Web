@@ -94,9 +94,16 @@
 				value: `${logs.filter((l) => !l.Title).length} of ${logs.length}`
 			},
 			{ label: 'Last updated', value: new Date(node.LastUpdated).toLocaleString() },
+			{ label: 'Learn', value: learnSummary(learnSessions) },
 			{ label: 'Node ID', value: `#${node.Id}` }
 		];
 	});
+
+	/** "2 sessions · 1 open question" for the Learn meta row. */
+	function learnSummary(sessions: LearnSession[]): string {
+		const open = sessions.reduce((sum, s) => sum + s.OpenQuestionCount, 0);
+		return `${sessions.length} ${sessions.length === 1 ? 'session' : 'sessions'} · ${open} open ${open === 1 ? 'question' : 'questions'}`;
+	}
 
 	async function load() {
 		loading = true;

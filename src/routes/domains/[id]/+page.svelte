@@ -7,7 +7,7 @@
 	import { logEntriesApi } from '$lib/api/logEntries';
 	import { actionsApi } from '$lib/api/actions';
 	import { learnApi } from '$lib/api/learn';
-	import type { DomainWithKNs } from '$lib/types/api';
+	import type { DomainWithKNs, LearnSession } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
 	import KnowledgeNodeTable from '$lib/components/KnowledgeNodeTable.svelte';
@@ -20,6 +20,7 @@
 	let actionCounts = $state<Map<number, number>>(new Map());
 	let learnCounts = $state<Map<number, number>>(new Map());
 	let logTotal = $state(0);
+	let domainLearnSessions = $state<LearnSession[]>([]);
 	let openActionTotal = $state(0);
 	let completedActionTotal = $state(0);
 	let loading = $state(true);
@@ -43,9 +44,16 @@
 				label: 'Actions',
 				value: `${openActionTotal} open · ${completedActionTotal} closed`
 			},
-			{ label: 'Domain ID', value: `#${domain.DomainId}` }
+			{ label: 'Domain ID', value: `#${domain.DomainId}` },
+			{ label: 'Learn', value: learnSummary(domainLearnSessions) }
 		];
 	});
+
+	/** "2 sessions · 1 open question" for the Learn meta row. */
+	function learnSummary(sessions: LearnSession[]): string {
+		const open = sessions.reduce((sum, s) => sum + s.OpenQuestionCount, 0);
+		return `${sessions.length} ${sessions.length === 1 ? 'session' : 'sessions'} · ${open} open ${open === 1 ? 'question' : 'questions'}`;
+	}
 
 	function countBy<T>(items: T[], keyOf: (item: T) => number): Map<number, number> {
 		const counts = new Map<number, number>();
@@ -96,6 +104,7 @@
 
 			const nodeIds = new Set(domain.KnowledgeNodes.map((node) => node.Id));
 			logTotal = logs.filter((log) => nodeIds.has(log.NodeId)).length;
+			domainLearnSessions = learnSessions.filter((s) => s.NodeId !== null && nodeIds.has(s.NodeId));
 			openActionTotal = openActions.filter((a) => nodeIds.has(a.KnowledgeNodeId)).length;
 			completedActionTotal = completedActions.filter((a) => nodeIds.has(a.KnowledgeNodeId)).length;
 
