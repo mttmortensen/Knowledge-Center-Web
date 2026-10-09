@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { tagsApi } from '$lib/api/tags';
+	import { matchesQuery } from '$lib/utils/tableFilter';
 	import type { Tag } from '$lib/types/api';
 
 	let { selectedIds = $bindable([]) }: { selectedIds: number[] } = $props();
@@ -9,6 +10,26 @@
 	let newTagName = $state('');
 	let creating = $state(false);
 	let error = $state('');
+	let expanded = $state(false);
+	let search = $state('');
+
+	const COLLAPSED_LIMIT = 10;
+
+	// Collapsed, the picker shows the first few tags plus any selected ones past
+	// the cutoff, so a selection never hides. Expanded, it shows every tag that
+	// matches the search box.
+	const visibleTags = $derived.by(() => {
+		if (expanded) return allTags.filter((tag) => matchesQuery(search, tag.Name));
+		return allTags.filter(
+			(tag, index) => index < COLLAPSED_LIMIT || selectedIds.includes(tag.TagId)
+		);
+	});
+	const hiddenCount = $derived(allTags.length - visibleTags.length);
+
+	function setExpanded(value: boolean) {
+		expanded = value;
+		search = '';
+	}
 
 	onMount(async () => {
 		try {
@@ -45,8 +66,18 @@
 	{#if error}
 		<p class="muted">{error}</p>
 	{/if}
+	{#if expanded}
+		<input
+			class="tag-search"
+			type="text"
+			placeholder="Search tags…"
+			aria-label="Search tags"
+			bind:value={search}
+			onkeydown={(e) => e.key === 'Enter' && e.preventDefault()}
+		/>
+	{/if}
 	<div class="row" style="flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem;">
-		{#each allTags as tag (tag.TagId)}
+		{#each visibleTags as tag (tag.TagId)}
 			<button
 				type="button"
 				class:selected={selectedIds.includes(tag.TagId)}
@@ -55,6 +86,18 @@
 				{tag.Name}
 			</button>
 		{/each}
+		{#if expanded}
+			{#if visibleTags.length === 0}
+				<span class="muted">No tags match "{search.trim()}".</span>
+			{/if}
+			{#if allTags.length > COLLAPSED_LIMIT}
+				<button type="button" class="toggle" onclick={() => setExpanded(false)}>Show less</button>
+			{/if}
+		{:else if hiddenCount > 0}
+			<button type="button" class="toggle" onclick={() => setExpanded(true)}>
+				View all ({allTags.length})
+			</button>
+		{/if}
 	</div>
 	<div class="row new-tag">
 		<input
@@ -72,6 +115,15 @@
 		background: var(--accent);
 		border-color: var(--accent);
 		color: #0b0d12;
+	}
+
+	button.toggle {
+		background: transparent;
+		border-style: dashed;
+	}
+
+	.tag-search {
+		margin-bottom: 0.6rem;
 	}
 
 	.new-tag input {
