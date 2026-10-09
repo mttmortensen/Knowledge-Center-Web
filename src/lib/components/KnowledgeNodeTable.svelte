@@ -7,6 +7,7 @@
 		{ key: 'type', label: 'Type' },
 		{ key: 'logs', label: 'Logs', dir: 'desc' },
 		{ key: 'actions', label: 'Actions', dir: 'desc' },
+		{ key: 'learn', label: 'Learn', dir: 'desc' },
 		{ key: 'confidence', label: 'Confidence', dir: 'desc' },
 		{ key: 'status', label: 'Status' },
 		{ key: 'updated', label: 'Updated', dir: 'desc' }
@@ -14,7 +15,11 @@
 
 	export const defaultNodeSort: SortState = { key: 'title', dir: 'asc' };
 
-	type Counts = { logs: Map<number, number>; actions: Map<number, number> };
+	type Counts = {
+		logs: Map<number, number>;
+		actions: Map<number, number>;
+		learn: Map<number, number>;
+	};
 
 	function nodeSortValue(node: KnowledgeNodeInline, key: string, counts: Counts): SortValue {
 		switch (key) {
@@ -26,6 +31,8 @@
 				return counts.logs.get(node.Id) ?? 0;
 			case 'actions':
 				return counts.actions.get(node.Id) ?? 0;
+			case 'learn':
+				return counts.learn.get(node.Id) ?? 0;
 			case 'confidence':
 				return node.ConfidenceLevel;
 			case 'status':
@@ -46,17 +53,20 @@
 		nodes,
 		logCounts,
 		actionCounts,
+		learnCounts,
 		sort = $bindable(defaultNodeSort)
 	}: {
 		nodes: KnowledgeNodeInline[];
 		logCounts: Map<number, number>;
 		actionCounts: Map<number, number>;
+		/** Learn sessions linked to each node. */
+		learnCounts: Map<number, number>;
 		sort?: SortState;
 	} = $props();
 
 	const rows = $derived(
 		sortRows(nodes, sort, (node, key) =>
-			nodeSortValue(node, key, { logs: logCounts, actions: actionCounts })
+			nodeSortValue(node, key, { logs: logCounts, actions: actionCounts, learn: learnCounts })
 		)
 	);
 </script>
@@ -82,6 +92,9 @@
 				<th class="col-count" aria-sort={ariaSort(sort, 'actions')}>
 					<SortHeader label="Actions" sortKey="actions" dir="desc" align="right" bind:sort />
 				</th>
+				<th class="col-count" aria-sort={ariaSort(sort, 'learn')}>
+					<SortHeader label="Learn" sortKey="learn" dir="desc" align="right" bind:sort />
+				</th>
 				<th class="col-confidence" aria-sort={ariaSort(sort, 'confidence')}>
 					<SortHeader label="Confidence" sortKey="confidence" dir="desc" bind:sort />
 				</th>
@@ -102,6 +115,7 @@
 					<td class="col-type muted" data-label="Type">{node.NodeType}</td>
 					<td class="col-count muted" data-label="Logs">{logCounts.get(node.Id) ?? 0}</td>
 					<td class="col-count muted" data-label="Actions">{actionCounts.get(node.Id) ?? 0}</td>
+					<td class="col-count muted" data-label="Learn">{learnCounts.get(node.Id) ?? 0}</td>
 					<td class="col-confidence muted" data-label="Confidence">{node.ConfidenceLevel}/5</td>
 					<td class="col-status" data-label="Status"><span class="tag-pill">{node.Status}</span></td>
 					<td class="col-date muted" data-label="Updated"

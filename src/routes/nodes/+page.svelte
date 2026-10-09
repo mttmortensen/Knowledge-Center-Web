@@ -3,6 +3,7 @@
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import { logEntriesApi } from '$lib/api/logEntries';
 	import { actionsApi } from '$lib/api/actions';
+	import { learnApi } from '$lib/api/learn';
 	import type { Domain, KnowledgeNode } from '$lib/types/api';
 	import KnowledgeNodeTable from '$lib/components/KnowledgeNodeTable.svelte';
 	import FilterBar from '$lib/components/FilterBar.svelte';
@@ -19,6 +20,7 @@
 	let nodes = $state<KnowledgeNode[]>([]);
 	let logCounts = $state<Map<number, number>>(new Map());
 	let actionCounts = $state<Map<number, number>>(new Map());
+	let learnCounts = $state<Map<number, number>>(new Map());
 	let loading = $state(true);
 	let error = $state('');
 
@@ -80,17 +82,23 @@
 		loading = true;
 		error = '';
 		try {
-			const [domainsResult, nodesResult, logs, openActions, completedActions] = await Promise.all([
+			const [domainsResult, nodesResult, logs, openActions, completedActions, learnSessions] = await Promise.all([
 				domainsApi.getAll(),
 				knowledgeNodesApi.getAll(),
 				logEntriesApi.getAll(),
 				actionsApi.getAllOpen(),
-				actionsApi.getAllCompleted()
+				actionsApi.getAllCompleted(),
+				// A Learn failure shouldn't blank the table; the column just reads 0.
+				learnApi.getSessions().catch(() => [])
 			]);
 			domains = domainsResult;
 			nodes = nodesResult;
 			logCounts = countBy(logs, (log) => log.NodeId);
 			actionCounts = countBy([...openActions, ...completedActions], (action) => action.KnowledgeNodeId);
+			learnCounts = countBy(
+				learnSessions.filter((s) => s.NodeId !== null),
+				(s) => s.NodeId as number
+			);
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load knowledge nodes.';
 		} finally {
@@ -246,7 +254,7 @@
 						<span class="group-count muted">{group.nodes.length}</span>
 					</div>
 					{#if !collapsed[group.domain.DomainId]}
-						<KnowledgeNodeTable nodes={group.nodes} {logCounts} {actionCounts} />
+						<KnowledgeNodeTable nodes={group.nodes} {logCounts} {actionCounts} {learnCounts} />
 					{/if}
 				</section>
 			{/each}

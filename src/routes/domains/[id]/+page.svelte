@@ -6,6 +6,7 @@
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import { logEntriesApi } from '$lib/api/logEntries';
 	import { actionsApi } from '$lib/api/actions';
+	import { learnApi } from '$lib/api/learn';
 	import type { DomainWithKNs } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { DemoForbiddenError } from '$lib/api/client';
@@ -17,6 +18,7 @@
 	let domain = $state<DomainWithKNs | null>(null);
 	let logCounts = $state<Map<number, number>>(new Map());
 	let actionCounts = $state<Map<number, number>>(new Map());
+	let learnCounts = $state<Map<number, number>>(new Map());
 	let logTotal = $state(0);
 	let openActionTotal = $state(0);
 	let completedActionTotal = $state(0);
@@ -72,11 +74,13 @@
 		loading = true;
 		error = '';
 		try {
-			const [domainResult, logs, openActions, completedActions] = await Promise.all([
+			const [domainResult, logs, openActions, completedActions, learnSessions] = await Promise.all([
 				domainsApi.getById(domainId),
 				logEntriesApi.getAll(),
 				actionsApi.getAllOpen(),
-				actionsApi.getAllCompleted()
+				actionsApi.getAllCompleted(),
+				// A Learn failure shouldn't blank the table; the column just reads 0.
+				learnApi.getSessions().catch(() => [])
 			]);
 			domain = domainResult;
 			// Demo mode's GET-by-id returns a bare Domain (no KnowledgeNodes array),
@@ -85,6 +89,10 @@
 			domain.KnowledgeNodes ??= [];
 			logCounts = countBy(logs, (log) => log.NodeId);
 			actionCounts = countBy([...openActions, ...completedActions], (action) => action.KnowledgeNodeId);
+			learnCounts = countBy(
+				learnSessions.filter((s) => s.NodeId !== null),
+				(s) => s.NodeId as number
+			);
 
 			const nodeIds = new Set(domain.KnowledgeNodes.map((node) => node.Id));
 			logTotal = logs.filter((log) => nodeIds.has(log.NodeId)).length;
@@ -276,7 +284,7 @@
 		{#if domain.KnowledgeNodes.length === 0}
 			<div class="empty-state">No knowledge nodes in this domain yet.</div>
 		{:else}
-			<KnowledgeNodeTable nodes={domain.KnowledgeNodes} {logCounts} {actionCounts} />
+			<KnowledgeNodeTable nodes={domain.KnowledgeNodes} {logCounts} {actionCounts} {learnCounts} />
 		{/if}
 	{/if}
 </div>
