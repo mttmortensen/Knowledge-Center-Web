@@ -11,6 +11,30 @@ npm install
 npm run dev
 ```
 
+## Testing
+
+```sh
+npm test        # vitest: Learn parser / renderer
+npm run check   # svelte-check
+```
+
+To run against a local API (e.g. `dotnet run` in Knowledge-Center-API on port 5131)
+instead of production, set `KC_API_PROXY_TARGET=http://localhost:5131` before
+`npm run dev`.
+
+## Learn
+
+`/learn` holds progressive-learning notebooks: one timeline per session, edited in
+place. Click an entry to edit its raw markdown (blur or Esc saves; clearing it
+deletes it), click the gap between entries to insert one, or the space below to
+append. Entry syntax:
+
+- `?? question` — tagged **open** in the margin until a follow-up answers it
+- `@answers(12) ...` — follow-up to entry 12 (ids show in the margin on hover)
+- `@log(34)` — embeds log 34; `@log <markdown>` writes a new log under the
+  session's Knowledge Node
+- paste or drop an image to upload it; the caption goes in `![caption](url)`
+
 ## Building
 
 Builds a static SPA (adapter-static, `fallback: index.html`) to `build/` — no Node

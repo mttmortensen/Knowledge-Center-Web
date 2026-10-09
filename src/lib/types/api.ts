@@ -180,3 +180,65 @@ export interface Stats {
 	ActionsByDay: CtpDayCount[];
 	TopTags: TagCount[];
 }
+
+// === Learn ===
+// EntryType / QuestionStatus / AnswersEntryId / LogId are derived by the API from
+// Source on every read; the client re-derives them live with src/lib/learn/parse.ts.
+
+export type LearnEntryType = 'note' | 'image' | 'code' | 'question' | 'followup' | 'log';
+
+export interface LearnSession {
+	SessionId: number;
+	Title: string;
+	Topic: string | null;
+	NodeId: number | null;
+	NodeTitle: string | null;
+	CreatedAt: string;
+	UpdatedAt: string;
+	EntryCount: number;
+	OpenQuestionCount: number;
+}
+
+export interface LearnEntry {
+	EntryId: number;
+	SessionId: number;
+	Position: number;
+	Source: string;
+	CreatedAt: string;
+	UpdatedAt: string;
+	EntryType: LearnEntryType;
+	QuestionStatus: 'open' | 'answered' | null;
+	AnswersEntryId: number | null;
+	LogId: number | null;
+}
+
+export interface LearnSessionDetails extends LearnSession {
+	Entries: LearnEntry[];
+}
+
+export interface LearnSessionCreateInput {
+	Title: string;
+	Topic?: string;
+	NodeId?: number;
+}
+
+/** Only supplied fields change. Empty Topic clears it; NodeId 0 unlinks the node. */
+export interface LearnSessionUpdateInput {
+	Title?: string;
+	Topic?: string;
+	NodeId?: number;
+}
+
+export interface LearnEntryCreateInput {
+	Source: string;
+	/** Insert directly above this entry; omit to append. */
+	BeforeEntryId?: number;
+}
+
+export interface LearnOpenQuestion {
+	EntryId: number;
+	SessionId: number;
+	SessionTitle: string;
+	Source: string;
+	CreatedAt: string;
+}

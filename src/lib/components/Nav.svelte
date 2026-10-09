@@ -42,6 +42,7 @@
 				<a href="/domains" onclick={closeMenu}>Domains</a>
 				<a href="/nodes" onclick={closeMenu}>Knowledge Nodes</a>
 				<a href="/logs" onclick={closeMenu}>Logs</a>
+				<a href="/learn" onclick={closeMenu}>Learn</a>
 				<a href="/actions" onclick={closeMenu}>Actions</a>
 				<a href="/tags" onclick={closeMenu}>Tags</a>
 			</div>
