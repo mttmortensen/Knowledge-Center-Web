@@ -396,6 +396,9 @@
 	.chevron.collapsed {
 		transform: rotate(-90deg);
 	}
+	.row-between + .learn-session {
+		margin-top: 1rem;
+	}
 	.learn-session .muted {
 		margin-top: 0.3rem;
 	}
