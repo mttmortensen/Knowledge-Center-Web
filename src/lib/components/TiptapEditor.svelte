@@ -46,7 +46,21 @@
 				value = markdownStorage(editor).getMarkdown();
 			},
 			editorProps: {
-				attributes: { class: 'tiptap-content' }
+				attributes: { class: 'tiptap-content' },
+				handlePaste: (_view, event) => {
+					const files = imageFiles(event.clipboardData?.files);
+					if (files.length === 0 || !onImageUpload) return false;
+					insertUploadedImages(files);
+					return true;
+				},
+				handleDrop: (view, event, _slice, moved) => {
+					if (moved) return false;
+					const files = imageFiles(event.dataTransfer?.files);
+					if (files.length === 0 || !onImageUpload) return false;
+					const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
+					insertUploadedImages(files, pos);
+					return true;
+				}
 			}
 		});
 	});
@@ -73,6 +87,26 @@
 
 	function onMarkdownInput() {
 		value = markdownDraft;
+	}
+
+	function imageFiles(files: FileList | undefined | null): File[] {
+		return files ? [...files].filter((f) => f.type.startsWith('image/')) : [];
+	}
+
+	async function insertUploadedImages(files: File[], pos?: number) {
+		if (!editor || !onImageUpload) return;
+		if (pos !== undefined) editor.commands.setTextSelection(pos);
+		uploading = true;
+		try {
+			for (const file of files) {
+				const url = await onImageUpload(file);
+				editor.chain().focus().setImage({ src: url }).run();
+			}
+		} catch (err) {
+			alert(err instanceof Error ? err.message : 'Image upload failed.');
+		} finally {
+			uploading = false;
+		}
 	}
 
 	function triggerImagePick() {
