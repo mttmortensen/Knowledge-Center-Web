@@ -9,6 +9,8 @@ export interface Domain {
 	CreatedAt: string;
 	LastUsed: string;
 	LastUpdated: string;
+	IsArchived: boolean;
+	ArchivedAt: string | null;
 }
 
 export interface DomainWithKNs extends Domain {
@@ -29,6 +31,8 @@ export interface KnowledgeNodeInline {
 	Status: string;
 	CreatedAt: string;
 	LastUpdated: string;
+	IsArchived: boolean;
+	ArchivedAt: string | null;
 }
 
 export interface KnowledgeNode {
@@ -41,6 +45,8 @@ export interface KnowledgeNode {
 	Status: string;
 	CreatedAt: string;
 	LastUpdated: string;
+	IsArchived: boolean;
+	ArchivedAt: string | null;
 }
 
 export interface KnowledgeNodeWithLogs extends KnowledgeNode {

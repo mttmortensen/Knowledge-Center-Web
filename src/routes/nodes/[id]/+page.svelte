@@ -176,11 +176,37 @@
 		}
 	}
 
+	let archiving = $state(false);
+
+	async function setArchived(archived: boolean) {
+		if (!confirm(archived ? 'Archive this knowledge node?' : 'Unarchive this knowledge node?')) return;
+		archiving = true;
+		error = '';
+		try {
+			await (archived ? knowledgeNodesApi.archive(nodeId) : knowledgeNodesApi.unarchive(nodeId));
+			await load();
+		} catch (err) {
+			error =
+				err instanceof DemoForbiddenError
+					? err.message
+					: err instanceof Error
+						? err.message
+						: `Failed to ${archived ? 'archive' : 'unarchive'} knowledge node.`;
+		} finally {
+			archiving = false;
+		}
+	}
+
 	async function deleteNode() {
-		if (!confirm('Delete this knowledge node and all its log entries?')) return;
+		if (
+			!confirm(
+				`Permanently delete "${node?.Title}" and all its log entries and actions? This cannot be undone.`
+			)
+		)
+			return;
 		try {
 			await knowledgeNodesApi.delete(nodeId);
-			goto(`/domains/${node?.DomainId}`);
+			goto('/nodes?archived=1');
 		} catch (err) {
 			error =
 				err instanceof DemoForbiddenError
@@ -246,8 +272,16 @@
 			{:else}
 				<div class="row-between">
 					<h1>{node.Title}</h1>
-					<span class="tag-pill">{node.Status}</span>
+					<div class="row">
+						{#if node.IsArchived}
+							<span class="tag-pill warn">Archived</span>
+						{/if}
+						<span class="tag-pill">{node.Status}</span>
+					</div>
 				</div>
+				{#if node.IsArchived && node.ArchivedAt}
+					<p class="muted">Archived {new Date(node.ArchivedAt).toLocaleString()}</p>
+				{/if}
 
 				<h2 class="section-heading">Details</h2>
 				<MetaPanel rows={metaRows} columns={2} />
@@ -257,10 +291,19 @@
 
 				<div class="row">
 					<button onclick={() => (editing = true)} disabled={auth.isDemo}>Edit</button>
-					<button class="danger" onclick={deleteNode} disabled={auth.isDemo}>Delete</button>
+					{#if node.IsArchived}
+						<button onclick={() => setArchived(false)} disabled={auth.isDemo || archiving}>
+							Unarchive
+						</button>
+						<button class="danger" onclick={deleteNode} disabled={auth.isDemo}>Delete</button>
+					{:else}
+						<button onclick={() => setArchived(true)} disabled={auth.isDemo || archiving}>
+							Archive
+						</button>
+					{/if}
 				</div>
 				{#if auth.isDemo}
-					<p class="muted">Editing and deleting are disabled in demo mode.</p>
+					<p class="muted">Editing, archiving and deleting are disabled in demo mode.</p>
 				{/if}
 			{/if}
 		</div>

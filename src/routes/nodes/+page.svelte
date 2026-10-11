@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { domainsApi } from '$lib/api/domains';
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import { logEntriesApi } from '$lib/api/logEntries';
@@ -14,7 +15,10 @@
 		optionsFrom,
 		type FilterSelect
 	} from '$lib/utils/tableFilter';
-	import { onMount } from 'svelte';
+	import { untrack } from 'svelte';
+
+	// /nodes?archived=1 lists the archived nodes instead of the active ones.
+	const showArchived = $derived(page.url.searchParams.get('archived') === '1');
 
 	let domains = $state<Domain[]>([]);
 	let nodes = $state<KnowledgeNode[]>([]);
@@ -50,7 +54,8 @@
 			key: 'domain',
 			label: 'Domain',
 			allLabel: 'All domains',
-			options: [...domains]
+			options: domains
+				.filter((domain) => nodes.some((node) => node.DomainId === domain.DomainId))
 				.sort((a, b) => a.DomainName.localeCompare(b.DomainName))
 				.map((domain) => ({ value: String(domain.DomainId), label: domain.DomainName }))
 		},
@@ -83,8 +88,9 @@
 		error = '';
 		try {
 			const [domainsResult, nodesResult, logs, openActions, completedActions, learnSessions] = await Promise.all([
-				domainsApi.getAll(),
-				knowledgeNodesApi.getAll(),
+				// Archived nodes can sit in active or archived domains, so group by all of them.
+				domainsApi.getAll(showArchived),
+				knowledgeNodesApi.getAll(showArchived),
 				logEntriesApi.getAll(),
 				actionsApi.getAllOpen(),
 				actionsApi.getAllCompleted(),
@@ -92,7 +98,7 @@
 				learnApi.getSessions().catch(() => [])
 			]);
 			domains = domainsResult;
-			nodes = nodesResult;
+			nodes = nodesResult.filter((node) => node.IsArchived === showArchived);
 			logCounts = countBy(logs, (log) => log.NodeId);
 			actionCounts = countBy([...openActions, ...completedActions], (action) => action.KnowledgeNodeId);
 			learnCounts = countBy(
@@ -106,7 +112,10 @@
 		}
 	}
 
-	onMount(load);
+	$effect(() => {
+		showArchived;
+		untrack(load);
+	});
 
 	async function createNode(event: SubmitEvent) {
 		event.preventDefault();
@@ -158,17 +167,21 @@
 
 <div class="container">
 	<div class="row-between">
-		<h1>Knowledge Nodes</h1>
-		<button class="primary" onclick={() => (showCreate = !showCreate)}>
-			{showCreate ? 'Cancel' : 'New node'}
-		</button>
+		<h1>{showArchived ? 'Archived Knowledge Nodes' : 'Knowledge Nodes'}</h1>
+		{#if showArchived}
+			<a href="/nodes">View active nodes</a>
+		{:else}
+			<button class="primary" onclick={() => (showCreate = !showCreate)}>
+				{showCreate ? 'Cancel' : 'New node'}
+			</button>
+		{/if}
 	</div>
 
 	{#if error}
 		<div class="error-banner">{error}</div>
 	{/if}
 
-	{#if showCreate}
+	{#if showCreate && !showArchived}
 		<form class="card" onsubmit={createNode}>
 			<div class="field">
 				<label for="node-domain">Domain</label>
@@ -221,7 +234,9 @@
 	{#if loading}
 		<p class="muted">Loading…</p>
 	{:else if nodes.length === 0}
-		<div class="empty-state">No knowledge nodes yet.</div>
+		<div class="empty-state">
+			{showArchived ? 'No archived knowledge nodes.' : 'No knowledge nodes yet.'}
+		</div>
 	{:else}
 		<FilterBar
 			bind:search

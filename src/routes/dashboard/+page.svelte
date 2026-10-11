@@ -62,18 +62,18 @@
 				<span class="stat-label muted">Active Knowledge Nodes</span>
 				<span class="stat-value">{stats.KnowledgeNodes.Active}</span>
 			</div>
-			<div class="card stat-card">
+			<a class="card card-link stat-card" href="/nodes?archived=1">
 				<span class="stat-label muted">Archived Knowledge Nodes</span>
 				<span class="stat-value">{stats.KnowledgeNodes.Archived}</span>
-			</div>
+			</a>
 			<div class="card stat-card">
 				<span class="stat-label muted">Active Domains</span>
 				<span class="stat-value">{stats.Domains.Active}</span>
 			</div>
-			<div class="card stat-card">
+			<a class="card card-link stat-card" href="/domains?archived=1">
 				<span class="stat-label muted">Archived Domains</span>
 				<span class="stat-value">{stats.Domains.Archived}</span>
-			</div>
+			</a>
 			<div class="card stat-card">
 				<span class="stat-label muted">Most Used Tag</span>
 				<span class="stat-value">{topTag ? topTag.Name : '—'}</span>

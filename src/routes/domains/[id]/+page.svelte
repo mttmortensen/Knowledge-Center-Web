@@ -95,6 +95,11 @@
 			// unlike the real API's DomainWithKNsDto — default it so the list below
 			// doesn't blow up on undefined.
 			domain.KnowledgeNodes ??= [];
+			// An active domain lists only its active nodes; an archived one lists the
+			// nodes archived along with it.
+			if (!domain.IsArchived) {
+				domain.KnowledgeNodes = domain.KnowledgeNodes.filter((node) => !node.IsArchived);
+			}
 			logCounts = countBy(logs, (log) => log.NodeId);
 			actionCounts = countBy([...openActions, ...completedActions], (action) => action.KnowledgeNodeId);
 			learnCounts = countBy(
@@ -144,11 +149,43 @@
 		}
 	}
 
+	let archiving = $state(false);
+
+	async function setArchived(archived: boolean) {
+		const prompt = archived
+			? 'Archive this domain? Its knowledge nodes are archived with it.'
+			: 'Unarchive this domain? Its knowledge nodes are restored with it.';
+		if (!confirm(prompt)) return;
+		archiving = true;
+		error = '';
+		try {
+			await (archived ? domainsApi.archive(domainId) : domainsApi.unarchive(domainId));
+			await load();
+		} catch (err) {
+			error =
+				err instanceof DemoForbiddenError
+					? err.message
+					: err instanceof Error
+						? err.message
+						: `Failed to ${archived ? 'archive' : 'unarchive'} domain.`;
+		} finally {
+			archiving = false;
+		}
+	}
+
 	async function deleteDomain() {
-		if (!confirm('Delete this domain? This does not delete its knowledge nodes on the server side automatically — check before confirming.')) return;
+		const nodeCount = domain?.KnowledgeNodes.length ?? 0;
+		if (
+			!confirm(
+				`Permanently delete "${domain?.DomainName}" along with its ${nodeCount} ` +
+					`knowledge ${nodeCount === 1 ? 'node' : 'nodes'} and all their log entries and actions? ` +
+					'This cannot be undone.'
+			)
+		)
+			return;
 		try {
 			await domainsApi.delete(domainId);
-			goto('/domains');
+			goto('/domains?archived=1');
 		} catch (err) {
 			error =
 				err instanceof DemoForbiddenError
@@ -186,7 +223,14 @@
 </script>
 
 <div class="container">
-	<div class="breadcrumb"><a href="/domains">Domains</a> / {domain?.DomainName ?? '…'}</div>
+	<div class="breadcrumb">
+		{#if domain?.IsArchived}
+			<a href="/domains?archived=1">Archived Domains</a>
+		{:else}
+			<a href="/domains">Domains</a>
+		{/if}
+		/ {domain?.DomainName ?? '…'}
+	</div>
 
 	{#if error}
 		<div class="error-banner">{error}</div>
@@ -223,8 +267,16 @@
 			{:else}
 				<div class="row-between">
 					<h1>{domain.DomainName}</h1>
-					<span class="tag-pill">{domain.DomainStatus}</span>
+					<div class="row">
+						{#if domain.IsArchived}
+							<span class="tag-pill archived">Archived</span>
+						{/if}
+						<span class="tag-pill">{domain.DomainStatus}</span>
+					</div>
 				</div>
+				{#if domain.IsArchived && domain.ArchivedAt}
+					<p class="muted">Archived {new Date(domain.ArchivedAt).toLocaleString()}</p>
+				{/if}
 
 				<h2 class="section-heading">Details</h2>
 				<MetaPanel rows={metaRows} columns={2} />
@@ -234,10 +286,19 @@
 
 				<div class="row">
 					<button onclick={() => (editing = true)} disabled={auth.isDemo}>Edit</button>
-					<button class="danger" onclick={deleteDomain} disabled={auth.isDemo}>Delete</button>
+					{#if domain.IsArchived}
+						<button onclick={() => setArchived(false)} disabled={auth.isDemo || archiving}>
+							Unarchive
+						</button>
+						<button class="danger" onclick={deleteDomain} disabled={auth.isDemo}>Delete</button>
+					{:else}
+						<button onclick={() => setArchived(true)} disabled={auth.isDemo || archiving}>
+							Archive
+						</button>
+					{/if}
 				</div>
 				{#if auth.isDemo}
-					<p class="muted">Editing and deleting are disabled in demo mode.</p>
+					<p class="muted">Editing, archiving and deleting are disabled in demo mode.</p>
 				{/if}
 			{/if}
 		</div>
@@ -291,7 +352,7 @@
 		{/if}
 
 		{#if domain.KnowledgeNodes.length === 0}
-			<div class="empty-state">No knowledge nodes in this domain yet.</div>
+			<div class="empty-state">No knowledge nodes in this domain.</div>
 		{:else}
 			<KnowledgeNodeTable nodes={domain.KnowledgeNodes} {logCounts} {actionCounts} {learnCounts} />
 		{/if}
@@ -299,6 +360,10 @@
 </div>
 
 <style>
+	.tag-pill.archived {
+		color: var(--warning);
+		border-color: var(--warning);
+	}
 	.domain-description {
 		white-space: pre-wrap;
 		margin: 0 0 1.25rem;

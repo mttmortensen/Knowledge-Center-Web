@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { domainsApi } from '$lib/api/domains';
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import type { Domain } from '$lib/types/api';
@@ -12,7 +13,10 @@
 		optionsFrom,
 		type FilterSelect
 	} from '$lib/utils/tableFilter';
-	import { onMount } from 'svelte';
+	import { untrack } from 'svelte';
+
+	// /domains?archived=1 lists the archived domains instead of the active ones.
+	const showArchived = $derived(page.url.searchParams.get('archived') === '1');
 
 	let domains = $state<Domain[]>([]);
 	let nodeCounts = $state<Map<number, number>>(new Map());
@@ -50,10 +54,10 @@
 		error = '';
 		try {
 			const [domainsResult, nodes] = await Promise.all([
-				domainsApi.getAll(),
-				knowledgeNodesApi.getAll()
+				domainsApi.getAll(showArchived),
+				knowledgeNodesApi.getAll(showArchived)
 			]);
-			domains = domainsResult;
+			domains = domainsResult.filter((domain) => domain.IsArchived === showArchived);
 			const counts = new Map<number, number>();
 			for (const node of nodes) {
 				counts.set(node.DomainId, (counts.get(node.DomainId) ?? 0) + 1);
@@ -66,7 +70,10 @@
 		}
 	}
 
-	onMount(load);
+	$effect(() => {
+		showArchived;
+		untrack(load);
+	});
 
 	async function createDomain(event: SubmitEvent) {
 		event.preventDefault();
@@ -93,17 +100,21 @@
 
 <div class="container">
 	<div class="row-between">
-		<h1>Domains</h1>
-		<button class="primary" onclick={() => (showCreate = !showCreate)}>
-			{showCreate ? 'Cancel' : 'New domain'}
-		</button>
+		<h1>{showArchived ? 'Archived Domains' : 'Domains'}</h1>
+		{#if showArchived}
+			<a href="/domains">View active domains</a>
+		{:else}
+			<button class="primary" onclick={() => (showCreate = !showCreate)}>
+				{showCreate ? 'Cancel' : 'New domain'}
+			</button>
+		{/if}
 	</div>
 
 	{#if error}
 		<div class="error-banner">{error}</div>
 	{/if}
 
-	{#if showCreate}
+	{#if showCreate && !showArchived}
 		<form class="card" onsubmit={createDomain}>
 			<div class="field">
 				<label for="name">Name</label>
@@ -129,7 +140,9 @@
 	{#if loading}
 		<p class="muted">Loading…</p>
 	{:else if domains.length === 0}
-		<div class="empty-state">No domains yet. Create one to get started.</div>
+		<div class="empty-state">
+			{showArchived ? 'No archived domains.' : 'No domains yet. Create one to get started.'}
+		</div>
 	{:else}
 		<FilterBar
 			bind:search
