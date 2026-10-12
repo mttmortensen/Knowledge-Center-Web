@@ -43,3 +43,20 @@ export function optionsFrom<T>(rows: T[], valueOf: (row: T) => string | null | u
 		.sort((a, b) => a.localeCompare(b))
 		.map((value) => ({ value, label: value }));
 }
+
+/** The status shown, and filtered on, for an archived Domain or Knowledge Node. */
+export const ARCHIVED = 'Archived';
+
+/** A row's status as the tables show it: archived rows read "Archived" whatever their own status. */
+export function displayStatus(row: { IsArchived: boolean }, status: string): string {
+	return row.IsArchived ? ARCHIVED : status;
+}
+
+/**
+	* Status filter that keeps archived rows out of the unfiltered list: they only
+	* show up when "Archived" is the chosen status.
+	*/
+export function matchesStatus(selected: string, row: { IsArchived: boolean }, status: string): boolean {
+	if (selected === ANY) return !row.IsArchived;
+	return displayStatus(row, status) === selected;
+}

@@ -178,6 +178,10 @@ label {
 	color: var(--success);
 	border-color: var(--success);
 }
+.tag-pill.archived {
+	color: var(--warning);
+	border-color: var(--warning);
+}
 
 .error-banner {
 	background: rgba(242, 119, 122, 0.12);

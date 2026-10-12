@@ -10,14 +10,18 @@
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import {
 		ANY,
+		ARCHIVED,
+		displayStatus,
 		matchesQuery,
 		matchesSelect,
+		matchesStatus,
 		optionsFrom,
 		type FilterSelect
 	} from '$lib/utils/tableFilter';
-	import { untrack } from 'svelte';
+	import { onMount } from 'svelte';
 
-	// /nodes?archived=1 lists the archived nodes instead of the active ones.
+	// /nodes?archived=1 (the dashboard's Archived Knowledge Nodes card) opens on
+	// the archived nodes.
 	const showArchived = $derived(page.url.searchParams.get('archived') === '1');
 
 	let domains = $state<Domain[]>([]);
@@ -48,6 +52,12 @@
 
 	let search = $state('');
 	let filters = $state<Record<string, string>>({ domain: ANY, type: ANY, status: ANY });
+	$effect(() => {
+		filters.status = showArchived ? ARCHIVED : ANY;
+	});
+
+	// New nodes can only go into an active domain.
+	const activeDomains = $derived(domains.filter((domain) => !domain.IsArchived));
 
 	const filterSelects = $derived<FilterSelect[]>([
 		{
@@ -55,7 +65,7 @@
 			label: 'Domain',
 			allLabel: 'All domains',
 			options: domains
-				.filter((domain) => nodes.some((node) => node.DomainId === domain.DomainId))
+				.filter((domain) => nodePool.some((node) => node.DomainId === domain.DomainId))
 				.sort((a, b) => a.DomainName.localeCompare(b.DomainName))
 				.map((domain) => ({ value: String(domain.DomainId), label: domain.DomainName }))
 		},
@@ -69,9 +79,13 @@
 			key: 'status',
 			label: 'Status',
 			allLabel: 'All statuses',
-			options: optionsFrom(nodes, (node) => node.Status)
+			// "All statuses" leaves archived nodes out; they only show under "Archived".
+			options: optionsFrom(nodes, (node) => displayStatus(node, node.Status))
 		}
 	]);
+
+	// What "x of y" counts against: archived nodes only count while they're the ones shown.
+	const nodePool = $derived(nodes.filter((node) => node.IsArchived === (filters.status === ARCHIVED)));
 
 	const visibleNodes = $derived(
 		nodes.filter(
@@ -79,7 +93,7 @@
 				matchesQuery(search, node.Title, node.Description) &&
 				matchesSelect(filters.domain, node.DomainId) &&
 				matchesSelect(filters.type, node.NodeType) &&
-				matchesSelect(filters.status, node.Status)
+				matchesStatus(filters.status, node, node.Status)
 		)
 	);
 
@@ -89,8 +103,8 @@
 		try {
 			const [domainsResult, nodesResult, logs, openActions, completedActions, learnSessions] = await Promise.all([
 				// Archived nodes can sit in active or archived domains, so group by all of them.
-				domainsApi.getAll(showArchived),
-				knowledgeNodesApi.getAll(showArchived),
+				domainsApi.getAll(true),
+				knowledgeNodesApi.getAll(true),
 				logEntriesApi.getAll(),
 				actionsApi.getAllOpen(),
 				actionsApi.getAllCompleted(),
@@ -98,7 +112,7 @@
 				learnApi.getSessions().catch(() => [])
 			]);
 			domains = domainsResult;
-			nodes = nodesResult.filter((node) => node.IsArchived === showArchived);
+			nodes = nodesResult;
 			logCounts = countBy(logs, (log) => log.NodeId);
 			actionCounts = countBy([...openActions, ...completedActions], (action) => action.KnowledgeNodeId);
 			learnCounts = countBy(
@@ -112,10 +126,7 @@
 		}
 	}
 
-	$effect(() => {
-		showArchived;
-		untrack(load);
-	});
+	onMount(load);
 
 	async function createNode(event: SubmitEvent) {
 		event.preventDefault();
@@ -167,27 +178,23 @@
 
 <div class="container">
 	<div class="row-between">
-		<h1>{showArchived ? 'Archived Knowledge Nodes' : 'Knowledge Nodes'}</h1>
-		{#if showArchived}
-			<a href="/nodes">View active nodes</a>
-		{:else}
-			<button class="primary" onclick={() => (showCreate = !showCreate)}>
-				{showCreate ? 'Cancel' : 'New node'}
-			</button>
-		{/if}
+		<h1>Knowledge Nodes</h1>
+		<button class="primary" onclick={() => (showCreate = !showCreate)}>
+			{showCreate ? 'Cancel' : 'New node'}
+		</button>
 	</div>
 
 	{#if error}
 		<div class="error-banner">{error}</div>
 	{/if}
 
-	{#if showCreate && !showArchived}
+	{#if showCreate}
 		<form class="card" onsubmit={createNode}>
 			<div class="field">
 				<label for="node-domain">Domain</label>
 				<select id="node-domain" bind:value={nodeDomainId} required>
 					<option value="" disabled>Select a domain…</option>
-					{#each domains as domain (domain.DomainId)}
+					{#each activeDomains as domain (domain.DomainId)}
 						<option value={domain.DomainId}>{domain.DomainName}</option>
 					{/each}
 				</select>
@@ -234,9 +241,7 @@
 	{#if loading}
 		<p class="muted">Loading…</p>
 	{:else if nodes.length === 0}
-		<div class="empty-state">
-			{showArchived ? 'No archived knowledge nodes.' : 'No knowledge nodes yet.'}
-		</div>
+		<div class="empty-state">No knowledge nodes yet.</div>
 	{:else}
 		<FilterBar
 			bind:search
@@ -245,7 +250,7 @@
 			placeholder="Search title or description…"
 			searchLabel="Search knowledge nodes"
 			shown={visibleNodes.length}
-			total={nodes.length}
+			total={nodePool.length}
 			itemLabel="nodes"
 		/>
 		{#if groups.length === 0}

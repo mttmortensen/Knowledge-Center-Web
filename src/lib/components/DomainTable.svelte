@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	import type { Domain } from '$lib/types/api';
 	import { sortRows, type SortColumn, type SortState, type SortValue } from '$lib/utils/tableSort';
+	import { displayStatus } from '$lib/utils/tableFilter';
 
 	export const domainSortColumns: SortColumn[] = [
 		{ key: 'name', label: 'Name' },
@@ -25,7 +26,7 @@
 			case 'nodes':
 				return nodeCounts.get(domain.DomainId) ?? 0;
 			case 'status':
-				return domain.DomainStatus;
+				return displayStatus(domain, domain.DomainStatus);
 			default:
 				return new Date(domain.LastUpdated).getTime();
 		}
@@ -86,7 +87,9 @@
 						>{nodeCounts.get(domain.DomainId) ?? 0}</td
 					>
 					<td class="col-status" data-label="Status"
-						><span class="tag-pill">{domain.DomainStatus}</span></td
+						><span class="tag-pill" class:archived={domain.IsArchived}
+							>{displayStatus(domain, domain.DomainStatus)}</span
+						></td
 					>
 					<td class="col-date muted" data-label="Updated"
 						>{new Date(domain.LastUpdated).toLocaleDateString()}</td

@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	import type { KnowledgeNodeInline } from '$lib/types/api';
 	import { sortRows, type SortColumn, type SortState, type SortValue } from '$lib/utils/tableSort';
+	import { displayStatus } from '$lib/utils/tableFilter';
 
 	export const nodeSortColumns: SortColumn[] = [
 		{ key: 'title', label: 'Title' },
@@ -36,7 +37,7 @@
 			case 'confidence':
 				return node.ConfidenceLevel;
 			case 'status':
-				return node.Status;
+				return displayStatus(node, node.Status);
 			default:
 				return new Date(node.LastUpdated).getTime();
 		}
@@ -117,7 +118,11 @@
 					<td class="col-count muted" data-label="Actions">{actionCounts.get(node.Id) ?? 0}</td>
 					<td class="col-count muted" data-label="Learn">{learnCounts.get(node.Id) ?? 0}</td>
 					<td class="col-confidence muted" data-label="Confidence">{node.ConfidenceLevel}/5</td>
-					<td class="col-status" data-label="Status"><span class="tag-pill">{node.Status}</span></td>
+					<td class="col-status" data-label="Status"
+						><span class="tag-pill" class:archived={node.IsArchived}
+							>{displayStatus(node, node.Status)}</span
+						></td
+					>
 					<td class="col-date muted" data-label="Updated"
 						>{new Date(node.LastUpdated).toLocaleDateString()}</td
 					>

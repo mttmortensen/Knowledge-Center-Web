@@ -274,7 +274,7 @@
 					<h1>{node.Title}</h1>
 					<div class="row">
 						{#if node.IsArchived}
-							<span class="tag-pill warn">Archived</span>
+							<span class="tag-pill archived">Archived</span>
 						{/if}
 						<span class="tag-pill">{node.Status}</span>
 					</div>

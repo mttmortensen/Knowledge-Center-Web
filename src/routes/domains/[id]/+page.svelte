@@ -360,10 +360,6 @@
 </div>
 
 <style>
-	.tag-pill.archived {
-		color: var(--warning);
-		border-color: var(--warning);
-	}
 	.domain-description {
 		white-space: pre-wrap;
 		margin: 0 0 1.25rem;

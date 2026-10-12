@@ -8,14 +8,17 @@
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import {
 		ANY,
+		ARCHIVED,
+		displayStatus,
 		matchesQuery,
-		matchesSelect,
+		matchesStatus,
 		optionsFrom,
 		type FilterSelect
 	} from '$lib/utils/tableFilter';
-	import { untrack } from 'svelte';
+	import { onMount } from 'svelte';
 
-	// /domains?archived=1 lists the archived domains instead of the active ones.
+	// /domains?archived=1 (the dashboard's Archived Domains card) opens on the
+	// archived domains.
 	const showArchived = $derived(page.url.searchParams.get('archived') === '1');
 
 	let domains = $state<Domain[]>([]);
@@ -31,21 +34,30 @@
 
 	let search = $state('');
 	let filters = $state<Record<string, string>>({ status: ANY });
+	$effect(() => {
+		filters.status = showArchived ? ARCHIVED : ANY;
+	});
 
 	const filterSelects = $derived<FilterSelect[]>([
 		{
 			key: 'status',
 			label: 'Status',
 			allLabel: 'All statuses',
-			options: optionsFrom(domains, (domain) => domain.DomainStatus)
+			// "All statuses" leaves archived domains out; they only show under "Archived".
+			options: optionsFrom(domains, (domain) => displayStatus(domain, domain.DomainStatus))
 		}
 	]);
+
+	// What "x of y" counts against: archived domains only count while they're the ones shown.
+	const domainPool = $derived(
+		domains.filter((domain) => domain.IsArchived === (filters.status === ARCHIVED))
+	);
 
 	const visibleDomains = $derived(
 		domains.filter(
 			(domain) =>
 				matchesQuery(search, domain.DomainName, domain.DomainDescription) &&
-				matchesSelect(filters.status, domain.DomainStatus)
+				matchesStatus(filters.status, domain, domain.DomainStatus)
 		)
 	);
 
@@ -54,12 +66,18 @@
 		error = '';
 		try {
 			const [domainsResult, nodes] = await Promise.all([
-				domainsApi.getAll(showArchived),
-				knowledgeNodesApi.getAll(showArchived)
+				domainsApi.getAll(true),
+				knowledgeNodesApi.getAll(true)
 			]);
-			domains = domainsResult.filter((domain) => domain.IsArchived === showArchived);
+			domains = domainsResult;
+			// An active domain counts its active nodes; an archived one the nodes
+			// archived with it.
+			const archivedDomains = new Set(
+				domains.filter((domain) => domain.IsArchived).map((domain) => domain.DomainId)
+			);
 			const counts = new Map<number, number>();
 			for (const node of nodes) {
+				if (node.IsArchived !== archivedDomains.has(node.DomainId)) continue;
 				counts.set(node.DomainId, (counts.get(node.DomainId) ?? 0) + 1);
 			}
 			nodeCounts = counts;
@@ -70,10 +88,7 @@
 		}
 	}
 
-	$effect(() => {
-		showArchived;
-		untrack(load);
-	});
+	onMount(load);
 
 	async function createDomain(event: SubmitEvent) {
 		event.preventDefault();
@@ -100,21 +115,17 @@
 
 <div class="container">
 	<div class="row-between">
-		<h1>{showArchived ? 'Archived Domains' : 'Domains'}</h1>
-		{#if showArchived}
-			<a href="/domains">View active domains</a>
-		{:else}
-			<button class="primary" onclick={() => (showCreate = !showCreate)}>
-				{showCreate ? 'Cancel' : 'New domain'}
-			</button>
-		{/if}
+		<h1>Domains</h1>
+		<button class="primary" onclick={() => (showCreate = !showCreate)}>
+			{showCreate ? 'Cancel' : 'New domain'}
+		</button>
 	</div>
 
 	{#if error}
 		<div class="error-banner">{error}</div>
 	{/if}
 
-	{#if showCreate && !showArchived}
+	{#if showCreate}
 		<form class="card" onsubmit={createDomain}>
 			<div class="field">
 				<label for="name">Name</label>
@@ -140,9 +151,7 @@
 	{#if loading}
 		<p class="muted">Loading…</p>
 	{:else if domains.length === 0}
-		<div class="empty-state">
-			{showArchived ? 'No archived domains.' : 'No domains yet. Create one to get started.'}
-		</div>
+		<div class="empty-state">No domains yet. Create one to get started.</div>
 	{:else}
 		<FilterBar
 			bind:search
@@ -151,7 +160,7 @@
 			placeholder="Search name or description…"
 			searchLabel="Search domains"
 			shown={visibleDomains.length}
-			total={domains.length}
+			total={domainPool.length}
 			itemLabel="domains"
 		/>
 		{#if visibleDomains.length === 0}
