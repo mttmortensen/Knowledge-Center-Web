@@ -58,29 +58,29 @@
 		<p class="muted">Loading…</p>
 	{:else if stats}
 		<div class="stat-cards">
-			<div class="card stat-card">
+			<a class="card card-link stat-card" href="/nodes">
 				<span class="stat-label muted">Active Knowledge Nodes</span>
 				<span class="stat-value">{stats.KnowledgeNodes.Active}</span>
-			</div>
+			</a>
 			<a class="card card-link stat-card" href="/nodes?archived=1">
 				<span class="stat-label muted">Archived Knowledge Nodes</span>
 				<span class="stat-value">{stats.KnowledgeNodes.Archived}</span>
 			</a>
-			<div class="card stat-card">
+			<a class="card card-link stat-card" href="/domains">
 				<span class="stat-label muted">Active Domains</span>
 				<span class="stat-value">{stats.Domains.Active}</span>
-			</div>
+			</a>
 			<a class="card card-link stat-card" href="/domains?archived=1">
 				<span class="stat-label muted">Archived Domains</span>
 				<span class="stat-value">{stats.Domains.Archived}</span>
 			</a>
-			<div class="card stat-card">
+			<a class="card card-link stat-card" href="/tags">
 				<span class="stat-label muted">Most Used Tag</span>
 				<span class="stat-value">{topTag ? topTag.Name : '—'}</span>
 				{#if topTag}
 					<span class="muted">{topTag.Count} {topTag.Count === 1 ? 'use' : 'uses'}</span>
 				{/if}
-			</div>
+			</a>
 		</div>
 
 		<div class="dashboard-grid">
