@@ -64,19 +64,19 @@
 		<div class="stat-cards">
 			<a class="card card-link stat-card" href="/nodes">
 				<span class="stat-label muted">Active Knowledge Nodes</span>
-				<span class="stat-value">{stats.KnowledgeNodes.Active}</span>
+				<span class="stat-value stat-number">{stats.KnowledgeNodes.Active}</span>
 			</a>
 			<a class="card card-link stat-card" href="/nodes?archived=1">
 				<span class="stat-label muted">Archived Knowledge Nodes</span>
-				<span class="stat-value">{stats.KnowledgeNodes.Archived}</span>
+				<span class="stat-value stat-number">{stats.KnowledgeNodes.Archived}</span>
 			</a>
 			<a class="card card-link stat-card" href="/domains">
 				<span class="stat-label muted">Active Domains</span>
-				<span class="stat-value">{stats.Domains.Active}</span>
+				<span class="stat-value stat-number">{stats.Domains.Active}</span>
 			</a>
 			<a class="card card-link stat-card" href="/domains?archived=1">
 				<span class="stat-label muted">Archived Domains</span>
-				<span class="stat-value">{stats.Domains.Archived}</span>
+				<span class="stat-value stat-number">{stats.Domains.Archived}</span>
 			</a>
 			<a
 				class="card card-link stat-card"
@@ -170,6 +170,11 @@
 	.stat-value {
 		font-size: 1.75rem;
 		font-weight: 700;
+	}
+	/* Bare counts get the room the tag card spends on its "N uses" line. */
+	.stat-number {
+		font-size: 2.5rem;
+		line-height: 1.1;
 	}
 
 	.dashboard-grid {
