@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { knowledgeNodesApi } from '$lib/api/knowledgeNodes';
 	import { logEntriesApi } from '$lib/api/logEntries';
 	import LogTable from '$lib/components/LogTable.svelte';
@@ -15,7 +16,11 @@
 	let error = $state('');
 
 	let search = $state('');
-	let filters = $state<Record<string, string>>({ node: ANY, tag: ANY });
+	// The dashboard's Most Used Tag card links here with ?tag=<name>.
+	let filters = $state<Record<string, string>>({
+		node: ANY,
+		tag: page.url.searchParams.get('tag') ?? ANY
+	});
 
 	const nodesById = $derived(new Map(nodes.map((node) => [node.Id, node])));
 

@@ -74,7 +74,10 @@
 				<span class="stat-label muted">Archived Domains</span>
 				<span class="stat-value">{stats.Domains.Archived}</span>
 			</a>
-			<a class="card card-link stat-card" href="/tags">
+			<a
+				class="card card-link stat-card"
+				href={topTag ? `/logs?tag=${encodeURIComponent(topTag.Name)}` : '/tags'}
+			>
 				<span class="stat-label muted">Most Used Tag</span>
 				<span class="stat-value">{topTag ? topTag.Name : '—'}</span>
 				{#if topTag}
