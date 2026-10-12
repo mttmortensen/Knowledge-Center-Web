@@ -3,12 +3,16 @@
 		currentStreak,
 		longestStreak,
 		lastEntryDate,
-		label = 'entry'
+		label = 'entry',
+		mostInOneDay,
+		mostInOneDayLabel
 	}: {
 		currentStreak: number;
 		longestStreak: number;
 		lastEntryDate: string | null;
 		label?: string;
+		mostInOneDay?: number;
+		mostInOneDayLabel?: string;
 	} = $props();
 
 	function formatDate(value: string): string {
@@ -29,6 +33,12 @@
 		<span class="streak-value">{longestStreak}</span>
 		<span class="muted">day{longestStreak === 1 ? '' : 's'} longest streak</span>
 	</div>
+	{#if mostInOneDay !== undefined && mostInOneDayLabel}
+		<div class="streak-figure">
+			<span class="streak-value">{mostInOneDay}</span>
+			<span class="muted">{mostInOneDayLabel}</span>
+		</div>
+	{/if}
 	<span class="muted last-entry">
 		{lastEntryDate ? `Last ${label} on ${formatDate(lastEntryDate)}` : `No ${label} yet`}
 	</span>

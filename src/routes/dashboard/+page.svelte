@@ -45,6 +45,10 @@
 	});
 
 	let topTag = $derived(stats?.TopTags[0] ?? null);
+	let mostLogsInOneDay = $derived(Math.max(0, ...(stats?.CtpByDay ?? []).map((d) => d.Count)));
+	let mostActionsInOneDay = $derived(
+		Math.max(0, ...(stats?.ActionsByDay ?? []).map((d) => d.Count))
+	);
 </script>
 
 <div class="dashboard">
@@ -95,6 +99,8 @@
 						longestStreak={stats.LogStreak.LongestStreak}
 						lastEntryDate={stats.LogStreak.LastEntryDate}
 						label="log entry"
+						mostInOneDay={mostLogsInOneDay}
+						mostInOneDayLabel="most logs in one day"
 					/>
 					<ContributionCalendar data={stats.CtpByDay} />
 				</div>
@@ -106,6 +112,8 @@
 						longestStreak={stats.ActionStreak.LongestStreak}
 						lastEntryDate={stats.ActionStreak.LastEntryDate}
 						label="completed action"
+						mostInOneDay={mostActionsInOneDay}
+						mostInOneDayLabel="most actions in one day"
 					/>
 					<ContributionCalendar
 						data={stats.ActionsByDay}
