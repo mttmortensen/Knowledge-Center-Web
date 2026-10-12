@@ -84,8 +84,8 @@
 		error = '';
 		try {
 			const [nodesResult, logsResult] = await Promise.all([
-				// Include archived nodes so their existing entries still find a title.
-				knowledgeNodesApi.getAll(true),
+				// Active nodes only — archived nodes' logs drop out with them.
+				knowledgeNodesApi.getAll(),
 				logEntriesApi.getAll()
 			]);
 			nodes = nodesResult;

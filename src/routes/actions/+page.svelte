@@ -78,8 +78,8 @@
 		error = '';
 		try {
 			const [nodes, openActions, completedActions] = await Promise.all([
-				// Include archived nodes so their existing entries still find a title.
-				knowledgeNodesApi.getAll(true),
+				// Active nodes only — archived nodes' actions drop out with them.
+				knowledgeNodesApi.getAll(),
 				actionsApi.getAllOpen(),
 				actionsApi.getAllCompleted()
 			]);
