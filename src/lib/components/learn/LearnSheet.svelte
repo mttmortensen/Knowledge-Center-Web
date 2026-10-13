@@ -729,16 +729,46 @@
 	.log-link {
 		color: var(--success);
 	}
+	/* Quiet until the row is hovered, so it doesn't compete with the entry. */
+	.log-toggle {
+		opacity: 0.55;
+		transition: opacity 0.15s;
+	}
+	.entry:hover .log-toggle,
+	.entry:focus-within .log-toggle {
+		opacity: 1;
+	}
+	@media (hover: none) {
+		.log-toggle {
+			opacity: 0.8;
+		}
+	}
 	.log-toggle input,
 	.log-link input {
-		width: 0.75rem;
-		height: 0.75rem;
+		appearance: none;
+		flex-shrink: 0;
+		width: 0.7rem;
+		height: 0.7rem;
 		margin: 0;
-		accent-color: var(--success);
+		background: transparent;
+		border: 1px solid var(--border);
+		border-radius: 3px;
 		cursor: inherit;
 	}
+	.log-toggle:hover input {
+		border-color: var(--text-muted);
+	}
+	.log-toggle input:focus-visible {
+		outline: 1px solid var(--accent);
+		outline-offset: 1px;
+	}
+	/* Checkmark stroke is --success; a data URI can't read the variable. */
 	.log-link input {
 		pointer-events: none;
+		border-color: color-mix(in srgb, var(--success) 60%, transparent);
+		background: color-mix(in srgb, var(--success) 15%, transparent)
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.3 2.3 4.7-4.9' fill='none' stroke='%237ec699' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+			center / 100% no-repeat;
 	}
 	.ref {
 		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
