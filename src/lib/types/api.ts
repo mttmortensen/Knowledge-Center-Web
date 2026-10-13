@@ -215,6 +215,8 @@ export interface LearnEntry {
 	EntryType: LearnEntryType;
 	QuestionStatus: 'open' | 'answered' | null;
 	AnswersEntryId: number | null;
+	/** The log made from this entry; null once that log is deleted. */
+	LogId: number | null;
 }
 
 export interface LearnSessionDetails extends LearnSession {

@@ -5,7 +5,8 @@
 	import { ApiError } from '$lib/api/client';
 	import { linkEntries, parseSource } from '$lib/learn/parse';
 	import { renderMarkdown } from '$lib/learn/render';
-	import type { LearnEntry } from '$lib/types/api';
+	import LogFromEntryDialog from './LogFromEntryDialog.svelte';
+	import type { LearnEntry, LogEntry } from '$lib/types/api';
 
 	// One continuous sheet: entries render as formatted markdown, clicking one
 	// swaps it for a raw-markdown textarea, clicking the gap between entries (or
@@ -16,12 +17,17 @@
 		sessionId,
 		entries = $bindable([]),
 		openOnly = $bindable(false),
-		readonly = false
+		readonly = false,
+		nodeId = null,
+		nodeTitle = null
 	}: {
 		sessionId: number;
 		entries: LearnEntry[];
 		openOnly?: boolean;
 		readonly?: boolean;
+		/** The session's knowledge node, where "log" files an entry by default. */
+		nodeId?: number | null;
+		nodeTitle?: string | null;
 	} = $props();
 
 	type Editing = { kind: 'entry'; id: number } | { kind: 'new'; beforeId: number | null };
@@ -212,7 +218,8 @@
 			UpdatedAt: now,
 			EntryType: parsed.type,
 			QuestionStatus: null,
-			AnswersEntryId: parsed.answersEntryId
+			AnswersEntryId: parsed.answersEntryId,
+			LogId: null
 		};
 	}
 
@@ -233,7 +240,7 @@
 
 	function onRowClick(event: MouseEvent, entry: LearnEntry) {
 		const target = event.target as HTMLElement;
-		if (target.closest('a, button, textarea')) return;
+		if (target.closest('a, button, textarea, input, label')) return;
 		// Selecting text to copy it shouldn't flip the entry into edit mode.
 		if (window.getSelection()?.toString()) return;
 
@@ -351,6 +358,34 @@
 		insertImages(files, event.currentTarget as HTMLTextAreaElement);
 	}
 
+	/* ===================== LOG FROM ENTRY ===================== */
+
+	// The gutter's "log" checkbox copies an entry into a Log through /logs, then
+	// records the new log's id on the entry so the box stays ticked and links to it.
+	let logDialog = $state<LogFromEntryDialog>();
+	let logNotice = $state('');
+
+	function openLogDialog(event: Event, entry: LearnEntry) {
+		// The box only ticks once the log actually exists.
+		(event.currentTarget as HTMLInputElement).checked = false;
+		const body = (links.get(entry.EntryId)?.parsed ?? parseSource(entry.Source)).body;
+		logDialog?.open(entry.EntryId, body);
+	}
+
+	async function onLogCreated(entryId: number, log: LogEntry) {
+		const entry = entries.find((e) => e.EntryId === entryId);
+		if (!entry) return;
+		// Tick it straight away: the log exists even if recording the link fails.
+		replaceLocal(entryId, { ...entry, LogId: log.LogId });
+		logNotice = '';
+		try {
+			replaceLocal(entryId, await learnApi.setEntryLog(entryId, log.LogId));
+		} catch (err) {
+			const reason = err instanceof Error ? err.message : 'unknown error';
+			logNotice = `Log #${log.LogId} was created, but entry #${entryId} couldn't be marked as logged (${reason}). It will show unticked after a reload.`;
+		}
+	}
+
 	/* ===================== MARGIN ===================== */
 
 	export async function jump(entryId: number) {
@@ -443,6 +478,12 @@
 			<button type="button" class="tag" onclick={restoreStranded}>Reopen it</button>
 		</div>
 	{/if}
+	{#if logNotice}
+		<div class="stranded" role="alert">
+			{logNotice}
+			<button type="button" class="tag" onclick={() => (logNotice = '')}>Dismiss</button>
+		</div>
+	{/if}
 
 	{#each visible as entry, i (entry.EntryId)}
 		{@const link = links.get(entry.EntryId)}
@@ -483,6 +524,18 @@
 				<time class="time" datetime={entry.CreatedAt} title={new Date(entry.CreatedAt).toLocaleString()}>
 					{shortTime(entry.CreatedAt)}
 				</time>
+
+				{#if entry.EntryId > 0}
+					{#if entry.LogId}
+						<a class="tag log-link" href="/logs/{entry.LogId}" title="Saved as log #{entry.LogId}">
+							<input type="checkbox" checked disabled aria-hidden="true" />log
+						</a>
+					{:else if !readonly}
+						<label class="tag log-toggle" title="Save this entry as a log">
+							<input type="checkbox" onchange={(e) => openLogDialog(e, entry)} />log
+						</label>
+					{/if}
+				{/if}
 
 				{#if link?.questionStatus === 'open'}
 					<span class="tag warn">open</span>
@@ -540,6 +593,10 @@
 		<p class="empty faint-text">This session has no entries yet.</p>
 	{/if}
 </div>
+
+{#if !readonly}
+	<LogFromEntryDialog bind:this={logDialog} {nodeId} {nodeTitle} oncreated={onLogCreated} />
+{/if}
 
 <style>
 	.sheet {
@@ -661,6 +718,27 @@
 		color: var(--text-muted);
 		cursor: default;
 		text-decoration: none;
+	}
+	.log-toggle,
+	.log-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		color: var(--text-muted);
+	}
+	.log-link {
+		color: var(--success);
+	}
+	.log-toggle input,
+	.log-link input {
+		width: 0.75rem;
+		height: 0.75rem;
+		margin: 0;
+		accent-color: var(--success);
+		cursor: inherit;
+	}
+	.log-link input {
+		pointer-events: none;
 	}
 	.ref {
 		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;

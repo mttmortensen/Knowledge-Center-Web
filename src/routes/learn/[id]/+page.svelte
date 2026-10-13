@@ -224,6 +224,8 @@
 			bind:entries
 			bind:openOnly
 			sessionId={session.SessionId}
+			nodeId={session.NodeId}
+			nodeTitle={session.NodeTitle}
 			readonly={auth.isDemo}
 		/>
 	{/if}

@@ -25,6 +25,9 @@ export const learnApi = {
 	updateEntry: (id: number, source: string) =>
 		api.put<LearnEntry>(`/learn/entries/${id}`, { Source: source }),
 	deleteEntry: (id: number) => api.delete<void>(`/learn/entries/${id}`),
+	/** Records the log made from an entry; null clears it. Learn never creates the log. */
+	setEntryLog: (id: number, logId: number | null) =>
+		api.put<LearnEntry>(`/learn/entries/${id}/log`, { LogId: logId }),
 
 	getOpenQuestions: (sessionId?: number) =>
 		api.get<LearnOpenQuestion[]>(
