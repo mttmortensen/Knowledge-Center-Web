@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { actionsApi } from '$lib/api/actions';
 	import { loadParentContext, type ParentContext } from '$lib/api/parents';
+	import NodeSelect from '$lib/components/NodeSelect.svelte';
 	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
 	import type { ActionItem } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -18,6 +19,7 @@
 
 	let editing = $state(false);
 	let editText = $state('');
+	let editNodeId = $state(0);
 	let saving = $state(false);
 
 	// Closing asks for an optional follow-up first; a closed action's note
@@ -70,6 +72,7 @@
 		try {
 			action = await actionsApi.getById(actionId);
 			editText = action.ActionText;
+			editNodeId = action.KnowledgeNodeId;
 			parent = await loadParentContext(action.KnowledgeNodeId);
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load action.';
@@ -86,6 +89,7 @@
 		error = '';
 		try {
 			await actionsApi.update(actionId, { ActionText: editText });
+			if (editNodeId !== action.KnowledgeNodeId) await actionsApi.move(actionId, editNodeId);
 			editing = false;
 			await load();
 		} catch (err) {
@@ -221,6 +225,10 @@
 				<label for="edit-text">Action</label>
 				<textarea id="edit-text" rows="3" bind:value={editText}></textarea>
 			</div>
+			<div class="field">
+				<label for="edit-node">Knowledge node</label>
+				<NodeSelect id="edit-node" bind:value={editNodeId} current={parent.node} />
+			</div>
 			<div class="row">
 				<button class="primary" onclick={saveEdit} disabled={saving}>
 					{saving ? 'Saving…' : 'Save'}
@@ -229,6 +237,7 @@
 					onclick={() => {
 						editing = false;
 						editText = action!.ActionText;
+						editNodeId = action!.KnowledgeNodeId;
 					}}>Cancel</button
 				>
 			</div>

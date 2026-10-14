@@ -72,7 +72,27 @@
 	let editDescription = $state('');
 	let editConfidence = $state(3);
 	let editStatus = $state('');
+	let editDomainId = $state(0);
 	let saving = $state(false);
+
+	// Archived domains can't be moved into, but the current one stays listed
+	// so the select still shows where the node lives today.
+	let domainChoices = $state<Domain[]>([]);
+	const domainOptions = $derived.by(() => {
+		const all =
+			domain && !domainChoices.some((d) => d.DomainId === domain!.DomainId)
+				? [...domainChoices, domain]
+				: domainChoices;
+		return [...all].sort((a, b) => a.DomainName.localeCompare(b.DomainName));
+	});
+
+	function startEditing() {
+		editing = true;
+		domainsApi
+			.getAll()
+			.then((d) => (domainChoices = d))
+			.catch(() => (domainChoices = []));
+	}
 
 	const metaRows: MetaRow[] = $derived.by(() => {
 		if (!node) return [];
@@ -147,6 +167,7 @@
 			editDescription = node.Description;
 			editConfidence = node.ConfidenceLevel;
 			editStatus = node.Status;
+			editDomainId = node.DomainId;
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load knowledge node.';
 		} finally {
@@ -168,6 +189,7 @@
 				ConfidenceLevel: editConfidence,
 				Status: editStatus
 			});
+			if (editDomainId !== node?.DomainId) await knowledgeNodesApi.move(nodeId, editDomainId);
 			editing = false;
 			await load();
 		} catch (err) {
@@ -243,6 +265,16 @@
 						<input id="edit-title" type="text" bind:value={editTitle} required />
 					</div>
 					<div class="field">
+						<label for="edit-domain">Domain</label>
+						<select id="edit-domain" bind:value={editDomainId}>
+							{#each domainOptions as d (d.DomainId)}
+								<option value={d.DomainId}>
+									{d.DomainName}{d.IsArchived ? ' (archived)' : ''}
+								</option>
+							{/each}
+						</select>
+					</div>
+					<div class="field">
 						<label for="edit-type">Type</label>
 						<select id="edit-type" bind:value={editType}>
 							<option>Concept</option>
@@ -269,7 +301,13 @@
 						<button type="submit" class="primary" disabled={saving}>
 							{saving ? 'Saving…' : 'Save'}
 						</button>
-						<button type="button" onclick={() => (editing = false)}>Cancel</button>
+						<button
+							type="button"
+							onclick={() => {
+								editing = false;
+								editDomainId = node!.DomainId;
+							}}>Cancel</button
+						>
 					</div>
 				</form>
 			{:else}
@@ -293,7 +331,7 @@
 				<p class="node-description">{node.Description || 'No description yet.'}</p>
 
 				<div class="row">
-					<button onclick={() => (editing = true)} disabled={auth.isDemo}>Edit</button>
+					<button onclick={startEditing} disabled={auth.isDemo}>Edit</button>
 					{#if node.IsArchived}
 						<button onclick={() => setArchived(false)} disabled={auth.isDemo || archiving}>
 							Unarchive

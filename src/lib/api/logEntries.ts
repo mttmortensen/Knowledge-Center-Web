@@ -6,6 +6,8 @@ export const logEntriesApi = {
 	getById: (id: number) => api.get<LogEntry>(`/logs/${id}`),
 	create: (input: LogEntryCreateInput) => api.post<LogEntry>('/logs', input),
 	update: (id: number, input: LogEntryUpdateInput) => api.put<LogEntry>(`/logs/${id}`, input),
+	/** Keeps the log's id, so its tags and any Learn link come along. */
+	move: (id: number, nodeId: number) => api.put<LogEntry>(`/logs/${id}/move`, { NodeId: nodeId }),
 	delete: (id: number) => api.delete<void>(`/logs/${id}`),
 	addTags: (id: number, tagIds: number[]) => api.put<void>(`/logs/${id}/tags`, { TagIds: tagIds }),
 	removeAllTags: (id: number) => api.delete<void>(`/logs/${id}/tags`),

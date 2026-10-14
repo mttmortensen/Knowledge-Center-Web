@@ -16,6 +16,9 @@ export const knowledgeNodesApi = {
 	}) => api.post<KnowledgeNode>('/knowledge-nodes', input),
 	update: (id: number, input: KnowledgeNodeUpdateInput) =>
 		api.put<KnowledgeNode>(`/knowledge-nodes/${id}`, input),
+	/** The node keeps its id, so its logs and actions come along. */
+	move: (id: number, domainId: number) =>
+		api.put<KnowledgeNodeWithLogs>(`/knowledge-nodes/${id}/move`, { DomainId: domainId }),
 	archive: (id: number) => api.put<KnowledgeNode>(`/knowledge-nodes/${id}/archive`),
 	unarchive: (id: number) => api.put<KnowledgeNode>(`/knowledge-nodes/${id}/unarchive`),
 	/**

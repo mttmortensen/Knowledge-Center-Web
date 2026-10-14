@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import TiptapEditor from '$lib/components/TiptapEditor.svelte';
 	import TagPicker from '$lib/components/TagPicker.svelte';
+	import NodeSelect from '$lib/components/NodeSelect.svelte';
 	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
 	import { logEntriesApi } from '$lib/api/logEntries';
 	import { loadParentContext, type ParentContext } from '$lib/api/parents';
@@ -24,6 +25,7 @@
 	let editTitle = $state('');
 	let editContent = $state('');
 	let editTagIds = $state<number[]>([]);
+	let editNodeId = $state(0);
 	let saving = $state(false);
 
 	const metaRows: MetaRow[] = $derived.by(() => {
@@ -63,6 +65,7 @@
 			editTitle = entry.Title ?? '';
 			editContent = entry.Content;
 			editTagIds = entry.Tags.map((t) => t.TagId);
+			editNodeId = entry.NodeId;
 			parent = await loadParentContext(entry.NodeId);
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load log entry.';
@@ -88,6 +91,8 @@
 			const toRemove = currentTagIds.filter((id) => !editTagIds.includes(id));
 			if (toAdd.length) await logEntriesApi.addTags(logId, toAdd);
 			if (toRemove.length) await logEntriesApi.removeTags(logId, toRemove);
+
+			if (editNodeId !== entry.NodeId) await logEntriesApi.move(logId, editNodeId);
 
 			editing = false;
 			await load();
@@ -165,6 +170,10 @@
 
 		{#if editing}
 			<div class="field" style="margin-top: 1rem;">
+				<label for="node">Knowledge node</label>
+				<NodeSelect bind:value={editNodeId} current={parent.node} />
+			</div>
+			<div class="field">
 				<label for="tags">Tags</label>
 				<TagPicker bind:selectedIds={editTagIds} />
 			</div>
@@ -176,6 +185,7 @@
 					onclick={() => {
 						editing = false;
 						editContent = entry!.Content;
+						editNodeId = entry!.NodeId;
 					}}>Cancel</button
 				>
 			</div>

@@ -22,6 +22,9 @@ export const actionsApi = {
 	/** Completed actions only; a blank followUp clears the note. */
 	updateFollowUp: (id: number, followUp: string) =>
 		api.put<ActionItem>(`/actions/${id}/follow-up`, { FollowUp: followUp }),
+	/** Status, dates and follow-up are kept. */
+	move: (id: number, nodeId: number) =>
+		api.put<ActionItem>(`/actions/${id}/move`, { KnowledgeNodeId: nodeId }),
 	reopen: (id: number) => api.put<ActionItem>(`/actions/${id}/reopen`),
 	delete: (id: number) => api.delete<void>(`/actions/${id}`)
 };
