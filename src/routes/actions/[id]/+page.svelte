@@ -20,6 +20,13 @@
 	let editText = $state('');
 	let saving = $state(false);
 
+	// Closing asks for an optional follow-up first; a closed action's note
+	// can be added, edited or cleared afterwards.
+	let completing = $state(false);
+	let editingFollowUp = $state(false);
+	let followUpText = $state('');
+	let savingFollowUp = $state(false);
+
 	function statusLabel(status: string): string {
 		return status === 'Completed' ? 'Closed' : status;
 	}
@@ -93,14 +100,18 @@
 		}
 	}
 
-	async function toggleStatus() {
+	function startCompleting() {
+		followUpText = '';
+		completing = true;
+	}
+
+	async function complete() {
 		if (!action) return;
+		savingFollowUp = true;
 		error = '';
 		try {
-			action =
-				action.Status === 'Open'
-					? await actionsApi.complete(actionId)
-					: await actionsApi.reopen(actionId);
+			action = await actionsApi.complete(actionId, followUpText.trim());
+			completing = false;
 		} catch (err) {
 			error =
 				err instanceof DemoForbiddenError
@@ -108,6 +119,48 @@
 					: err instanceof Error
 						? err.message
 						: 'Failed to update status.';
+		} finally {
+			savingFollowUp = false;
+		}
+	}
+
+	async function reopen() {
+		if (!action) return;
+		error = '';
+		try {
+			action = await actionsApi.reopen(actionId);
+			editingFollowUp = false;
+		} catch (err) {
+			error =
+				err instanceof DemoForbiddenError
+					? err.message
+					: err instanceof Error
+						? err.message
+						: 'Failed to update status.';
+		}
+	}
+
+	function startEditingFollowUp() {
+		followUpText = action?.FollowUp ?? '';
+		editingFollowUp = true;
+	}
+
+	async function saveFollowUp() {
+		if (!action) return;
+		savingFollowUp = true;
+		error = '';
+		try {
+			action = await actionsApi.updateFollowUp(actionId, followUpText.trim());
+			editingFollowUp = false;
+		} catch (err) {
+			error =
+				err instanceof DemoForbiddenError
+					? err.message
+					: err instanceof Error
+						? err.message
+						: 'Failed to save follow-up.';
+		} finally {
+			savingFollowUp = false;
 		}
 	}
 
@@ -183,15 +236,78 @@
 			<div class="card">
 				<p class="action-text">{action.ActionText}</p>
 			</div>
-			<div class="row" style="margin-top: 1rem;">
-				<button onclick={() => (editing = true)} disabled={auth.isDemo}>Edit</button>
-				<button onclick={toggleStatus} disabled={auth.isDemo}>
-					{action.Status === 'Open' ? 'Mark complete' : 'Reopen'}
-				</button>
-				<button class="danger" onclick={deleteAction} disabled={auth.isDemo}>Delete</button>
-			</div>
+			{#if completing}
+				<div class="field" style="margin-top: 1rem;">
+					<label for="complete-follow-up">Follow-up (optional)</label>
+					<textarea
+						id="complete-follow-up"
+						rows="3"
+						maxlength="2000"
+						placeholder="What happened after?"
+						bind:value={followUpText}
+					></textarea>
+				</div>
+				<div class="row">
+					<button class="primary" onclick={complete} disabled={savingFollowUp}>
+						{savingFollowUp ? 'Closing…' : 'Close action'}
+					</button>
+					<button onclick={() => (completing = false)}>Cancel</button>
+				</div>
+			{:else}
+				<div class="row" style="margin-top: 1rem;">
+					<button onclick={() => (editing = true)} disabled={auth.isDemo}>Edit</button>
+					{#if action.Status === 'Open'}
+						<button onclick={startCompleting} disabled={auth.isDemo}>Mark complete</button>
+					{:else}
+						<button onclick={reopen} disabled={auth.isDemo}>Reopen</button>
+					{/if}
+					<button class="danger" onclick={deleteAction} disabled={auth.isDemo}>Delete</button>
+				</div>
+			{/if}
 			{#if auth.isDemo}
 				<p class="muted">Editing and deleting are disabled in demo mode.</p>
+			{/if}
+		{/if}
+
+		<!-- The note survives a reopen, so show it on open actions too, but the
+		     API only lets a closed action's note change. -->
+		{#if action.Status === 'Completed' || action.FollowUp}
+			<h2 class="section-heading">Follow-up</h2>
+			{#if editingFollowUp}
+				<div class="field">
+					<label for="edit-follow-up">Follow-up</label>
+					<textarea
+						id="edit-follow-up"
+						rows="3"
+						maxlength="2000"
+						placeholder="What happened after?"
+						bind:value={followUpText}
+					></textarea>
+				</div>
+				<div class="row">
+					<button class="primary" onclick={saveFollowUp} disabled={savingFollowUp}>
+						{savingFollowUp ? 'Saving…' : 'Save'}
+					</button>
+					<button onclick={() => (editingFollowUp = false)}>Cancel</button>
+				</div>
+				<p class="muted">Leave it blank to remove the follow-up.</p>
+			{:else}
+				{#if action.FollowUp}
+					<div class="card">
+						<p class="action-text">{action.FollowUp}</p>
+					</div>
+				{:else}
+					<p class="muted">No follow-up yet.</p>
+				{/if}
+				{#if action.Status === 'Completed'}
+					<div class="row" style="margin-top: 1rem;">
+						<button onclick={startEditingFollowUp} disabled={auth.isDemo}>
+							{action.FollowUp ? 'Edit follow-up' : 'Add follow-up'}
+						</button>
+					</div>
+				{:else}
+					<p class="muted">Close the action again to change its follow-up.</p>
+				{/if}
 			{/if}
 		{/if}
 	{/if}

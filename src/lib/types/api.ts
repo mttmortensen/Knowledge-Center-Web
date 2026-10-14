@@ -97,6 +97,8 @@ export interface ActionItem {
 	Status: string;
 	CreatedAt: string;
 	CompletedAt?: string | null;
+	/** Note on what happened after the action was closed; kept if it's reopened. */
+	FollowUp?: string | null;
 }
 
 export interface ActionItemCreateInput {
