@@ -11,6 +11,7 @@
 	import ActionTable, { openFirstActionSort, sortActions } from '$lib/components/ActionTable.svelte';
 	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
+	import PromoteNodeDialog from '$lib/components/PromoteNodeDialog.svelte';
 	import type {
 		Domain,
 		KnowledgeNodeWithLogs,
@@ -197,31 +198,7 @@
 		}
 	}
 
-	let promoting = $state(false);
-
-	async function promoteNode() {
-		if (
-			!confirm(
-				`Promote "${node?.Title}" to a domain? A new domain with this title is created, and this node moves under it with all its log entries and actions.`
-			)
-		)
-			return;
-		promoting = true;
-		error = '';
-		try {
-			const newDomain = await knowledgeNodesApi.promote(nodeId);
-			goto(`/domains/${newDomain.DomainId}`);
-		} catch (err) {
-			error =
-				err instanceof DemoForbiddenError
-					? err.message
-					: err instanceof Error
-						? err.message
-						: 'Failed to promote knowledge node.';
-		} finally {
-			promoting = false;
-		}
-	}
+	let promoteDialog = $state<PromoteNodeDialog>();
 
 	async function deleteNode() {
 		if (
@@ -326,8 +303,8 @@
 						<button onclick={() => setArchived(true)} disabled={auth.isDemo || archiving}>
 							Archive
 						</button>
-						<button onclick={promoteNode} disabled={auth.isDemo || promoting}>
-							{promoting ? 'Promoting…' : 'Promote to domain'}
+						<button onclick={() => promoteDialog?.open()} disabled={auth.isDemo}>
+							Promote to Domain
 						</button>
 					{/if}
 				</div>
@@ -431,6 +408,14 @@
 				{/if}
 			{/if}
 		</section>
+
+		<PromoteNodeDialog
+			bind:this={promoteDialog}
+			{nodeId}
+			nodeTitle={node.Title}
+			logCount={logs.length}
+			actionCount={actions.length}
+		/>
 	{/if}
 </div>
 

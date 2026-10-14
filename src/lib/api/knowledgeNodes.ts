@@ -18,7 +18,11 @@ export const knowledgeNodesApi = {
 		api.put<KnowledgeNode>(`/knowledge-nodes/${id}`, input),
 	archive: (id: number) => api.put<KnowledgeNode>(`/knowledge-nodes/${id}/archive`),
 	unarchive: (id: number) => api.put<KnowledgeNode>(`/knowledge-nodes/${id}/unarchive`),
-	/** Creates a domain from the node and moves the node (with its logs and actions) under it. */
-	promote: (id: number) => api.post<Domain>(`/knowledge-nodes/${id}/promote`),
+	/**
+	 * Creates a domain from the node and moves the node (with its logs and actions) under it.
+	 * Blank names fall back to the node's title.
+	 */
+	promote: (id: number, input: { DomainName?: string; KnowledgeNodeTitle?: string } = {}) =>
+		api.post<Domain>(`/knowledge-nodes/${id}/promote`, input),
 	delete: (id: number) => api.delete<{ message: string }>(`/knowledge-nodes/${id}`)
 };
