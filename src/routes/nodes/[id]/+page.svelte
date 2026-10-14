@@ -197,6 +197,32 @@
 		}
 	}
 
+	let promoting = $state(false);
+
+	async function promoteNode() {
+		if (
+			!confirm(
+				`Promote "${node?.Title}" to a domain? A new domain with this title is created, and this node moves under it with all its log entries and actions.`
+			)
+		)
+			return;
+		promoting = true;
+		error = '';
+		try {
+			const newDomain = await knowledgeNodesApi.promote(nodeId);
+			goto(`/domains/${newDomain.DomainId}`);
+		} catch (err) {
+			error =
+				err instanceof DemoForbiddenError
+					? err.message
+					: err instanceof Error
+						? err.message
+						: 'Failed to promote knowledge node.';
+		} finally {
+			promoting = false;
+		}
+	}
+
 	async function deleteNode() {
 		if (
 			!confirm(
@@ -300,10 +326,13 @@
 						<button onclick={() => setArchived(true)} disabled={auth.isDemo || archiving}>
 							Archive
 						</button>
+						<button onclick={promoteNode} disabled={auth.isDemo || promoting}>
+							{promoting ? 'Promoting…' : 'Promote to domain'}
+						</button>
 					{/if}
 				</div>
 				{#if auth.isDemo}
-					<p class="muted">Editing, archiving and deleting are disabled in demo mode.</p>
+					<p class="muted">Editing, archiving, promoting and deleting are disabled in demo mode.</p>
 				{/if}
 			{/if}
 		</div>

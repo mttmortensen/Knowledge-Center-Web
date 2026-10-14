@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { KnowledgeNode, KnowledgeNodeUpdateInput, KnowledgeNodeWithLogs } from '$lib/types/api';
+import type { Domain, KnowledgeNode, KnowledgeNodeUpdateInput, KnowledgeNodeWithLogs } from '$lib/types/api';
 
 export const knowledgeNodesApi = {
 	/** Archived nodes are left out unless includeArchived is set. */
@@ -18,5 +18,7 @@ export const knowledgeNodesApi = {
 		api.put<KnowledgeNode>(`/knowledge-nodes/${id}`, input),
 	archive: (id: number) => api.put<KnowledgeNode>(`/knowledge-nodes/${id}/archive`),
 	unarchive: (id: number) => api.put<KnowledgeNode>(`/knowledge-nodes/${id}/unarchive`),
+	/** Creates a domain from the node and moves the node (with its logs and actions) under it. */
+	promote: (id: number) => api.post<Domain>(`/knowledge-nodes/${id}/promote`),
 	delete: (id: number) => api.delete<{ message: string }>(`/knowledge-nodes/${id}`)
 };
