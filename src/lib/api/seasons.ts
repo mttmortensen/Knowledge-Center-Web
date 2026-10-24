@@ -18,7 +18,7 @@ function isOverloadWarning(body: unknown): body is SeasonOverloadWarning {
 }
 
 export const seasonsApi = {
-	/** In date order. No domains or stats. */
+	/** Active, then planned, then ended (demo mode lists them by id). No domains or stats. */
 	getAll: (status?: SeasonStatus) =>
 		api.get<Season[]>(status ? `/seasons?status=${status}` : '/seasons'),
 	/** The active season, or null when none is (the API answers 204). */
