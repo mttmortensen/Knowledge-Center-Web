@@ -251,3 +251,143 @@ export interface LearnOpenQuestion {
 	Source: string;
 	CreatedAt: string;
 }
+
+// Seasons: time-boxed focus periods. Domains in a season are Focus or Passive;
+// domains left out are resting. Stats is null until the season has started.
+
+export type SeasonStatus = 'Planned' | 'Active' | 'Ended';
+export type SeasonRole = 'Focus' | 'Passive';
+/** Stats also list domains that got work without being in the season. */
+export type SeasonStatsRole = SeasonRole | 'Outside';
+
+export interface Season {
+	SeasonId: number;
+	Name: string;
+	Intention: string | null;
+	Status: SeasonStatus;
+	/** Date only, "YYYY-MM-DD". */
+	PlannedStart: string;
+	PlannedEnd: string;
+	StartedAt: string | null;
+	EndedAt: string | null;
+	Reflection: string | null;
+	OverloadReason: string | null;
+	CreatedAt: string;
+	UpdatedAt: string;
+	FocusCount: number;
+	PassiveCount: number;
+	DaysPlanned: number;
+	/** Null until the season has started. */
+	DaysElapsed: number | null;
+	/** Only set while Active; 0 once PlannedEnd has passed. */
+	DaysRemaining: number | null;
+	/** Active and past PlannedEnd. Seasons never end on their own. */
+	IsOverdue: boolean;
+}
+
+export interface SeasonDomain {
+	DomainId: number;
+	DomainName: string;
+	Role: SeasonRole;
+	Note: string | null;
+	IsArchived: boolean;
+}
+
+export interface SeasonActivityTotals {
+	Logs: number;
+	ActionsCreated: number;
+	ActionsCompleted: number;
+	LearnSessions: number;
+	LearnEntries: number;
+}
+
+export interface SeasonDomainStats {
+	DomainId: number;
+	DomainName: string;
+	Role: SeasonStatsRole;
+	Logs: number;
+	ActionsCreated: number;
+	ActionsCompleted: number;
+	LearnEntries: number;
+	/** Logs + completed actions + Learn entries. */
+	Score: number;
+}
+
+export interface SeasonNodeStats extends SeasonDomainStats {
+	NodeId: number;
+	Title: string;
+}
+
+export interface SeasonStats {
+	From: string;
+	To: string;
+	ActiveDays: number;
+	/** 0-100: share of scored activity that landed in Focus domains. */
+	FocusShare: number;
+	Totals: SeasonActivityTotals;
+	/** Focus first, then Passive, then Outside; season domains are listed even at zero. */
+	ByDomain: SeasonDomainStats[];
+	TopKnowledgeNodes: SeasonNodeStats[];
+	UnfiledLearnEntries: number;
+}
+
+export interface SeasonDetails extends Season {
+	Domains: SeasonDomain[];
+	Stats: SeasonStats | null;
+}
+
+export interface SeasonCreateInput {
+	Name: string;
+	Intention?: string;
+	PlannedStart: string;
+	PlannedEnd: string;
+}
+
+/** Only supplied fields change. Empty Intention or Reflection clears it. */
+export interface SeasonUpdateInput {
+	Name?: string;
+	Intention?: string;
+	PlannedStart?: string;
+	PlannedEnd?: string;
+	Reflection?: string;
+}
+
+export interface SeasonDomainInput {
+	DomainId: number;
+	Role: SeasonRole;
+	Note?: string;
+}
+
+export interface SeasonOverloadAck {
+	ChallengeToken: string;
+	Phrase?: string;
+	Reason?: string;
+}
+
+export interface SeasonOverloadRequirements {
+	ConfirmLabel: string;
+	/** When set, the typed phrase must match it (case and spacing don't matter). */
+	Phrase: string | null;
+	/** When above zero, the reason must be at least this long. */
+	ReasonMinLength: number;
+	ReasonPrompt: string | null;
+	WaitSeconds: number;
+	WaitRemainingSeconds: number;
+}
+
+/** 409 body from PUT /seasons/{id}/domains when the lineup has more than two Focus domains. */
+export interface SeasonOverloadWarning {
+	Warning: 'FocusOverload';
+	Level: number;
+	FocusCount: number;
+	FocusDomains: string[];
+	Title: string;
+	Message: string;
+	Consequences: string[];
+	Suggestion: string;
+	Requires: SeasonOverloadRequirements;
+	ChallengeToken: string;
+	ChallengeExpiresAt: string;
+	/** Set when an ack was sent but didn't satisfy Requires. */
+	AckError: string | null;
+}

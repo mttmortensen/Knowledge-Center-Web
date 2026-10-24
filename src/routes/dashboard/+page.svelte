@@ -6,6 +6,8 @@
 	import ContributionCalendar from '$lib/components/ContributionCalendar.svelte';
 	import StreakStat from '$lib/components/StreakStat.svelte';
 	import ActionTable from '$lib/components/ActionTable.svelte';
+	import SeasonStrip from '$lib/components/seasons/SeasonStrip.svelte';
+	import { currentSeason } from '$lib/stores/season.svelte';
 
 	let stats = $state<Stats | null>(null);
 	let loading = $state(true);
@@ -42,6 +44,8 @@
 	onMount(() => {
 		load();
 		loadRecentActions();
+		// A failed season fetch just leaves the strip out.
+		currentSeason.ensure().catch(() => {});
 	});
 
 	let topTag = $derived(stats?.TopTags[0] ?? null);
@@ -53,6 +57,10 @@
 
 <div class="dashboard">
 	<h1>Dashboard</h1>
+
+	{#if currentSeason.season}
+		<SeasonStrip season={currentSeason.season} />
+	{/if}
 
 	{#if error}
 		<div class="error-banner">{error}</div>

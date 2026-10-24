@@ -38,6 +38,8 @@
 	import SortHeader from './SortHeader.svelte';
 	import TableSortBar from './TableSortBar.svelte';
 	import { ariaSort } from '$lib/utils/tableSort';
+	import RolePill from './seasons/RolePill.svelte';
+	import { currentSeason } from '$lib/stores/season.svelte';
 
 	let {
 		domains,
@@ -68,6 +70,9 @@
 				<th class="col-count" aria-sort={ariaSort(sort, 'nodes')}>
 					<SortHeader label="Nodes" sortKey="nodes" dir="desc" align="right" bind:sort />
 				</th>
+				{#if currentSeason.season}
+					<th class="col-season">This season</th>
+				{/if}
 				<th class="col-status" aria-sort={ariaSort(sort, 'status')}>
 					<SortHeader label="Status" sortKey="status" bind:sort />
 				</th>
@@ -86,6 +91,12 @@
 					<td class="col-count muted" data-label="Knowledge Nodes"
 						>{nodeCounts.get(domain.DomainId) ?? 0}</td
 					>
+					{#if currentSeason.season}
+						{@const role = domain.IsArchived ? null : currentSeason.roleOf(domain.DomainId)}
+						<td class="col-season" data-label="This season"
+							>{#if role}<RolePill {role} />{:else}<span class="muted">—</span>{/if}</td
+						>
+					{/if}
 					<td class="col-status" data-label="Status"
 						><span class="tag-pill" class:archived={domain.IsArchived}
 							>{displayStatus(domain, domain.DomainStatus)}</span
@@ -154,9 +165,13 @@
 		white-space: nowrap;
 		text-align: right;
 	}
-	.col-status {
+	.col-status,
+	.col-season {
 		width: 1%;
 		white-space: nowrap;
+	}
+	th.col-season {
+		padding: 0.5rem 0.75rem;
 	}
 	.col-date {
 		width: 1%;

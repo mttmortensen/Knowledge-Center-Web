@@ -12,6 +12,8 @@
 	import { DemoForbiddenError } from '$lib/api/client';
 	import KnowledgeNodeTable from '$lib/components/KnowledgeNodeTable.svelte';
 	import MetaPanel, { type MetaRow } from '$lib/components/MetaPanel.svelte';
+	import RolePill from '$lib/components/seasons/RolePill.svelte';
+	import { currentSeason } from '$lib/stores/season.svelte';
 
 	const domainId = $derived(Number(page.params.id));
 
@@ -123,7 +125,12 @@
 		}
 	}
 
-	onMount(load);
+	onMount(() => {
+		load();
+		currentSeason.ensure().catch(() => {});
+	});
+
+	const seasonRole = $derived(domain && !domain.IsArchived ? currentSeason.roleOf(domain.DomainId) : null);
 
 	async function saveEdit(event: SubmitEvent) {
 		event.preventDefault();
@@ -268,6 +275,11 @@
 				<div class="row-between">
 					<h1>{domain.DomainName}</h1>
 					<div class="row">
+						{#if seasonRole && currentSeason.season}
+							<a href="/seasons/{currentSeason.season.SeasonId}" title={currentSeason.season.Name}>
+								<RolePill role={seasonRole} label="{seasonRole} this season" />
+							</a>
+						{/if}
 						{#if domain.IsArchived}
 							<span class="tag-pill archived">Archived</span>
 						{/if}

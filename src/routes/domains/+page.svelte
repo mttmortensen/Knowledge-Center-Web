@@ -5,6 +5,7 @@
 	import type { Domain } from '$lib/types/api';
 	import { auth } from '$lib/stores/auth.svelte';
 	import DomainTable from '$lib/components/DomainTable.svelte';
+	import { currentSeason } from '$lib/stores/season.svelte';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import {
 		ANY,
@@ -88,7 +89,11 @@
 		}
 	}
 
-	onMount(load);
+	onMount(() => {
+		load();
+		// Fills the table's "This season" column; without it the column stays hidden.
+		currentSeason.ensure().catch(() => {});
+	});
 
 	async function createDomain(event: SubmitEvent) {
 		event.preventDefault();

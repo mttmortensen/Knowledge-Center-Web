@@ -4,9 +4,12 @@ import type { ApiErrorBody } from '$lib/types/api';
 
 export class ApiError extends Error {
 	status: number;
-	constructor(status: number, message: string) {
+	/** The parsed JSON error body, when there was one (e.g. a Seasons overload warning). */
+	body: unknown;
+	constructor(status: number, message: string, body?: unknown) {
 		super(message);
 		this.status = status;
+		this.body = body;
 	}
 }
 
@@ -39,13 +42,14 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 	if (!response.ok) {
 		let message = `Request failed (${response.status})`;
+		let body: ApiErrorBody | undefined;
 		try {
-			const body: ApiErrorBody = await response.json();
+			body = await response.json();
 			if (body?.message) message = body.message;
 		} catch {
 			// body wasn't JSON — keep the generic message
 		}
-		throw new ApiError(response.status, message);
+		throw new ApiError(response.status, message, body);
 	}
 
 	if (response.status === 204) {
