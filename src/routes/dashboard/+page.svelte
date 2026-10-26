@@ -7,6 +7,7 @@
 	import StreakStat from '$lib/components/StreakStat.svelte';
 	import ActionTable from '$lib/components/ActionTable.svelte';
 	import SeasonStrip from '$lib/components/seasons/SeasonStrip.svelte';
+	import NoSeasonCard from '$lib/components/seasons/NoSeasonCard.svelte';
 	import { currentSeason } from '$lib/stores/season.svelte';
 
 	let stats = $state<Stats | null>(null);
@@ -44,7 +45,7 @@
 	onMount(() => {
 		load();
 		loadRecentActions();
-		// A failed season fetch just leaves the strip out.
+		// A failed season fetch just leaves the season card out.
 		currentSeason.ensure().catch(() => {});
 	});
 
@@ -57,10 +58,6 @@
 
 <div class="dashboard">
 	<h1>Dashboard</h1>
-
-	{#if currentSeason.season}
-		<SeasonStrip season={currentSeason.season} />
-	{/if}
 
 	{#if error}
 		<div class="error-banner">{error}</div>
@@ -132,20 +129,28 @@
 				</div>
 			</div>
 
-			<div class="card">
-				<div class="row-between">
-					<h2>Recent Actions</h2>
-					<a href="/actions">View all</a>
-				</div>
-				{#if recentActionsError}
-					<div class="error-banner">{recentActionsError}</div>
-				{:else if recentActionsLoading}
-					<p class="muted">Loading…</p>
-				{:else if recentActions.length === 0}
-					<div class="empty-state">No actions yet.</div>
-				{:else}
-					<ActionTable actions={recentActions} showNode compact />
+			<div class="side-col">
+				{#if currentSeason.season}
+					<SeasonStrip season={currentSeason.season} />
+				{:else if currentSeason.loaded}
+					<NoSeasonCard />
 				{/if}
+
+				<div class="card side-card">
+					<div class="row-between">
+						<h2>Recent Actions</h2>
+						<a href="/actions">View all</a>
+					</div>
+					{#if recentActionsError}
+						<div class="error-banner">{recentActionsError}</div>
+					{:else if recentActionsLoading}
+						<p class="muted">Loading…</p>
+					{:else if recentActions.length === 0}
+						<div class="empty-state">No actions yet.</div>
+					{:else}
+						<ActionTable actions={recentActions} showNode compact />
+					{/if}
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -204,6 +209,16 @@
 	}
 	.heatmap-card {
 		min-width: 0;
+	}
+	/* Season card above Recent Actions, same width as it. */
+	.side-col {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		min-width: 0;
+	}
+	.side-card {
+		margin-bottom: 0;
 	}
 
 	h2 {
