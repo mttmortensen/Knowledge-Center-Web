@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SeasonDomainStats, SeasonStats } from '$lib/types/api';
-import { barSegments, formatDay, idleFocusDomains, outsideTopNode, roleShares } from './stats';
+import { barSegments, formatDay, idleFocusDomains, nodeSortValue, outsideTopNode, roleShares } from './stats';
+import { sortRows } from '$lib/utils/tableSort';
 import { expectedOverloadLevel, focusCount, phraseMatches, toEditorLineup, toLineupInput } from './lineup';
 import { composeReflection, stallQuestion } from './reflection';
 
@@ -43,6 +44,16 @@ const spring = stats(
 );
 
 describe('stats', () => {
+	it('sorts node roles by weight, not alphabetically', () => {
+		const nodes = (['Outside', 'Focus', 'Passive'] as const).map((role, i) => ({
+			...domain('Rust', role, 1),
+			NodeId: i,
+			Title: `Node ${i}`
+		}));
+		const sorted = sortRows(nodes, { key: 'role', dir: 'asc' }, nodeSortValue);
+		expect(sorted.map((n) => n.Role)).toEqual(['Focus', 'Passive', 'Outside']);
+	});
+
 	it('splits the score by role', () => {
 		const s = roleShares(spring);
 		expect(s.focus).toBe(61.7);

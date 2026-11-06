@@ -327,6 +327,7 @@ export interface SeasonStats {
 	Totals: SeasonActivityTotals;
 	/** Focus first, then Passive, then Outside; season domains are listed even at zero. */
 	ByDomain: SeasonDomainStats[];
+	/** Every node with scored work, highest score first. */
 	TopKnowledgeNodes: SeasonNodeStats[];
 	UnfiledLearnEntries: number;
 }

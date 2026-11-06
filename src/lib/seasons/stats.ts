@@ -1,4 +1,5 @@
 import type { Season, SeasonDomainStats, SeasonNodeStats, SeasonStats } from '$lib/types/api';
+import type { SortValue } from '$lib/utils/tableSort';
 
 /** Percent (0-100) of scored work that went to each role. Focus matches the API's FocusShare. */
 export function roleShares(stats: SeasonStats): { focus: number; passive: number; outside: number } {
@@ -29,6 +30,24 @@ export function idleFocusDomains(stats: SeasonStats): SeasonDomainStats[] {
 export function outsideTopNode(stats: SeasonStats): SeasonNodeStats | null {
 	const top = stats.TopKnowledgeNodes[0];
 	return top && top.Role === 'Outside' ? top : null;
+}
+
+/** What each column of the season's node table sorts on. Role runs Focus, Passive, Outside. */
+export function nodeSortValue(node: SeasonNodeStats, key: string): SortValue {
+	switch (key) {
+		case 'title':
+			return node.Title;
+		case 'role':
+			return ['Focus', 'Passive', 'Outside'].indexOf(node.Role);
+		case 'logs':
+			return node.Logs;
+		case 'done':
+			return node.ActionsCompleted;
+		case 'learn':
+			return node.LearnEntries;
+		default:
+			return node.Score;
+	}
 }
 
 /** Elapsed share of the planned length, 0-100. */

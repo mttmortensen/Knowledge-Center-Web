@@ -1,15 +1,34 @@
 <script lang="ts">
 	import type { SeasonStats } from '$lib/types/api';
-	import { barSegments, outsideTopNode, roleShares } from '$lib/seasons/stats';
+	import { barSegments, nodeSortValue, outsideTopNode, roleShares } from '$lib/seasons/stats';
+	import { ariaSort, sortRows, type SortState } from '$lib/utils/tableSort';
+	import Pagination from '$lib/components/Pagination.svelte';
+	import SortHeader from '$lib/components/SortHeader.svelte';
 	import RolePill from './RolePill.svelte';
 
-	// A season's activity: totals, where the work went by role, and the
-	// most-worked nodes. Shared by the active season page and ended reports.
+	// A season's activity: totals, where the work went by role, and every node
+	// worked on. Shared by the active season page and ended reports.
 	let { stats, daysElapsed }: { stats: SeasonStats; daysElapsed: number } = $props();
 
 	const shares = $derived(roleShares(stats));
 	const maxScore = $derived(Math.max(0, ...stats.ByDomain.map((d) => d.Score)));
 	const drift = $derived(outsideTopNode(stats));
+
+	const NODES_PAGE_SIZE = 10;
+	let nodeSort = $state<SortState>({ key: 'score', dir: 'desc' });
+	let nodePage = $state(1);
+
+	const sortedNodes = $derived(sortRows(stats.TopKnowledgeNodes, nodeSort, nodeSortValue));
+	const nodeTotalPages = $derived(Math.max(1, Math.ceil(sortedNodes.length / NODES_PAGE_SIZE)));
+	const pagedNodes = $derived(
+		sortedNodes.slice((nodePage - 1) * NODES_PAGE_SIZE, nodePage * NODES_PAGE_SIZE)
+	);
+
+	// A new sort starts back at the top of the list.
+	$effect(() => {
+		nodeSort;
+		nodePage = 1;
+	});
 
 	const roleHeading: Record<string, string> = {
 		Focus: 'Focus',
@@ -116,7 +135,7 @@
 	</div>
 
 	<div class="card stack">
-		<h3>Top Knowledge Nodes</h3>
+		<h3>Knowledge Nodes</h3>
 		{#if stats.TopKnowledgeNodes.length === 0}
 			<p class="muted">No scored work yet.</p>
 		{:else}
@@ -124,16 +143,28 @@
 				<table class="nodes">
 					<thead>
 						<tr>
-							<th>Node</th>
-							<th>Role</th>
-							<th class="n">Logs</th>
-							<th class="n">Done</th>
-							<th class="n">Learn</th>
-							<th class="n">Score</th>
+							<th aria-sort={ariaSort(nodeSort, 'title')}>
+								<SortHeader label="Node" sortKey="title" bind:sort={nodeSort} />
+							</th>
+							<th aria-sort={ariaSort(nodeSort, 'role')}>
+								<SortHeader label="Role" sortKey="role" bind:sort={nodeSort} />
+							</th>
+							<th aria-sort={ariaSort(nodeSort, 'logs')}>
+								<SortHeader label="Logs" sortKey="logs" dir="desc" align="right" bind:sort={nodeSort} />
+							</th>
+							<th aria-sort={ariaSort(nodeSort, 'done')}>
+								<SortHeader label="Done" sortKey="done" dir="desc" align="right" bind:sort={nodeSort} />
+							</th>
+							<th aria-sort={ariaSort(nodeSort, 'learn')}>
+								<SortHeader label="Learn" sortKey="learn" dir="desc" align="right" bind:sort={nodeSort} />
+							</th>
+							<th aria-sort={ariaSort(nodeSort, 'score')}>
+								<SortHeader label="Score" sortKey="score" dir="desc" align="right" bind:sort={nodeSort} />
+							</th>
 						</tr>
 					</thead>
 					<tbody>
-						{#each stats.TopKnowledgeNodes as n (n.NodeId)}
+						{#each pagedNodes as n (n.NodeId)}
 							<tr>
 								<td><a href="/nodes/{n.NodeId}">{n.Title}</a></td>
 								<td><RolePill role={n.Role} /></td>
@@ -146,6 +177,12 @@
 					</tbody>
 				</table>
 			</div>
+			<Pagination
+				bind:page={nodePage}
+				totalPages={nodeTotalPages}
+				totalItems={sortedNodes.length}
+				itemLabel="nodes"
+			/>
 		{/if}
 		{#if stats.UnfiledLearnEntries > 0}
 			<p class="muted">
@@ -318,12 +355,15 @@
 		font-variant-numeric: tabular-nums;
 	}
 	.nodes th {
-		text-align: left;
+		padding: 0;
 		font-weight: 600;
 		color: var(--text-muted);
 		font-size: 0.78rem;
-		padding: 0.35rem 0.5rem;
 		border-bottom: 1px solid var(--border);
+	}
+	/* Tighter than the listing tables: this one shares its row with another card. */
+	.nodes th :global(.sort-header) {
+		padding: 0.35rem 0.5rem;
 	}
 	.nodes td {
 		padding: 0.45rem 0.5rem;
