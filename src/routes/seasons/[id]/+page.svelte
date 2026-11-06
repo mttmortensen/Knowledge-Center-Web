@@ -290,8 +290,8 @@
 		max-width: 1100px;
 	}
 	.hero {
-		display: grid;
-		grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+		display: flex;
+		flex-direction: column;
 		gap: 1rem;
 		margin-bottom: 1rem;
 	}
@@ -363,7 +363,6 @@
 		font-size: 0.85rem;
 	}
 	@media (max-width: 760px) {
-		.hero,
 		.two {
 			grid-template-columns: minmax(0, 1fr);
 		}

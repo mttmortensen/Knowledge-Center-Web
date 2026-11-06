@@ -29,30 +29,32 @@
 		{/if}
 	</div>
 
-	{#each [{ label: 'Focus', items: focus }, { label: 'Passive', items: passive }] as group (group.label)}
-		<div class="group">
-			<span class="group-label">{group.label} · {group.items.length}</span>
-			{#each group.items as m (m.DomainId)}
-				<div class="item">
-					<a href="/domains/{m.DomainId}"><RolePill role={m.Role} label={m.DomainName} /></a>
-					{#if m.Note}<span class="muted">{m.Note}</span>{/if}
-				</div>
-			{:else}
-				<span class="muted">None</span>
-			{/each}
-		</div>
-	{/each}
-
-	{#if resting.length}
-		<div class="group">
-			<span class="group-label">Resting · {resting.length}</span>
-			<div class="chips">
-				{#each resting as d (d.DomainId)}
-					<a href="/domains/{d.DomainId}"><RolePill role="Resting" label={d.DomainName} /></a>
+	<div class="groups">
+		{#each [{ label: 'Focus', items: focus }, { label: 'Passive', items: passive }] as group (group.label)}
+			<div class="group">
+				<span class="group-label">{group.label} · {group.items.length}</span>
+				{#each group.items as m (m.DomainId)}
+					<div class="item">
+						<a href="/domains/{m.DomainId}"><RolePill role={m.Role} label={m.DomainName} /></a>
+						{#if m.Note}<span class="muted">{m.Note}</span>{/if}
+					</div>
+				{:else}
+					<span class="muted">None</span>
 				{/each}
 			</div>
-		</div>
-	{/if}
+		{/each}
+
+		{#if resting.length}
+			<div class="group resting">
+				<span class="group-label">Resting · {resting.length}</span>
+				<div class="chips">
+					{#each resting as d (d.DomainId)}
+						<a href="/domains/{d.DomainId}"><RolePill role="Resting" label={d.DomainName} /></a>
+					{/each}
+				</div>
+			</div>
+		{/if}
+	</div>
 </div>
 
 <style>
@@ -65,10 +67,21 @@
 		margin: 0;
 		font-size: 1rem;
 	}
+	/* Side by side when the card is wide; wraps to one group per row on a phone. */
+	.groups {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.7rem 1.5rem;
+	}
 	.group {
 		display: flex;
 		flex-direction: column;
 		gap: 0.35rem;
+		flex: 1 1 200px;
+		min-width: 0;
+	}
+	.group.resting {
+		flex: 2 1 320px;
 	}
 	.group-label {
 		font-size: 0.7rem;
